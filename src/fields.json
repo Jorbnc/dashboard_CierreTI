@@ -1,0 +1,9 @@
+{
+  "id": "string", "business": "string", "entity": "string", "brand": "string",
+  "default_currency": "string", "year": "int64", "cutoff": "int64", "source": "string",
+  "sheet": "string", "sha256": "string", "unit": "string", "level": "string",
+  "kind": "string", "category": "string", "label": "string", "month": "int64",
+  "actual": "double", "forecast": "double", "budget": "double", "prior": "double",
+  "range_execution_forecast": "string", "range_budget": "string", "range_prior": "string",
+  "history_note": "string", "expected_rows": "int64"
+}

@@ -1,0 +1,27 @@
+{
+  "brand": "Ripley Retail",
+  "source": "User-provided PNG images; sampled colors, not an official brand specification",
+  "assets": {
+    "monogram": {
+      "file": "retail_monograma.png",
+      "width": 554,
+      "height": 554
+    },
+    "wordmark": {
+      "file": "retail_ripley.png",
+      "width": 3000,
+      "height": 1116
+    }
+  },
+  "colors": {
+    "black": "#000000",
+    "white": "#FFFFFF",
+    "red": "#CE171E",
+    "purple": "#741472",
+    "yellow": "#FFD400",
+    "gray": "#CFD4D8",
+    "coral": "#F15B5B"
+  },
+  "background": "#000000",
+  "notes": "Original PNGs preserved, including black backgrounds and alpha channels. Preserve aspect ratios; do not stretch, crop or recolor the logos. Available for future Retail Chile and Retail Peru dashboards; not applied to the current Banco Peru dashboard."
+}

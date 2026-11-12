@@ -1,0 +1,377 @@
+{
+  "dataRoles": [
+    {
+      "name": "id",
+      "displayName": "id",
+      "kind": "Grouping"
+    },
+    {
+      "name": "business",
+      "displayName": "business",
+      "kind": "Grouping"
+    },
+    {
+      "name": "entity",
+      "displayName": "entity",
+      "kind": "Grouping"
+    },
+    {
+      "name": "brand",
+      "displayName": "brand",
+      "kind": "Grouping"
+    },
+    {
+      "name": "default_currency",
+      "displayName": "default_currency",
+      "kind": "Grouping"
+    },
+    {
+      "name": "year",
+      "displayName": "year",
+      "kind": "Grouping"
+    },
+    {
+      "name": "cutoff",
+      "displayName": "cutoff",
+      "kind": "Grouping"
+    },
+    {
+      "name": "source",
+      "displayName": "source",
+      "kind": "Grouping"
+    },
+    {
+      "name": "sheet",
+      "displayName": "sheet",
+      "kind": "Grouping"
+    },
+    {
+      "name": "sha256",
+      "displayName": "sha256",
+      "kind": "Grouping"
+    },
+    {
+      "name": "unit",
+      "displayName": "unit",
+      "kind": "Grouping"
+    },
+    {
+      "name": "level",
+      "displayName": "level",
+      "kind": "Grouping"
+    },
+    {
+      "name": "kind",
+      "displayName": "kind",
+      "kind": "Grouping"
+    },
+    {
+      "name": "category",
+      "displayName": "category",
+      "kind": "Grouping"
+    },
+    {
+      "name": "label",
+      "displayName": "label",
+      "kind": "Grouping"
+    },
+    {
+      "name": "month",
+      "displayName": "month",
+      "kind": "Grouping"
+    },
+    {
+      "name": "actual",
+      "displayName": "actual",
+      "kind": "Grouping"
+    },
+    {
+      "name": "forecast",
+      "displayName": "forecast",
+      "kind": "Grouping"
+    },
+    {
+      "name": "budget",
+      "displayName": "budget",
+      "kind": "Grouping"
+    },
+    {
+      "name": "prior",
+      "displayName": "prior",
+      "kind": "Grouping"
+    },
+    {
+      "name": "range_execution_forecast",
+      "displayName": "range_execution_forecast",
+      "kind": "Grouping"
+    },
+    {
+      "name": "range_budget",
+      "displayName": "range_budget",
+      "kind": "Grouping"
+    },
+    {
+      "name": "range_prior",
+      "displayName": "range_prior",
+      "kind": "Grouping"
+    },
+    {
+      "name": "history_note",
+      "displayName": "history_note",
+      "kind": "Grouping"
+    },
+    {
+      "name": "expected_rows",
+      "displayName": "expected_rows",
+      "kind": "Grouping"
+    }
+  ],
+  "dataViewMappings": [
+    {
+      "conditions": [
+        {
+          "id": {
+            "min": 1,
+            "max": 1
+          },
+          "business": {
+            "min": 1,
+            "max": 1
+          },
+          "entity": {
+            "min": 1,
+            "max": 1
+          },
+          "brand": {
+            "min": 1,
+            "max": 1
+          },
+          "default_currency": {
+            "min": 1,
+            "max": 1
+          },
+          "year": {
+            "min": 1,
+            "max": 1
+          },
+          "cutoff": {
+            "min": 1,
+            "max": 1
+          },
+          "source": {
+            "min": 1,
+            "max": 1
+          },
+          "sheet": {
+            "min": 1,
+            "max": 1
+          },
+          "sha256": {
+            "min": 1,
+            "max": 1
+          },
+          "unit": {
+            "min": 1,
+            "max": 1
+          },
+          "level": {
+            "min": 1,
+            "max": 1
+          },
+          "kind": {
+            "min": 1,
+            "max": 1
+          },
+          "category": {
+            "min": 1,
+            "max": 1
+          },
+          "label": {
+            "min": 1,
+            "max": 1
+          },
+          "month": {
+            "min": 1,
+            "max": 1
+          },
+          "actual": {
+            "min": 1,
+            "max": 1
+          },
+          "forecast": {
+            "min": 1,
+            "max": 1
+          },
+          "budget": {
+            "min": 1,
+            "max": 1
+          },
+          "prior": {
+            "min": 1,
+            "max": 1
+          },
+          "range_execution_forecast": {
+            "min": 1,
+            "max": 1
+          },
+          "range_budget": {
+            "min": 1,
+            "max": 1
+          },
+          "range_prior": {
+            "min": 1,
+            "max": 1
+          },
+          "history_note": {
+            "min": 1,
+            "max": 1
+          },
+          "expected_rows": {
+            "min": 1,
+            "max": 1
+          }
+        }
+      ],
+      "table": {
+        "rows": {
+          "select": [
+            {
+              "for": {
+                "in": "id"
+              }
+            },
+            {
+              "for": {
+                "in": "business"
+              }
+            },
+            {
+              "for": {
+                "in": "entity"
+              }
+            },
+            {
+              "for": {
+                "in": "brand"
+              }
+            },
+            {
+              "for": {
+                "in": "default_currency"
+              }
+            },
+            {
+              "for": {
+                "in": "year"
+              }
+            },
+            {
+              "for": {
+                "in": "cutoff"
+              }
+            },
+            {
+              "for": {
+                "in": "source"
+              }
+            },
+            {
+              "for": {
+                "in": "sheet"
+              }
+            },
+            {
+              "for": {
+                "in": "sha256"
+              }
+            },
+            {
+              "for": {
+                "in": "unit"
+              }
+            },
+            {
+              "for": {
+                "in": "level"
+              }
+            },
+            {
+              "for": {
+                "in": "kind"
+              }
+            },
+            {
+              "for": {
+                "in": "category"
+              }
+            },
+            {
+              "for": {
+                "in": "label"
+              }
+            },
+            {
+              "for": {
+                "in": "month"
+              }
+            },
+            {
+              "for": {
+                "in": "actual"
+              }
+            },
+            {
+              "for": {
+                "in": "forecast"
+              }
+            },
+            {
+              "for": {
+                "in": "budget"
+              }
+            },
+            {
+              "for": {
+                "in": "prior"
+              }
+            },
+            {
+              "for": {
+                "in": "range_execution_forecast"
+              }
+            },
+            {
+              "for": {
+                "in": "range_budget"
+              }
+            },
+            {
+              "for": {
+                "in": "range_prior"
+              }
+            },
+            {
+              "for": {
+                "in": "history_note"
+              }
+            },
+            {
+              "for": {
+                "in": "expected_rows"
+              }
+            }
+          ],
+          "dataReductionAlgorithm": {
+            "window": {
+              "count": 1000
+            }
+          }
+        }
+      }
+    }
+  ],
+  "privileges": [],
+  "supportsKeyboardFocus": true,
+  "supportsLandingPage": true,
+  "supportsEmptyDataView": true
+}

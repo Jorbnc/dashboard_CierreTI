@@ -1,0 +1,230 @@
+:root {
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  color: #2b2340;
+  background: #f7f5fb;
+  --purple: #523178;
+  --violet: #6b4a94;
+  --actual: #523178;
+  --forecast: #006577;
+  --budget: #805600;
+  --gold: #ffb81c;
+  --magenta: #fd1585;
+  --navy: #002060;
+  --green: #23833e;
+  --red: #c5243d;
+  --prior: #748897;
+  --muted: #6e6680;
+  --border: #e2dcec;
+  --lavender: #f1ecf7;
+}
+* {box-sizing: border-box; letter-spacing: 0}
+body {margin: 0}
+button, select {font: inherit}
+button {cursor: pointer; border: 0}
+button, select, summary {touch-action: manipulation}
+button:focus-visible, select:focus-visible, summary:focus-visible, [tabindex]:focus-visible {outline: 3px solid #147b99; outline-offset: 3px}
+button svg, summary svg, label svg, .snapshot svg {width: 16px; height: 16px; flex-shrink: 0}
+button svg {pointer-events: none}
+h1, h2, h3, p {margin: 0}
+h1 {font-size: 22px; line-height: 1.3}
+h2 {font-size: 26px; line-height: 1.35}
+h3 {font-size: 16px; line-height: 1.4}
+a {color: var(--purple)}
+[hidden] {display: none !important}
+
+.navigation {display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 11px 36px; background: #fff; border-bottom: 1px solid var(--border)}
+.tabs {display: flex; gap: 8px; min-width: 0}
+.tabs button {display: flex; align-items: center; justify-content: center; gap: 8px; height: 34px; padding: 0 16px; color: var(--purple); background: #fff; font-weight: 600; font-size: 13px; border: 1px solid #d9cde9; border-radius: 18px}
+.tabs button[aria-selected=true] {color: #fff; background: var(--purple); border-color: var(--purple)}
+.tabs button:hover:not([aria-selected=true]) {background: var(--lavender)}
+.filters {display: flex; gap: 18px; align-items: center; flex-wrap: wrap}
+.filters label {display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--muted)}
+select {max-width: 100%; height: 33px; border: 1px solid #d9cde9; background: #fff; color: var(--purple); border-radius: 6px; padding: 0 25px 0 9px; font-size: 12px}
+.currency {display: flex; border: 1px solid #d9cde9; border-radius: 18px; overflow: hidden}
+.currency button {height: 32px; min-width: 76px; padding: 0 12px; font-size: 12px; font-weight: 600; color: var(--purple); background: #fff}
+.currency button[aria-pressed=true] {background: var(--purple); color: #fff}
+.currency button:focus-visible {outline-offset: -3px}
+.masthead {display: grid; grid-template-columns: minmax(245px, 1fr) minmax(0, 1.8fr) auto; align-items: center; gap: 24px; min-height: 80px; padding: 16px 36px; background: var(--purple); color: #fff}
+.identity {display: flex; align-items: center; gap: 12px; min-width: 0}
+.country-flag {width: 35px; height: 29px; flex-shrink: 0; background: linear-gradient(to right, #d91023 0 33.33%, #fff 33.33% 66.67%, #d91023 66.67%); border-radius: 2px}
+.overline {display: block; font-size: 10px; font-weight: 600; color: #e6d9f5; margin-bottom: 3px}
+#page-title {text-align: center; text-wrap: balance}
+.brand {display: flex; align-items: center; gap: 12px; flex-shrink: 0; color: #fff}
+.brand > span {font-size: 10px; line-height: 1.4; border-right: 1px solid #a891c1; padding-right: 12px; text-transform: uppercase}
+.brand > strong {font-size: 27px}
+.brand-dot {color: var(--gold)}
+
+main {max-width: 1680px; margin: 0 auto; padding: 12px 36px 20px}
+.page-heading {display: flex; justify-content: flex-end; margin-bottom: 16px}
+.heading-meta {display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 12px; font-size: 11px; color: var(--muted)}
+.snapshot {display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 14px; background: #fff0c4; color: #6a4900; font-weight: 600}
+.snapshot svg {width: 13px; height: 13px}
+#month-status {font-size: 12px; color: #745617; background: #fff3d1; border-left: 3px solid var(--gold); padding: 10px 14px; margin: 0 0 18px; line-height: 1.5}
+#report-panel {outline-offset: 7px}
+.kpi-grid {display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px}
+.band-heading {display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; color: var(--purple)}
+.band-heading span {font-size: 11px}
+.summary-section + .summary-section {margin-top: 22px}
+.row-title {display: flex; align-items: center; gap: 10px; margin-bottom: 7px; font-size: 20px; font-weight: 700; color: var(--navy)}
+.row-title:before {content: ""; width: 16px; height: 16px; flex-shrink: 0; background: var(--row-color); border-radius: 50%}
+.kpi-card {position: relative; container-type: inline-size; min-width: 0; min-height: 178px; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 20px 17px 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 9px; box-shadow: 0 2px 6px #5231780e}
+.scenario-actual {--scenario-color: var(--actual)}
+.scenario-forecast {--scenario-color: var(--forecast)}
+.scenario-budget {--scenario-color: var(--budget)}
+.scenario-text {color: var(--scenario-color); font-weight: 600; font-variant-numeric: tabular-nums}
+.metric-block {display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; min-width: 0}
+.kpi-value {display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 5px; row-gap: 2px; max-width: 100%; font-size: 34px; font-weight: 750; line-height: 1.15; font-variant-numeric: tabular-nums; color: var(--purple)}
+.kpi-value.scenario-text {color: var(--scenario-color); font-weight: 750}
+.kpi-value small {font-size: 11px; font-weight: 600; color: inherit}
+.kpi-label {color: var(--muted); font-weight: 600; font-size: 12px}
+.kpi-sub {font-size: 12px; line-height: 1.45; color: var(--muted)}
+.delta {display: inline-flex; align-items: center; flex-wrap: wrap; gap: 3px; max-width: 100%; font-size: 11px; font-weight: 650; line-height: 1.45; padding: 4px 10px; border-radius: 14px; margin-top: 2px}
+.delta.good {background: #e3f4e8}
+.delta.bad {background: #fbe3e6}
+.delta.neutral {background: var(--lavender)}
+.delta-row {display: flex; align-items: center; flex-wrap: wrap; gap: 6px}
+.delta-reference {display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted)}
+.delta.good:before, .delta.bad:before {content: ""; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-right: 2px; background: currentColor}
+.good {color: var(--green)}
+.bad {color: var(--red)}
+.neutral {color: var(--muted)}
+.caution {color: #956411}
+.quiet-note {font-size: 11px; color: var(--muted); line-height: 1.45}
+.kpi-value.unavailable {color: #7c728c}
+.usage-bar {position: relative; width: 100%; height: 8px; background: var(--lavender); border-radius: 4px; margin: 4px 0 2px}
+.usage-bar .fill {position: absolute; left: 0; height: 100%; background: var(--actual); max-width: 100%; border-radius: 4px}
+.usage-bar .expected {position: absolute; width: 4px; height: 16px; top: -4px; background: var(--budget); border-radius: 2px}
+.card-break {border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px; width: 100%}
+.inline-metric, .usage-info {display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%; font-size: 12px; line-height: 1.7; color: var(--muted)}
+.inline-metric strong, .usage-info strong {color: #2b2340; font-variant-numeric: tabular-nums; white-space: nowrap}
+.usage-info {margin-top: 8px}
+.usage-info > strong {font-size: 18px}
+.label-with-help {display: inline-flex; align-items: center; gap: 5px; min-width: 0}
+.help-button {display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 24px; height: 24px; padding: 4px; background: transparent; color: var(--muted); border-radius: 4px}
+.help-button:hover, .help-button[aria-expanded=true] {color: #2b2340}
+#calculation-tooltip {position: fixed; z-index: 1000; width: 330px; max-width: calc(100vw - 24px); max-height: calc(100dvh - 24px); overflow: auto; padding: 16px; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: #2b2340; box-shadow: 0 6px 24px #2b234020; font-size: 12px; line-height: 1.55; font-variant-numeric: tabular-nums}
+#calculation-tooltip h4 {font-size: 13px; line-height: 1.4; margin: 0 0 12px}
+#calculation-tooltip p + p {margin-top: 8px}
+#calculation-tooltip .tooltip-section {border-top: 1px solid var(--border); padding-top: 10px; margin-top: 12px; color: var(--muted); font-size: 11px}
+#calculation-tooltip .tooltip-section:first-child {border-top: 0; padding-top: 0; margin-top: 0}
+#calculation-tooltip .tooltip-formula {margin-top: 4px}
+#calculation-tooltip .tooltip-note {font-size: 10px; color: var(--muted); margin-top: 12px}
+.inline-metric + .inline-metric {margin-top: 6px}
+.segmented {display: inline-flex; flex-wrap: wrap; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: #fff}
+.segmented button {background: transparent; color: var(--purple); padding: 7px 11px; font-size: 12px; min-height: 32px}
+.segmented button[aria-pressed=true] {background: var(--purple); color: #fff}
+.segmented button[aria-pressed=true] .scenario-text {color: inherit}
+.segmented button:focus-visible {outline-offset: -3px}
+#history-details {margin-top: 24px; font-size: 12px; color: var(--muted)}
+#history-details summary {cursor: pointer; font-weight: 600; padding: 10px 0}
+#history-details .unavailable {line-height: 1.6}
+.history-table {min-width: 570px}
+
+.detail-intro {display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 30px; margin: 0 0 14px}
+.detail-focus {font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 10px}
+.icon-button {display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1px solid var(--border); border-radius: 4px; background: #fff; color: var(--purple)}
+.icon-button:disabled {opacity: 0.35; cursor: default}
+.detail-grid {display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 24px 22px}
+.chart-section {min-width: 0; border-top: 2px solid #d9cde9; padding-top: 12px}
+.full-width {grid-column: 1 / -1}
+.section-heading {display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 8px; min-height: 42px}
+.section-heading h3 {color: var(--purple); font-weight: 700}
+.section-heading > span {font-size: 10px; color: var(--muted); white-space: nowrap}
+.plot {width: 100%; height: 310px; min-width: 0; background: #fff}
+.plot.tall {height: 420px}
+.legend {display: flex; flex-wrap: wrap; gap: 12px; margin: 4px 0 12px; font-size: 11px; color: var(--muted)}
+.legend > span {display: inline-flex; align-items: center; gap: 5px}
+.swatch {display: inline-block; width: 13px; height: 8px; background: var(--color)}
+.swatch.line {height: 3px}
+.table-wrap {overflow: auto; width: 100%; background: #fff; border: 1px solid var(--border); border-radius: 6px}
+table {width: 100%; min-width: 740px; border-collapse: collapse; font-size: 11px; font-variant-numeric: tabular-nums}
+th, td {padding: 9px 7px; text-align: right; vertical-align: middle; border-bottom: 1px solid #eee9f4}
+thead th {background: var(--purple); color: #fff; font-size: 10px; font-weight: 600; line-height: 1.4; border-right: 1px solid #715291}
+thead .scenario-text {color: inherit}
+th:first-child, td:first-child {text-align: left; width: 20%}
+tbody th {font-weight: 500}
+tbody tr.selected {background: #fff3d1}
+tbody tr.selected th {box-shadow: inset 3px 0 var(--gold)}
+tbody tr:hover {background: #f7f5fb}
+tfoot th, tfoot td {background: var(--lavender); color: var(--purple); font-weight: 700; border-top: 2px solid #d9cde9; white-space: nowrap}
+td {white-space: nowrap}
+.category-button {font-size: 11px; text-align: left; background: none; color: #2b2340; padding: 0; line-height: 1.4; font-weight: 600}
+.category-button[aria-pressed=true] {color: var(--purple); text-decoration: underline}
+.pct-cell {font-size: 10px}
+.pct-cell.good {background: #e3f4e8; color: var(--green)}
+.pct-cell.bad {background: #fbe3e6; color: var(--red)}
+#category-table {min-width: 1000px; table-layout: fixed}
+#category-table thead tr:nth-child(2) th:first-child {width: auto; text-align: right}
+#category-table thead th[colspan] {text-align: center; border-bottom: 1px solid #a58bc9}
+#matrix-table {min-width: 800px}
+#matrix-table tbody td {padding: 0}
+#matrix-table .active-month {box-shadow: inset 0 2px var(--gold), inset 0 -2px var(--gold)}
+.matrix-cell {display: block; width: 100%; min-height: 38px; background: transparent; color: #2b2340; padding: 9px 7px; font-size: 11px; font-variant-numeric: tabular-nums; text-align: right}
+.matrix-cell[aria-pressed=true] {outline: 2px solid var(--purple); outline-offset: -2px; font-weight: 700}
+.legend-note {font-size: 10px; color: var(--muted); margin-top: 10px; line-height: 1.5}
+#source-details {margin-top: 24px; border-top: 1px solid var(--border); padding-top: 13px; font-size: 11px; color: var(--muted)}
+#source-details summary {display: flex; gap: 7px; align-items: center; cursor: pointer; width: fit-content; font-weight: 600}
+#source-details[open] summary {margin-bottom: 12px}
+#source-content {line-height: 1.7; overflow-wrap: anywhere; max-width: 1100px}
+#source-content p + p {margin-top: 6px}
+code {font-size: 11px}
+footer {max-width: 1680px; margin: auto; display: flex; justify-content: space-between; padding: 8px 36px 22px; font-size: 10px; color: var(--muted)}
+
+@container (max-width: 160px) {
+  .kpi-value {font-size: 28px}
+}
+@media (max-width: 1180px) {
+  .navigation, .masthead {padding-left: 24px; padding-right: 24px}
+  .masthead {grid-template-columns: minmax(0, 1fr) auto; gap: 14px 24px}
+  #page-title {grid-row: 2; grid-column: 1 / -1}
+  .brand {grid-row: 1; grid-column: 2}
+  main {padding-left: 24px; padding-right: 24px}
+  .filters {gap: 10px}
+  .kpi-grid {gap: 12px}
+  .kpi-card {padding: 18px 14px}
+  .detail-grid {grid-template-columns: minmax(0, 1fr)}
+  .plot.tall {height: 380px}
+}
+@media (max-width: 760px) {
+  .navigation {padding: 12px 16px; flex-direction: column; align-items: stretch; gap: 12px}
+  .tabs {justify-content: space-between}
+  .tabs button {padding: 0 10px; flex: 1}
+  .filters {justify-content: space-between}
+  .filters label > span {display: none}
+  .filters select {max-width: 170px}
+  .masthead {padding: 16px; gap: 12px}
+  .identity {gap: 8px}
+  .country-flag {width: 24px; height: 23px}
+  .brand {flex-direction: column; align-items: flex-end; gap: 2px}
+  .brand > span {font-size: 9px; border: 0; padding: 0}
+  .brand > span br {display: none}
+  .brand > strong {font-size: 22px}
+  main {padding: 12px 16px 20px}
+  .page-heading {justify-content: flex-start}
+  .heading-meta {justify-content: flex-start; gap: 8px}
+  .kpi-grid {grid-template-columns: minmax(0, 1fr); gap: 12px}
+  .kpi-card {padding: 18px; min-height: 0}
+  .kpi-value {column-gap: 4px}
+  .delta {padding: 4px 7px}
+  .summary-section + .summary-section {margin-top: 22px}
+  .plot {height: 300px}
+  .plot.tall {height: 400px}
+  .detail-grid {gap: 22px}
+  .legend {gap: 9px}
+  footer {padding: 5px 16px 20px; gap: 15px; line-height: 1.5}
+}
+@media (max-width: 380px) {
+  .currency button {min-width: 65px; padding: 0 9px}
+  .filters select {max-width: 150px}
+}
+@media print {
+  body {background: #fff}
+  .navigation, #month-status, #source-details, .help-button, #calculation-tooltip {display: none}
+  main {padding: 18px}
+  .kpi-card {break-inside: avoid}
+  .detail-grid {display: block}
+  .chart-section {break-inside: avoid; margin-bottom: 20px}
+  .masthead {padding: 12px 18px; print-color-adjust: exact}
+  .table-wrap {overflow: visible}
+  footer {padding: 12px 18px}
+}

@@ -1,0 +1,15 @@
+/data/
+/previews/
+/node_modules/
+/dist/
+/.tmp/
+/src/generated/
+/test-results/
+/playwright-report/
+/webpack.statistics*.html
+**/.pbi/
+*.pbix
+*.pbit
+*.xlsx
+*.csv
+.env*

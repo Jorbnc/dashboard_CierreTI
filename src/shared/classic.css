@@ -1,0 +1,106 @@
+:root {--forecast: #a58bc9; --budget: #ffb81c; --prior: #8c8c99}
+body {font-family: "Segoe UI", Arial, Helvetica, sans-serif; background: #e7e3ef}
+.navigation, .masthead, main, footer {max-width: 1600px; margin-left: auto; margin-right: auto}
+.navigation {padding: 10px 22px}
+.masthead {background: #582982; grid-template-columns: minmax(220px, 1fr) minmax(0, 2.5fr) minmax(100px, 1fr); min-height: 100px; padding: 6px 22px; gap: 20px}
+.identity h1 {font-size: 22px; font-weight: 700}
+.country-flag {width: 40px; height: 34px; background: none; object-fit: contain}
+#page-title {font-size: 27px; font-weight: 700}
+.brand {justify-self: end}
+.bank-logo {display: block; width: 88px; height: 88px; object-fit: contain}
+.retail-logo {display: block; width: 180px; height: auto; max-width: 100%; object-fit: contain}
+body[data-brand=retail] .masthead {background: #000}
+.fixed-currency {font-size: 13px; font-weight: 700; color: var(--purple)}
+#month-status.sr-only {position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0}
+.period-note {font-size: 12px; color: var(--muted); line-height: 1.3; margin: 0 0 4px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap}
+.period-note .help-button {width: 20px; height: 20px; padding: 2px}
+.forecast-validity {display: block; font-size: 11.5px; font-weight: 400; line-height: 1.3; margin-top: 3px}
+.table-period {display: block; font-size: 10.5px; line-height: 1.3; font-weight: 400; margin-top: 2px}
+#category-table thead .help-button {color: #fff; margin: 0 3px 3px; width: 20px; height: 20px}
+.row-title .help-button {margin-left: 4px}
+main {padding: 12px 44px 20px; background: #f7f5fb}
+footer {padding-left: 44px; padding-right: 44px; background: #f7f5fb; font-size: 12px}
+.page-heading {margin-bottom: 14px}
+.column-heads, .kpi-grid {display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px}
+.column-heads {margin-bottom: 10px}
+.column-heads > div {display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--purple); color: #fff; border-radius: 16px; text-align: center; font-size: 15.5px; font-weight: 700; line-height: 1.25; padding: 8px 6px; box-shadow: 0 3px 6px #52317840}
+.row-title {font-size: 21px; font-weight: 800; margin-bottom: 6px}
+.row-title:before {width: 18px; height: 18px}
+.summary-section + .summary-section {margin-top: 12px}
+.kpi-card {padding: 18px 18px 12px; min-height: 178px; gap: 6px; box-shadow: 0 2px 6px #52317814}
+.kpi-label {display: none}
+.kpi-value {font-size: 40px; font-weight: 800; line-height: 1.1; overflow-wrap: anywhere}
+.kpi-value small {font-size: 14px; color: var(--muted); font-weight: 700}
+.kpi-sub {font-size: 13.5px; line-height: 1.25}
+.delta {font-size: 13px; font-weight: 700; padding: 4px 12px; gap: 7px}
+.delta-row {gap: 5px; margin-top: 2px}
+.delta-reference {font-size: 12px}
+.quiet-note {font-size: 12.5px; line-height: 1.4}
+.usage-bar {height: 9px; margin-top: 4px}
+.usage-bar .expected {height: 17px; background: var(--gold)}
+.scenario-budget {--scenario-color: #805600}
+.scenario-forecast {--scenario-color: #006577}
+.detail-intro {margin-bottom: 8px}
+.detail-focus {font-size: 11.5px}
+.detail-grid {display: grid; grid-template-columns: minmax(0, 1.48fr) minmax(0, 1fr); gap: 16px 22px; align-items: stretch}
+.chart-section {min-width: 0; display: flex; flex-direction: column; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; box-shadow: 0 2px 6px #52317814}
+.section-heading {display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 0; margin-bottom: 6px; align-items: start; gap: 8px}
+.section-heading h3 {font-size: 18px; font-weight: 800; line-height: 1.3}
+.section-heading .chart-unit {font-size: 12px; line-height: 1.2; padding-top: 3px}
+.legend {font-size: 12.5px; color: #2b2340; justify-content: center; gap: 6px 16px; margin: 4px 0 0}
+.legend .swatch {width: 14px; height: 9px}
+.legend .swatch.line {height: 3px}
+.legend .swatch.line.dotted {width: 20px; height: 0; border-top: 2px dotted var(--color); background: transparent}
+.legend-note {font-size: 11.5px; margin-top: 4px}
+.table-wrap {border: 0; border-radius: 0}
+#category-table {width: 100%; min-width: 850px; font-size: 13px}
+#category-table thead th {font-size: 12.5px; padding: 4px 2px; line-height: 1.1; font-weight: 700; border: 1px solid #fff}
+#category-table th:first-child {width: 20%}
+#category-table td, #category-table tbody th, #category-table tfoot th {padding: 3px 7px; line-height: 1.3}
+#category-table td {white-space: nowrap}
+#category-table .pct-cell {font-size: 13px; font-weight: 800}
+#category-table tbody tr {cursor: pointer}
+#category-table tbody tr.selected th, #category-table tbody tr.selected td {box-shadow: inset 0 0 0 2px var(--gold)}
+#category-table tbody tr.selected {background: #fff8e7}
+#category-table tfoot th, #category-table tfoot td {background: var(--lavender); font-weight: 800; color: var(--purple)}
+.category-button {font-size: 13px; font-weight: 700; line-height: 1.3; min-height: 20px}
+.sort-button {display: flex; align-items: center; justify-content: flex-end; gap: 2px; width: 100%; background: transparent; color: inherit; padding: 2px 0; min-height: 32px; text-align: right; font-size: inherit; font-weight: inherit; line-height: 1.1}
+th:first-child .sort-button {justify-content: flex-start; text-align: left}
+.sort-button svg {width: 12px; height: 12px; flex-shrink: 0; opacity: 0.65}
+th[aria-sort=ascending] .sort-button svg, th[aria-sort=descending] .sort-button svg {opacity: 1; color: var(--gold)}
+.sort-button:focus-visible {outline-color: var(--gold); outline-offset: 0}
+.plot {flex-shrink: 0}
+@container (max-width: 195px) {
+  .kpi-value {font-size: 34px}
+  .delta {padding: 4px 8px}
+}
+@media (max-width: 1180px) {
+  .masthead {grid-template-columns: minmax(0, 1fr) auto; gap: 6px 20px}
+  #page-title {grid-row: 2; grid-column: 1 / -1; padding-bottom: 10px}
+  .brand {grid-row: 1; grid-column: 2}
+  main {padding-left: 24px; padding-right: 24px}
+  .column-heads {display: none}
+  .kpi-grid {grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px}
+  .kpi-label {display: block; font-size: 15.5px; color: var(--purple); font-weight: 700}
+  .kpi-card:last-child {grid-column: 1 / -1}
+  .detail-grid {grid-template-columns: minmax(0, 1fr)}
+}
+@media (max-width: 760px) {
+  .navigation {padding: 12px 16px}
+  main {padding: 12px 16px 20px}
+  .masthead {padding: 0 16px 10px}
+  .bank-logo {width: 76px; height: 76px}
+  .country-flag {width: 32px; height: 27px}
+  .kpi-grid {grid-template-columns: minmax(0, 1fr)}
+  .kpi-card {min-height: 178px; padding: 18px 18px 12px}
+  .chart-section {padding: 12px}
+  .section-heading {min-height: 0}
+  footer {padding: 8px 16px 22px}
+}
+@media print {
+  .column-heads {display: grid}
+  .kpi-grid {grid-template-columns: repeat(5, minmax(0, 1fr))}
+  .kpi-label {display: none}
+  .kpi-card:last-child {grid-column: auto}
+  .chart-section {break-inside: avoid}
+}

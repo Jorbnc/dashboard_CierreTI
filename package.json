@@ -1,0 +1,25 @@
+{
+  "name": "dashboard-cierre-ti",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {"node": ">=22.13"},
+  "scripts": {
+    "prepare:ui": "node tools/prepare.cjs",
+    "build": "npm run prepare:ui && tsc --noEmit && pbiviz package && node tools/build-manifest.cjs record",
+    "test": "node --test tests/*.test.cjs",
+    "test:visual": "node tools/test-visual.cjs",
+    "package:projects": "node tools/projects.cjs",
+    "check": "node tools/check.cjs",
+    "check:schemas": "node tools/check-schemas.cjs",
+    "release:local": "npm test && npm run build && npm run test:visual && npm run package:projects && npm run check"
+  },
+  "dependencies": {"lucide": "1.67.0", "plotly.js-dist-min": "4.2.0"},
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "powerbi-visuals-api": "5.11.1",
+    "powerbi-visuals-tools": "7.2.1",
+    "typescript": "5.5.4",
+    "fflate": "0.8.2",
+    "@playwright/test": "1.64.1"
+  }
+}

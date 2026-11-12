@@ -1,0 +1,2 @@
+expression pDataFile = "C:\CierreTI\data\retail_chile.json" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: b3b2db28-1749-4dfa-a3e6-7df3597177cc

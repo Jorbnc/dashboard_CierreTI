@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>/*__ENTITY__*/ | Cierre mensual TI</title>
+  <style>/*__STYLE__*/</style>
+</head>
+<body data-ready="false" data-summary-layout="/*__LAYOUT__*/" data-brand="/*__BRAND_KIND__*/">
+  <div class="navigation">
+    <div class="tabs" role="tablist" aria-label="Páginas del reporte">
+      <button id="tab-summary" role="tab" aria-controls="report-panel" aria-selected="true" data-page="summary"><i data-lucide="layout-dashboard"></i>Gastos TI</button>
+      <button id="tab-opex" role="tab" aria-controls="report-panel" aria-selected="false" tabindex="-1" data-page="opex"><i data-lucide="layers"></i>OPEX</button>
+      <button id="tab-capex" role="tab" aria-controls="report-panel" aria-selected="false" tabindex="-1" data-page="capex"><i data-lucide="chart-column-increasing"></i>CAPEX</button>
+    </div>
+    <div class="filters">
+      <label for="month"><i data-lucide="calendar-days"></i><span>Mes de análisis</span><select id="month" aria-describedby="month-status"></select></label>
+      /*__CURRENCY__*/
+    </div>
+  </div>
+  <header class="masthead">
+    <div class="identity">/*__IDENTITY__*/</div>
+    <h2 id="page-title"></h2>
+    <div class="brand">/*__BRAND__*/</div>
+  </header>
+  <main>
+    <div class="page-heading"><span id="layout-label" hidden>Visión integrada</span><div class="heading-meta"><span class="snapshot"><i data-lucide="calendar-check"></i><span id="snapshot"></span></span><span id="unit-label"></span></div></div>
+    <p id="month-status" role="status" hidden></p>
+    <section id="report-panel" role="tabpanel" aria-labelledby="tab-summary" tabindex="0"></section>
+    <details id="source-details"><summary><i data-lucide="file-spreadsheet"></i>Fuente y criterios</summary><div id="source-content"></div></details>
+  </main>
+  <footer><span>/*__ENTITY__*/ · Gastos TI</span><span id="footer-cutoff"></span></footer>
+  <div id="calculation-tooltip" role="tooltip" hidden></div>
+  <script id="report-data" type="application/json">/*__DATA__*/</script>
+  <script>/*__PLOTLY__*/</script>
+  <script>/*__LUCIDE__*/</script>
+  <script>/*__MODEL__*/</script>
+  <script>/*__CLASSIC__*/</script>
+  <script>/*__APP__*/</script>
+  <script>mountCierreDashboard(document.body, JSON.parse(document.getElementById('report-data').textContent), {
+    model: CierreModel, classic: globalThis.CierreClassic, proposal: globalThis.CierreProposal, plotly: Plotly, icons: lucide
+  });</script>
+</body>
+</html>

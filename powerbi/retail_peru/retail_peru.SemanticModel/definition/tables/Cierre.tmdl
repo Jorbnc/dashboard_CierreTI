@@ -1,0 +1,164 @@
+table Cierre
+	lineageTag: 24979050-b5da-489f-ae99-dbe4d19611b1
+
+	column id
+		dataType: string
+		lineageTag: fab08043-8c64-4f5e-a3e1-b9be9af1d461
+		summarizeBy: none
+		sourceColumn: id
+
+	column business
+		dataType: string
+		lineageTag: 4d100d97-e6ab-422d-a6a9-24b091c109ec
+		summarizeBy: none
+		sourceColumn: business
+
+	column entity
+		dataType: string
+		lineageTag: 957bb02d-74f3-490f-ad5f-9a92b045d8c7
+		summarizeBy: none
+		sourceColumn: entity
+
+	column brand
+		dataType: string
+		lineageTag: a4efcb1a-667c-445b-accc-0d19b6acd7f8
+		summarizeBy: none
+		sourceColumn: brand
+
+	column default_currency
+		dataType: string
+		lineageTag: 2bece95c-5c6a-42aa-a85d-7902f80f10f4
+		summarizeBy: none
+		sourceColumn: default_currency
+
+	column year
+		dataType: int64
+		lineageTag: ad5452b6-aed2-4d52-a523-7af24ea5b94c
+		summarizeBy: none
+		sourceColumn: year
+
+	column cutoff
+		dataType: int64
+		lineageTag: 1559bf9d-fa1e-40e5-a9ae-18b06a16fa4d
+		summarizeBy: none
+		sourceColumn: cutoff
+
+	column source
+		dataType: string
+		lineageTag: 5e5ef51d-edbb-49e2-a0ed-d69d50888bba
+		summarizeBy: none
+		sourceColumn: source
+
+	column sheet
+		dataType: string
+		lineageTag: 392a5105-4fc9-4604-a062-32c3d9884879
+		summarizeBy: none
+		sourceColumn: sheet
+
+	column sha256
+		dataType: string
+		lineageTag: e26c3222-8a2a-4d32-a542-50225fc1d81f
+		summarizeBy: none
+		sourceColumn: sha256
+
+	column unit
+		dataType: string
+		lineageTag: 825e12d6-fec4-4692-a603-58489c6b8224
+		summarizeBy: none
+		sourceColumn: unit
+
+	column level
+		dataType: string
+		lineageTag: 3e885cda-c76c-4e24-a0e1-719caf6f6e46
+		summarizeBy: none
+		sourceColumn: level
+
+	column kind
+		dataType: string
+		lineageTag: 0089b52e-79b0-49b9-a57d-c57a28339aa3
+		summarizeBy: none
+		sourceColumn: kind
+
+	column category
+		dataType: string
+		lineageTag: 9b9f4b4c-4fa4-4f8b-a534-d71f8e1b263f
+		summarizeBy: none
+		sourceColumn: category
+
+	column label
+		dataType: string
+		lineageTag: 085d3139-8d70-4a7c-af0c-a08c4e60e300
+		summarizeBy: none
+		sourceColumn: label
+
+	column month
+		dataType: int64
+		lineageTag: 962c8b1d-ed06-4ae5-aa62-ef09517e53cb
+		summarizeBy: none
+		sourceColumn: month
+
+	column actual
+		dataType: double
+		lineageTag: 12861c66-ba59-4ab5-a47e-410b9d10f692
+		summarizeBy: none
+		sourceColumn: actual
+
+	column forecast
+		dataType: double
+		lineageTag: 18279093-a42e-4f57-a173-587e6928a801
+		summarizeBy: none
+		sourceColumn: forecast
+
+	column budget
+		dataType: double
+		lineageTag: ffbc181a-0368-458f-aea3-7d80ec0ba33f
+		summarizeBy: none
+		sourceColumn: budget
+
+	column prior
+		dataType: double
+		lineageTag: 1c6aa5bd-c5e4-4fb6-ad7b-b03d4578b9d9
+		summarizeBy: none
+		sourceColumn: prior
+
+	column range_execution_forecast
+		dataType: string
+		lineageTag: 5663a0c9-6ac6-4513-ac1a-284e626d8581
+		summarizeBy: none
+		sourceColumn: range_execution_forecast
+
+	column range_budget
+		dataType: string
+		lineageTag: d7201b37-33f9-4a74-a6e2-051ed02b2a56
+		summarizeBy: none
+		sourceColumn: range_budget
+
+	column range_prior
+		dataType: string
+		lineageTag: fc1bf6c7-af76-4b94-ac7d-7623f6a2aa5f
+		summarizeBy: none
+		sourceColumn: range_prior
+
+	column history_note
+		dataType: string
+		lineageTag: 2f1f5e03-6ff3-4217-ad7b-70fe906083e2
+		summarizeBy: none
+		sourceColumn: history_note
+
+	column expected_rows
+		dataType: int64
+		lineageTag: 2c776cac-a08e-4057-a79b-c3bb7624c722
+		summarizeBy: none
+		sourceColumn: expected_rows
+
+	partition Cierre = m
+		mode: import
+		source =
+				let
+				    Input = Json.Document(File.Contents(pDataFile)),
+				    Checked = if Input[schema] = 1 and Input[business] = "retail_peru" then Input[rows] else error "Archivo de otro negocio o esquema no compatible",
+				    Scope = if List.Count(Checked) > 0 and List.AllTrue(List.Transform(Checked, each [business] = "retail_peru" and [expected_rows] = List.Count(Checked))) then Checked else error "Negocio incorrecto o entrega incompleta",
+				    Records = Table.FromRecords(Scope, {"id", "business", "entity", "brand", "default_currency", "year", "cutoff", "source", "sheet", "sha256", "unit", "level", "kind", "category", "label", "month", "actual", "forecast", "budget", "prior", "range_execution_forecast", "range_budget", "range_prior", "history_note", "expected_rows"}, MissingField.Error),
+				    Typed = Table.TransformColumnTypes(Records, {{"id", type text}, {"business", type text}, {"entity", type text}, {"brand", type text}, {"default_currency", type text}, {"year", Int64.Type}, {"cutoff", Int64.Type}, {"source", type text}, {"sheet", type text}, {"sha256", type text}, {"unit", type text}, {"level", type text}, {"kind", type text}, {"category", type text}, {"label", type text}, {"month", Int64.Type}, {"actual", type number}, {"forecast", type number}, {"budget", type number}, {"prior", type number}, {"range_execution_forecast", type text}, {"range_budget", type text}, {"range_prior", type text}, {"history_note", type text}, {"expected_rows", Int64.Type}}, "en-US")
+				in
+				    Typed

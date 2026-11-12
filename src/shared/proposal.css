@@ -1,0 +1,2 @@
+.kpi-value.history-trigger {padding: 0; background: transparent; text-align: left; cursor: help; text-decoration: underline dotted var(--muted); text-decoration-thickness: 1px; text-underline-offset: 6px; border-radius: 0}
+.kpi-value.history-trigger:hover {text-decoration-color: var(--purple)}
