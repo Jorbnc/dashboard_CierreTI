@@ -49,7 +49,8 @@ async function main() {
           await expect(app).toHaveAttribute('data-currency', scopes[business].default); await ready();
           await expect(app.locator('[role=tab]')).toHaveCount(3);
           await app.locator('#month').click(); await app.locator('[data-month-option="3"]').click(); await ready();
-          await expect(app.locator('[data-scope=Total][data-kpi="0"] [data-metric=actual-month]')).toContainText(business === 'retail_chile' ? '9,000' : business === 'banco_peru' ? '6' : '6,000');
+          await expect(app.locator('[data-scope=Total][data-kpi="0"] [data-metric=actual-month]')).toHaveText(`${business === 'retail_chile' ? '9' : '6'}${scopes[business].default}`);
+          await expect(app.locator('#unit-label')).toContainText(business === 'banco_peru' ? 'Miles de soles' : 'Millones de CLP');
           for (const tab of ['opex', 'capex']) {
             await app.locator(`#tab-${tab}`).click(); await ready();
             await expect(app.locator('#monthly-chart .barlayer .point')).not.toHaveCount(0);

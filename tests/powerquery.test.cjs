@@ -58,6 +58,12 @@ test('lector sin fuentes remotas, Python, Node ni cero para invalidos', () => {
   assert.ok(code.includes('Excel.Workbook'));
   for (const banned of ['Web.Contents', 'Python.Execute', 'R.Execute', 'otherwise 0', 'pDataFile']) assert.ok(!code.includes(banned), banned);
 });
+test('lector conserva millones CLP y miles PEN del agregado, sin redondear', () => {
+  const code = fs.readFileSync(path.join(root, 'powerquery/fxCierreXlsx.pq'), 'utf8');
+  assert.ok(code.includes('divisor = 1,'));
+  assert.ok(code.includes('delta = difference,'));
+  assert.ok(!/\/\s*1000\b|else 1000|Number\.Round\(/.test(code));
+});
 test('lector sin hashes mantiene excepcion delimitada y localizador sin fold', () => {
   const reader = fs.readFileSync(path.join(root, 'powerquery/fxCierreXlsx.pq'), 'utf8');
   assert.ok(!/sha256|digest|hash/i.test(reader));

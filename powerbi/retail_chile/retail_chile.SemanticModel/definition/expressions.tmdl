@@ -155,7 +155,8 @@ expression fxCierreXlsx =
 		    ReadCurrency = (definition as record) as record =>
 		        let
 		            unit = definition[unit],
-		            divisor = if unit = "MSoles" then 1 else 1000,
+		            // Source blocks already use millions of CLP or thousands of PEN.
+		            divisor = 1,
 		            location = Locate(definition[marker], unit),
 		            block = location[block], header = location[header],
 		            last = block + List.Sum(List.Transform(Record.FieldValues(Config[categories]), each 1 + List.Count(_))),
@@ -329,7 +330,7 @@ expression fxCierreXlsx =
 		                                corp = values{2}{month}, sum = fxCierreSum({values{0}{month}, values{1}{month}}),
 		                                difference = corp - sum,
 		                                tolerance = List.Max({0.000001, 0.0000000001 * List.Max({Number.Abs(corp), Number.Abs(sum)})}),
-		                                delta = difference / 1000,
+		                                delta = difference,
 		                                cells = List.Transform(countryRows, each Address(_, scenario[start] + month))
 		                            in if Number.Abs(difference) <= tolerance then null else scenario[name] & " " & N(Year) & "-" &
 		                                Text.PadStart(N(month + 1), 2, "0") & ": RETAIL CORP (" & cells{2} & ") menos Chile + Per#(00FA) " &

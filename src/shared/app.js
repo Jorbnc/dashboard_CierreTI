@@ -33,16 +33,15 @@
   const theme = getComputedStyle(document.documentElement);
   const color = name => theme.getPropertyValue(`--${name}`).trim();
   const colors = {actual: color('actual'), forecast: color('forecast'), budget: color('budget'), prior: color('actual'), good: color('green'), bad: color('red')};
-  const number = new Intl.NumberFormat('es-CL', {minimumFractionDigits: 3, maximumFractionDigits: 3});
   const thousands = new Intl.NumberFormat('es-CL', {maximumFractionDigits: 0, useGrouping: true});
-  const amountDecimals = () => state.currency === 'MSoles' ? 0 : 3;
+  const amountDecimals = () => 0;
   const amountThreshold = () => 0.5 * 10 ** -amountDecimals();
   const percent = new Intl.NumberFormat('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2});
   const escape = value => String(value).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
   const scenarioKeys = {REAL: 'actual', FCST: 'forecast', PPTO: 'budget'};
   const scenarioValue = (key, text) => `<span class="scenario-text scenario-${key}">${escape(text)}</span>`;
   const scenarioText = text => escape(text).replace(/\b(REAL|FCST|PPTO)\b/g, word => scenarioValue(scenarioKeys[word], word));
-  const fmt = value => !Number.isFinite(value) ? 'N/D' : (state.currency === 'MSoles' ? thousands : number).format(Math.abs(value) < amountThreshold() ? 0 : value);
+  const fmt = value => !Number.isFinite(value) ? 'N/D' : thousands.format(Math.abs(value) < amountThreshold() ? 0 : value);
   const pct = value => !Number.isFinite(value) ? 'N/D' : `${percent.format(Math.abs(value) < 0.005 ? 0 : value)}%`;
   const signed = (value, format = fmt) => !Number.isFinite(value) ? 'N/D' : `${value > 0 && Math.abs(value) >= (format === pct ? 0.005 : amountThreshold()) ? '+' : ''}${format(value)}`;
   const isProposal = document.body.dataset.summaryLayout === 'proposal';
@@ -307,7 +306,7 @@
     $('monthly-legend').innerHTML = legend(legendItems);
     $('history-note').innerHTML = scenarioText(`REAL hasta ${closure.toLowerCase()} ${data.year}. ${focused ? `Histórico ${data.year - 1} no incorporado por categoría.` : selected().history_note}`);
     const x = Array.from({length: 12}, (_, i) => i + 1);
-    const hover = name => `%{customdata}<br>${name}: %{y:${state.currency === 'MSoles' ? ',.0f' : ',.3f'}} ${state.currency}<extra></extra>`;
+    const hover = name => `%{customdata}<br>${name}: %{y:,.0f} ${state.currency}<extra></extra>`;
     const hoverStyle = key => ({bgcolor: '#fff', bordercolor: color('border'), font: {color: colors[key]}});
     const monthly = [
       {type: 'bar', x, y: series.actual, customdata: months, name: `REAL ${data.year}`, marker: {color: colors.actual}, hovertemplate: hover('REAL'), hoverlabel: hoverStyle('actual')},
@@ -321,7 +320,7 @@
     const variance = [{type: 'bar', orientation: 'h', x: sorted.map(row => row.c.delta), y: labels,
       customdata: sorted.map(row => [row.label, signed(row.c.percent, pct), row.category]), name: 'Variación',
       marker: {color: sorted.map(row => row.c.delta > 0 ? colors.bad : colors.good), opacity: sorted.map(row => !state.category || state.category === row.category ? 1 : 0.4)},
-      hovertemplate: `%{customdata[0]}<br>%{x:${state.currency === 'MSoles' ? ',.0f' : ',.3f'}} ${state.currency} (%{customdata[1]})<extra></extra>`}];
+      hovertemplate: `%{customdata[0]}<br>%{x:,.0f} ${state.currency} (%{customdata[1]})<extra></extra>`}];
     $('ranking-note').innerHTML = scenarioText(`${state.ranking === 'annual' ? `FCST anual vigente al cierre de ${closure.toLowerCase()}` : state.ranking === 'month' ? `REAL de ${month().toLowerCase()}` : `REAL de enero a ${month().toLowerCase()}`} menos PPTO equivalente. Rojo: sobre PPTO; verde: bajo PPTO.`);
     $('variance-chart').style.height = `${Math.max(310, sorted.length * 31 + 45)}px`;
     const shapes = [{type: 'rect', xref: 'x', yref: 'paper', x0: state.month - 0.45, x1: state.month + 0.45, y0: 0, y1: 1, fillcolor: '#ffb81c18', line: {width: 0}, layer: 'below'}];
@@ -343,12 +342,12 @@
     const ranges = selected().ranges;
     $('source-content').innerHTML = `<p><b>Fuente única:</b> ${escape(data.source)} · Hoja ${escape(data.sheet)} · ${escape(data.entity)}. Valores almacenados, sin recalcular vínculos externos. Se excluyen Negocio, Retail Corp y las otras entidades.</p>
       <p><b>Períodos:</b> ${scenarioText(`Mes consultado ${month().toLowerCase()} ${data.year}; acumulado enero a ${month().toLowerCase()}. Cierre fuente ${closure.toLowerCase()} ${data.year}. FCST anual vigente = REAL enero a ${closure.toLowerCase()} + FCST posterior hasta diciembre. No representa una proyección histórica del mes consultado.`)}</p>
-      <p><b>Escala:</b> ${state.currency === 'MSoles' ? 'MSoles = miles de soles. El bloque de origen ya está en miles de soles; no se divide nuevamente.' : 'MMCLP = miles de millones de CLP. Origen en millones de CLP, dividido por 1.000.'} Cada moneda proviene de su bloque, sin aplicar un tipo de cambio nuevo.</p>
+      <p><b>Escala:</b> ${state.currency === 'MSoles' ? 'MSoles = miles de soles. El bloque de origen ya está en miles de soles; no se divide nuevamente.' : 'MMCLP = millones de CLP. El bloque de origen ya está en millones de CLP; no se divide nuevamente.'} Cada moneda proviene de su bloque, sin aplicar un tipo de cambio nuevo.</p>
       <p><b>Rangos:</b> ${scenarioText(`REAL + FCST ${ranges.execution_forecast}; PPTO ${ranges.budget}${ranges.prior ? `; REAL ${data.year - 1} ${ranges.prior}` : ''}.`)}</p>
       <p><b>Histórico:</b> ${scenarioText(selected().history_note)}</p>
       ${selected().types.CO ? '<p><b>Composición del Total:</b> OPEX + CAPEX + CO. CO se conserva por separado, sin reclasificarlo. Las páginas OPEX y CAPEX no incluyen CO.</p>' : ''}
       <p><b>Indicadores:</b> ${scenarioText(`Uso = 100 × REAL acumulado / PPTO anual; esperado = 100 × PPTO acumulado / PPTO anual. ${classic ? 'PPTO disponible al mes consultado = PPTO anual menos REAL acumulado al mes. FCST pendiente comprende solo meses posteriores al cierre fuente.' : 'Saldo al cierre = PPTO anual menos REAL al cierre fuente.'} Variación = REAL o FCST menos PPTO. Porcentaje N/D si el denominador no es positivo. Los negativos se conservan; bajo PPTO no implica ahorro definitivo.`)}</p>
-      <p><b>Presentación:</b> ${Object.keys(data.aliases).length ? Object.entries(data.aliases).map(([key, label]) => `${escape(key)}: ${escape(label)}`).join('; ') + '. ' : 'Categorías originales de la fuente. '}Son rótulos de categoría, no un desglose por proveedor. MSoles sin decimales; MMCLP con tres y porcentajes con dos. Punto para miles y coma decimal, sin redondeos intermedios.</p>`;
+      <p><b>Presentación:</b> ${Object.keys(data.aliases).length ? Object.entries(data.aliases).map(([key, label]) => `${escape(key)}: ${escape(label)}`).join('; ') + '. ' : 'Categorías originales de la fuente. '}Son rótulos de categoría, no un desglose por proveedor. Montos sin decimales y porcentajes con dos. Punto para miles y coma decimal, sin redondeos intermedios.</p>`;
   }
 
   async function render(rebuild) {
@@ -371,7 +370,7 @@
     if ($('context')) $('context').textContent = `FUENTE · CIERRE ${closure.toUpperCase()} ${data.year}`;
     $('page-title').textContent = `${state.page === 'summary' ? classic ? 'Gastos Tecnológicos' : 'Gastos tecnológicos' : kind().toUpperCase()} | ${classic && state.month === data.cutoff ? 'Cierre ' : ''}${month()} ${data.year}`;
     $('snapshot').textContent = `Cierre fuente: ${closure} ${data.year}`;
-    $('unit-label').textContent = state.currency === 'MSoles' ? 'MSoles · Miles de soles' : 'MMCLP · Miles de millones de CLP';
+    $('unit-label').textContent = state.currency === 'MSoles' ? 'MSoles · Miles de soles' : 'MMCLP · Millones de CLP';
     $('footer-cutoff').textContent = `${closure} ${data.year} · ${state.currency}`;
     $('layout-label').hidden = !integrated || state.page !== 'summary';
     $('month-status').hidden = !classic && state.month === data.cutoff;

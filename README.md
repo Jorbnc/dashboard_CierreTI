@@ -6,11 +6,11 @@ El usuario confirmo **funcionamiento en Desktop el 16/11/2026**, tras retirar ha
 
 ## Preparar en Linux
 
-### Migracion 0.1.0.2: escala y selector
+### Migracion 0.1.0.3: MMCLP en millones
 
-En este dashboard **MSoles = miles de soles**, con importes enteros, punto para miles y coma decimal en porcentajes. M conserva los importes del bloque soles sin dividir por 1.000; MMCLP no cambia. Historico y ajustes usan la misma escala; los porcentajes no cambian. No se modifican las reglas del reporte canonico Comite ni Finbot. Consultar las referencias financieras privadas en `previews/`, nunca incorporarlas a Git.
+En los cuatro dashboards **MMCLP = millones de CLP**; **MSoles = miles de soles** se mantiene en Banco Peru desde 0.1.0.2. Importes enteros, punto para miles y coma decimal en porcentajes. Python y M conservan los importes de ambos bloques, sin dividir nuevamente por 1.000. Historico, PPTO, FCST y ajustes usan la misma escala; los importes economicos y porcentajes no cambian. No se modifican las reglas de Comite canonico, Steerco ni Finbot. Consultar las referencias financieras privadas en `previews/`, nunca incorporarlas a Git.
 
-Sincronizar modelo y visual juntos, preservar cambios Windows, confirmar `pWorkbookPath`, **Refresh, comprobar, Save y republicar**. El visual nuevo no debe usarse con la cache anterior en millones. No se requiere otro XLSX ni Node/Python Windows.
+Sincronizar modelo y visual juntos, revisar cambios Windows, confirmar `pWorkbookPath`, **Refresh, comprobar, Save y republicar los cuatro PBIP**. La cache CLP anterior esta en miles de millones y no debe reutilizarse con la nueva unidad. No se requiere otro XLSX ni Node/Python Windows. Los snapshots historicos conservan su escala/version congelada y no se sobrescriben.
 
 El mes usa un listbox dentro del visual, con clic y teclado, en lugar del select nativo. El usuario reporto un problema del desplegable en Service/Opera; no se ha demostrado su causa ni validado esta correccion en ese entorno. Probar tambien en Edge/Chrome, incluidos en la [lista oficial de navegadores soportados](https://learn.microsoft.com/en-us/power-bi/fundamentals/power-bi-browsers). No relajar el sandbox ni pedir habilitar popups.
 
@@ -36,7 +36,7 @@ npm run check:schemas
 
 `release:local` prueba, compila e instala `artifacts/cierre-gastos-ti.pbiviz` sin datos. Su `package:projects` **ejecuta automaticamente `configure:xlsx`**: no se requiere un segundo comando. Migra solo particiones de origen y parametros/funciones M de los cuatro modelos existentes, preservando layout, identidades, enlaces y `pWorkbookPath` existente. Particiones personalizadas desconocidas deben revisarse, no sobrescribirse.
 
-`npm run configure:xlsx` es opcional para refrescar solo el adaptador. `npm run test:powerquery` comprueba sintaxis con `@microsoft/powerquery-parser` y contratos locales, no el runtime M. La lectura usa solo `powerquery/fxCierreXlsx.pq` y `fxCierreSum.pq`. No se usan hashes en lectura, metadatos, visual ni entrega. La migracion retira funcion, columna y enlace obsoletos desde `0.1.0.1`; la entrega vigente `0.1.0.2` conserva esos 24 campos y actualiza la escala MSoles.
+`npm run configure:xlsx` es opcional para refrescar solo el adaptador. `npm run test:powerquery` comprueba sintaxis con `@microsoft/powerquery-parser` y contratos locales, no el runtime M. La lectura usa solo `powerquery/fxCierreXlsx.pq` y `fxCierreSum.pq`. No se usan hashes en lectura, metadatos, visual ni entrega. La migracion retira funcion, columna y enlace obsoletos desde `0.1.0.1`; la entrega vigente `0.1.0.3` conserva esos 24 campos y usa las escalas indicadas arriba.
 
 No ejecutar build/prepare/package simultaneos ni sincronizar datos/assets durante compilacion; `.tmp/build.lock` se comparte con snapshot y no se borra para forzar acceso. Un cambio mensual compatible de datos **no requiere recompilar el visual**.
 
