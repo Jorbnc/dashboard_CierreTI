@@ -1,0 +1,157 @@
+table Cierre
+	lineageTag: 474dfcef-f227-4fc2-aebc-91c5ad81a2fc
+
+	column id
+		dataType: string
+		lineageTag: 4f05c07a-d911-4689-ae42-5ca001715405
+		summarizeBy: none
+		sourceColumn: id
+
+	column business
+		dataType: string
+		lineageTag: db7e00d1-33f5-4425-a447-2785bc4cd832
+		summarizeBy: none
+		sourceColumn: business
+
+	column entity
+		dataType: string
+		lineageTag: ff646318-a710-4eb1-ad5b-2681ef5d6882
+		summarizeBy: none
+		sourceColumn: entity
+
+	column brand
+		dataType: string
+		lineageTag: c1c326a3-e698-46cb-a750-43ca788e2297
+		summarizeBy: none
+		sourceColumn: brand
+
+	column default_currency
+		dataType: string
+		lineageTag: 398a5fd3-e32d-4633-ac73-f131dd8bfc7d
+		summarizeBy: none
+		sourceColumn: default_currency
+
+	column year
+		dataType: int64
+		lineageTag: 18f0ef99-c271-4ace-a6ab-3a94b5366ef6
+		summarizeBy: none
+		sourceColumn: year
+
+	column cutoff
+		dataType: int64
+		lineageTag: 09cdecb6-5b03-49c5-a53b-c88d0aadc187
+		summarizeBy: none
+		sourceColumn: cutoff
+
+	column source
+		dataType: string
+		lineageTag: 6e0c7384-40d0-4e89-a42c-3f97d8000a49
+		summarizeBy: none
+		sourceColumn: source
+
+	column sheet
+		dataType: string
+		lineageTag: 634c58d7-98a9-434b-a677-9349befe0867
+		summarizeBy: none
+		sourceColumn: sheet
+
+	column unit
+		dataType: string
+		lineageTag: 6d027e10-3737-4250-ae9d-de4617a5b765
+		summarizeBy: none
+		sourceColumn: unit
+
+	column level
+		dataType: string
+		lineageTag: 769a910b-4427-489c-a190-cc3d6adaaae8
+		summarizeBy: none
+		sourceColumn: level
+
+	column kind
+		dataType: string
+		lineageTag: 63a2b0fe-2937-49a7-aaa3-69eadac15f4d
+		summarizeBy: none
+		sourceColumn: kind
+
+	column category
+		dataType: string
+		lineageTag: 3a06da83-4473-44a3-a9e4-fd48319b0f67
+		summarizeBy: none
+		sourceColumn: category
+
+	column label
+		dataType: string
+		lineageTag: 2f33d9d9-798e-4ba4-ae25-36f8f6e04415
+		summarizeBy: none
+		sourceColumn: label
+
+	column month
+		dataType: int64
+		lineageTag: b5266ea8-750a-4d1e-a587-b44112ef6807
+		summarizeBy: none
+		sourceColumn: month
+
+	column actual
+		dataType: double
+		lineageTag: 992994ec-cf98-40dc-a400-898da2bd54cf
+		summarizeBy: none
+		sourceColumn: actual
+
+	column forecast
+		dataType: double
+		lineageTag: 140d9af5-54f3-4437-a9ac-d40b54f75fa6
+		summarizeBy: none
+		sourceColumn: forecast
+
+	column budget
+		dataType: double
+		lineageTag: c8ef900b-f66e-4fdb-ad13-eb178d613007
+		summarizeBy: none
+		sourceColumn: budget
+
+	column prior
+		dataType: double
+		lineageTag: 9cf5c36e-63d4-43f6-a206-e8e94053f446
+		summarizeBy: none
+		sourceColumn: prior
+
+	column range_execution_forecast
+		dataType: string
+		lineageTag: c219b2b7-2f7e-46ea-a977-10ed673e7978
+		summarizeBy: none
+		sourceColumn: range_execution_forecast
+
+	column range_budget
+		dataType: string
+		lineageTag: ee349ca7-6999-4f2b-a074-671ec2a53f19
+		summarizeBy: none
+		sourceColumn: range_budget
+
+	column range_prior
+		dataType: string
+		lineageTag: 752ab076-4408-4495-a872-87a99eeae067
+		summarizeBy: none
+		sourceColumn: range_prior
+
+	column history_note
+		dataType: string
+		lineageTag: 5038adcb-aa3f-47f6-a9e3-7d6da1551ef3
+		summarizeBy: none
+		sourceColumn: history_note
+
+	column expected_rows
+		dataType: int64
+		lineageTag: a581ddb3-aed0-4c51-ab9b-db3ec6d5f525
+		summarizeBy: none
+		sourceColumn: expected_rows
+
+	partition Cierre = m
+		mode: import
+		source =
+				let
+				    SourceName = List.Last(Text.Split(Text.Replace(pWorkbookPath, "\", "/"), "/")),
+				    Workbook = Binary.Buffer(File.Contents(pWorkbookPath)),
+				    Result = fxCierreXlsx(Workbook, SourceName, "banco_peru")
+				in
+				    Result
+

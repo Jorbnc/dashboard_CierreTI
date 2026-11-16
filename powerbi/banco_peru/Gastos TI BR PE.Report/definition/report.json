@@ -1,0 +1,36 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.4.0/schema.json",
+  "themeCollection": {},
+  "objects": {
+    "outspacePane": [
+      {
+        "properties": {
+          "expanded": {
+            "expr": {
+              "Literal": {
+                "Value": "false"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "resourcePackages": [
+    {
+      "name": "CierreGastosTI87D1AC0452B14A2C9D131B5482A80B71",
+      "type": "CustomVisual",
+      "items": [
+        {
+          "name": "resources/CierreGastosTI87D1AC0452B14A2C9D131B5482A80B71.pbiviz.json",
+          "path": "CierreGastosTI87D1AC0452B14A2C9D131B5482A80B71.pbiviz.json",
+          "type": "CustomVisualMetadata"
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "exportDataMode": "None",
+    "useEnhancedTooltips": true
+  }
+}
