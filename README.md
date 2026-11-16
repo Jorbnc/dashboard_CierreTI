@@ -12,6 +12,8 @@ En los cuatro dashboards **MMCLP = millones de CLP**; **MSoles = miles de soles*
 
 Sincronizar modelo y visual juntos, revisar cambios Windows, confirmar `pWorkbookPath`, **Refresh, comprobar, Save y republicar los cuatro PBIP**. La cache CLP anterior esta en miles de millones y no debe reutilizarse con la nueva unidad. No se requiere otro XLSX ni Node/Python Windows. Los snapshots historicos conservan su escala/version congelada y no se sobrescriben.
 
+La version vigente **0.1.0.4** cambia solo la interfaz: **Millones de Pesos** como descripcion de MMCLP y etiquetas REAL/PPTO del mes seleccionado en la evolucion mensual de OPEX/CAPEX. Responden a mes, moneda y categoria; no cambian datos, M ni parametros. Desde 0.1.0.3 ya migrada, sincronizar con Desktop cerrado, comprobar, Save y republicar. Un clon sin cache requiere Refresh; para versiones anteriores aplicar la migracion de escala descrita arriba.
+
 El mes usa un listbox dentro del visual, con clic y teclado, en lugar del select nativo. El usuario reporto un problema del desplegable en Service/Opera; no se ha demostrado su causa ni validado esta correccion en ese entorno. Probar tambien en Edge/Chrome, incluidos en la [lista oficial de navegadores soportados](https://learn.microsoft.com/en-us/power-bi/fundamentals/power-bi-browsers). No relajar el sandbox ni pedir habilitar popups.
 
 Desde **CierreGastosTI**, seleccionar el agregado, hoja `Comité`, no un libro completo Base:
@@ -36,7 +38,7 @@ npm run check:schemas
 
 `release:local` prueba, compila e instala `artifacts/cierre-gastos-ti.pbiviz` sin datos. Su `package:projects` **ejecuta automaticamente `configure:xlsx`**: no se requiere un segundo comando. Migra solo particiones de origen y parametros/funciones M de los cuatro modelos existentes, preservando layout, identidades, enlaces y `pWorkbookPath` existente. Particiones personalizadas desconocidas deben revisarse, no sobrescribirse.
 
-`npm run configure:xlsx` es opcional para refrescar solo el adaptador. `npm run test:powerquery` comprueba sintaxis con `@microsoft/powerquery-parser` y contratos locales, no el runtime M. La lectura usa solo `powerquery/fxCierreXlsx.pq` y `fxCierreSum.pq`. No se usan hashes en lectura, metadatos, visual ni entrega. La migracion retira funcion, columna y enlace obsoletos desde `0.1.0.1`; la entrega vigente `0.1.0.3` conserva esos 24 campos y usa las escalas indicadas arriba.
+`npm run configure:xlsx` es opcional para refrescar solo el adaptador. `npm run test:powerquery` comprueba sintaxis con `@microsoft/powerquery-parser` y contratos locales, no el runtime M. La lectura usa solo `powerquery/fxCierreXlsx.pq` y `fxCierreSum.pq`. No se usan hashes en lectura, metadatos, visual ni entrega. La migracion retira funcion, columna y enlace obsoletos desde `0.1.0.1`; la entrega vigente `0.1.0.4` conserva esos 24 campos y usa las escalas indicadas arriba.
 
 No ejecutar build/prepare/package simultaneos ni sincronizar datos/assets durante compilacion; `.tmp/build.lock` se comparte con snapshot y no se borra para forzar acceso. Un cambio mensual compatible de datos **no requiere recompilar el visual**.
 

@@ -154,6 +154,19 @@ globalThis.CierreClassic = {
       }).join('')}</tr></thead><tbody>${rows.map(row => `<tr data-row-category="${escape(row.category)}" class="${state.category === row.category ? 'selected' : ''}"><th scope="row"><button class="category-button" data-category="${escape(row.category)}" aria-pressed="${state.category === row.category}">${escape(row.label)}</button></th>${cells(row.m)}</tr>`).join('')}</tbody><tfoot><tr data-row-total><th scope="row"><button class="category-button" data-reset-category aria-pressed="${state.category === null}" title="Mostrar todas las categorías">Total</button></th>${cells(measured({series: totals}).m)}</tr></tfoot>`;
     }
 
+    function monthlyAnnotation(series) {
+      const index = state.month - 1;
+      const real = series.actual[index], budget = series.budget[index];
+      // A shared clear band keeps both labels above all bars/lines, including on narrow screens.
+      const top = Math.max(0, ...Object.values(series).flat().filter(Number.isFinite));
+      return {name: 'selected-month-values', xref: 'paper', x: (state.month - 0.4) / 12.2,
+        xanchor: state.month >= 4 && state.month <= 9 ? 'center' : 'auto',
+        yref: 'y', y: top, yanchor: 'bottom', yshift: 8, showarrow: false,
+        align: 'left', font: {family: 'Segoe UI, Arial, sans-serif', size: 12},
+        text: `<span style="color:${colors.actual}"><b>REAL ${data.year}: ${fmt(real)}</b></span><br>` +
+          `<span style="color:#805600"><b>PPTO ${data.year}: ${fmt(budget)}</b></span>`};
+    }
+
     async function detail() {
       const group = selected().types[kind()];
       const rows = sortedRows(group.rows);
@@ -212,9 +225,10 @@ globalThis.CierreClassic = {
       if (changed(['page', 'currency', 'month', 'category', 'narrow'])) {
         const enhancement = proposal ? proposal.monthlyLayout(kind(), focused?.label || 'Todas las categorías') : {};
         await Plotly.react('monthly-chart', proposal ? proposal.monthlyTraces(monthly, series) : monthly,
-          plotLayout({barmode: 'relative', bargap: 0.3, shapes, ...enhancement,
+          plotLayout({barmode: 'relative', bargap: 0.3, shapes, ...enhancement, annotations: [monthlyAnnotation(series)],
             xaxis: {fixedrange: true, range: [0.4, 12.6], tickmode: 'array', tickvals: x, ticktext: months.map(m => m.slice(0, 3)), tickfont: {size: 13}, ...enhancement.xaxis},
             yaxis: {title: monetaryTitle, automargin: true, fixedrange: true, tickformat: ',.0f', rangemode: 'tozero', gridcolor: '#ece7f3'}, margin: {l: 72, r: 10, t: 12, b: 36}}), plotConfig);
+        $('monthly-chart').setAttribute('aria-label', `${kind().toUpperCase()} · ${focused?.label || 'Todas las categorías'} · ${month()} ${data.year}: REAL ${fmt(series.actual[state.month - 1])}; PPTO ${fmt(series.budget[state.month - 1])} ${state.currency}`);
       }
       if (changed(['page', 'currency', 'month', 'sortKey', 'sortDirection', 'narrow'])) {
         const varianceLayout = plotLayout({...horizontal, xaxis: {...horizontal.xaxis}});

@@ -50,10 +50,12 @@ async function main() {
           await expect(app.locator('[role=tab]')).toHaveCount(3);
           await app.locator('#month').click(); await app.locator('[data-month-option="3"]').click(); await ready();
           await expect(app.locator('[data-scope=Total][data-kpi="0"] [data-metric=actual-month]')).toHaveText(`${business === 'retail_chile' ? '9' : '6'}${scopes[business].default}`);
-          await expect(app.locator('#unit-label')).toContainText(business === 'banco_peru' ? 'Miles de soles' : 'Millones de CLP');
+          await expect(app.locator('#unit-label')).toContainText(business === 'banco_peru' ? 'Miles de soles' : 'Millones de Pesos');
           for (const tab of ['opex', 'capex']) {
             await app.locator(`#tab-${tab}`).click(); await ready();
             await expect(app.locator('#monthly-chart .barlayer .point')).not.toHaveCount(0);
+            await expect(app.locator('#monthly-chart .annotation-text')).toContainText('REAL 2030: 3');
+            await expect(app.locator('#monthly-chart .annotation-text')).toContainText('PPTO 2030: 3');
             await expect(app.locator('#annual-chart .barlayer .point')).not.toHaveCount(0);
             await app.locator('[data-sort-key=actualYtd]').click(); await ready();
             await app.locator('[data-category]').first().click(); await ready();

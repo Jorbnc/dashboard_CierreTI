@@ -342,7 +342,7 @@
     const ranges = selected().ranges;
     $('source-content').innerHTML = `<p><b>Fuente única:</b> ${escape(data.source)} · Hoja ${escape(data.sheet)} · ${escape(data.entity)}. Valores almacenados, sin recalcular vínculos externos. Se excluyen Negocio, Retail Corp y las otras entidades.</p>
       <p><b>Períodos:</b> ${scenarioText(`Mes consultado ${month().toLowerCase()} ${data.year}; acumulado enero a ${month().toLowerCase()}. Cierre fuente ${closure.toLowerCase()} ${data.year}. FCST anual vigente = REAL enero a ${closure.toLowerCase()} + FCST posterior hasta diciembre. No representa una proyección histórica del mes consultado.`)}</p>
-      <p><b>Escala:</b> ${state.currency === 'MSoles' ? 'MSoles = miles de soles. El bloque de origen ya está en miles de soles; no se divide nuevamente.' : 'MMCLP = millones de CLP. El bloque de origen ya está en millones de CLP; no se divide nuevamente.'} Cada moneda proviene de su bloque, sin aplicar un tipo de cambio nuevo.</p>
+      <p><b>Escala:</b> ${state.currency === 'MSoles' ? 'MSoles = miles de soles. El bloque de origen ya está en miles de soles; no se divide nuevamente.' : 'MMCLP = Millones de Pesos (CLP). El bloque de origen ya está en esa escala; no se divide nuevamente.'} Cada moneda proviene de su bloque, sin aplicar un tipo de cambio nuevo.</p>
       <p><b>Rangos:</b> ${scenarioText(`REAL + FCST ${ranges.execution_forecast}; PPTO ${ranges.budget}${ranges.prior ? `; REAL ${data.year - 1} ${ranges.prior}` : ''}.`)}</p>
       <p><b>Histórico:</b> ${scenarioText(selected().history_note)}</p>
       ${selected().types.CO ? '<p><b>Composición del Total:</b> OPEX + CAPEX + CO. CO se conserva por separado, sin reclasificarlo. Las páginas OPEX y CAPEX no incluyen CO.</p>' : ''}
@@ -370,7 +370,7 @@
     if ($('context')) $('context').textContent = `FUENTE · CIERRE ${closure.toUpperCase()} ${data.year}`;
     $('page-title').textContent = `${state.page === 'summary' ? classic ? 'Gastos Tecnológicos' : 'Gastos tecnológicos' : kind().toUpperCase()} | ${classic && state.month === data.cutoff ? 'Cierre ' : ''}${month()} ${data.year}`;
     $('snapshot').textContent = `Cierre fuente: ${closure} ${data.year}`;
-    $('unit-label').textContent = state.currency === 'MSoles' ? 'MSoles · Miles de soles' : 'MMCLP · Millones de CLP';
+    $('unit-label').textContent = state.currency === 'MSoles' ? 'MSoles · Miles de soles' : 'MMCLP · Millones de Pesos';
     $('footer-cutoff').textContent = `${closure} ${data.year} · ${state.currency}`;
     $('layout-label').hidden = !integrated || state.page !== 'summary';
     $('month-status').hidden = !classic && state.month === data.cutoff;
