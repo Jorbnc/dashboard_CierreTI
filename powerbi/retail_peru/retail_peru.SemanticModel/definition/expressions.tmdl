@@ -1,4 +1,4 @@
-expression pWorkbookPath = "C:\CierreTI\datos\2609_dashboard_data.xlsx" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+expression pWorkbookPath = "C:\Users\jnunezca\OneDrive - Ripley Corp\dashboards\input\CierreTI\2609_dashboard_data.xlsx" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 
 expression fxCierreSum =
 		// Binary64 expansion summation, including the half-even final correction used by math.fsum.

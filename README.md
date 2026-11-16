@@ -46,13 +46,15 @@ git status --short
 
 En clones existentes, cerrar Desktop y revisar cambios locales, rama y remoto antes de sincronizar. No borrar ni resetear trabajo Windows; conservar copias privadas. No se hace push automatico ni se han verificado permisos remotos. No ejecutar npm/Python en Windows ni transferir caches como sustituto de Refresh.
 
-1. Recibir el XLSX explicito. `pWorkbookPath` inicia en `C:\CierreTI\datos\2609_dashboard_data.xlsx`; usar una ruta absoluta Windows, no `/c/...` de Git Bash. Fuente: hoja `Comité` del agregado, no Base; no se busca automaticamente el archivo mas reciente.
+1. Recibir el XLSX explicito. `pWorkbookPath` inicia en `C:\Users\jnunezca\OneDrive - Ripley Corp\dashboards\input\CierreTI\2609_dashboard_data.xlsx`; usar una ruta absoluta Windows, no `/c/...` de Git Bash. Fuente: hoja `Comité` del agregado, no Base; no se busca automaticamente el archivo mas reciente.
 2. Abrir `powerbi/banco_peru/banco_peru.pbip` **del clon raiz**, con sus carpetas `.Report` y `.SemanticModel`, no un PBIP de `releases/`.
 3. En **Transformar datos > Administrar parametros**, confirmar o cambiar `pWorkbookPath`. Se configura una vez por PBIP mientras la ruta siga igual; si cambia el nombre mensual, cambia el parametro.
 4. Aplicar y **Actualizar / Refresh**. Un clon fresco no contiene datos importados porque `.pbi/cache.abf` se excluye de Git. Si solo aparece `pDataFile`, revisar la migracion Linux, no introducir JSON en este flujo.
 5. Comparar con el HTML del mismo XLSX: importes, precision, nulos, mes actual/anterior, Gastos TI/OPEX/CAPEX, categoria, orden, ambas monedas de Banco Peru, historia y CO. No dar por probada la paridad solo porque abra.
 6. **Guardar / Save**, cerrar, reabrir y comprobar. Repetir carga y aceptacion en los otros tres modelos.
 7. Publicar manualmente al workspace autorizado, **nunca Publicar en web**. Verificar cifras y permisos por negocio en Service y registrar los cuatro enlaces reales. Guardar o hacer push no publica datos.
+
+La ruta es editable por proyecto: se guarda en la primera linea de `powerbi/<negocio>/<negocio>.SemanticModel/definition/expressions.tmdl`. El valor inicial para proyectos nuevos esta en `tools/configure-xlsx.cjs`; el generador conserva rutas existentes. `Cierre` usa `File.Contents(pWorkbookPath)`, sin otra carpeta fija. Si un error sigue mostrando la ruta anterior, revisar el valor actual en el PBIP abierto, aplicar/guardar y reabrir la revision sincronizada con Desktop cerrado. Cambiar un parametro no actualiza los otros tres proyectos. La ruta OneDrive es local y su disponibilidad se comprueba en Windows, no desde Linux.
 
 | Negocio | Ruta desde este repositorio | Monedas | Service |
 | --- | --- | --- | --- |

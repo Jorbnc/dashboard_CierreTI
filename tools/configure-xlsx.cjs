@@ -4,7 +4,7 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const {scopes} = require('../src/adapter');
 const fields = require('../src/fields.json');
-const DEFAULT_PATH = 'C:\\CierreTI\\datos\\2609_dashboard_data.xlsx';
+const DEFAULT_PATH = String.raw`C:\Users\jnunezca\OneDrive - Ripley Corp\dashboards\input\CierreTI\2609_dashboard_data.xlsx`;
 const FUNCTIONS = ['fxCierreSum', 'fxCierreXlsx'];
 const expression = (name, code) => `expression ${name} =\n${code.trim().split('\n').map(line => '\t\t' + line).join('\n')}\n`;
 const parameter = () => `expression pWorkbookPath = "${DEFAULT_PATH}" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]\n`;

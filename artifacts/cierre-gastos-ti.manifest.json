@@ -31,7 +31,7 @@
     "tools/check-schemas.cjs": 1539,
     "tools/check-snapshot.cjs": 4258,
     "tools/check.cjs": 3339,
-    "tools/configure-xlsx.cjs": 6247,
+    "tools/configure-xlsx.cjs": 6303,
     "tools/export-powerquery-qa.cjs": 3000,
     "tools/prepare.cjs": 3102,
     "tools/projects.cjs": 7081,

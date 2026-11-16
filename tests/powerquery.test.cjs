@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const {DefaultSettings, TaskUtils} = require('@microsoft/powerquery-parser');
-const {expressions, replacePartition, partition, legacyPartition, FUNCTIONS} = require('../tools/configure-xlsx.cjs');
+const {expressions, replacePartition, partition, legacyPartition, DEFAULT_PATH, FUNCTIONS} = require('../tools/configure-xlsx.cjs');
 const {acceptanceQuery} = require('../tools/export-powerquery-qa.cjs');
 const {fixture} = require('./adapter.test.cjs');
 const root = path.resolve(__dirname, '..');
@@ -18,9 +18,20 @@ test('particion nativa y consulta opcional QA tienen sintaxis M valida', async (
   await parses(partition('banco_peru').split('\t\tsource =\n')[1], 'Particion');
   await parses(acceptanceQuery({business: 'banco_chile', rows: fixture()}), 'QA');
 });
+test('ruta Windows con espacios se conserva literalmente y Cierre usa el parametro', async () => {
+  const sources = Object.fromEntries(FUNCTIONS.map(fn => [fn, '(x) => x']));
+  const declaration = expressions('', sources).split('\n')[0];
+  assert.equal(declaration.match(/= "([^"]*)"/)[1], DEFAULT_PATH);
+  assert.ok(path.win32.isAbsolute(DEFAULT_PATH));
+  await parses(declaration.replace('expression pWorkbookPath = ', ''), 'Parametro Windows');
+  for (const business of ['banco_chile', 'banco_peru', 'retail_chile', 'retail_peru']) {
+    assert.ok(partition(business).includes('File.Contents(pWorkbookPath)'));
+    assert.ok(!partition(business).includes(DEFAULT_PATH));
+  }
+});
 test('migracion idempotente conserva ruta local y expresiones ajenas', () => {
   const sources = Object.fromEntries(FUNCTIONS.map(fn => [fn, '(x) => x']));
-  const previous = 'expression pWorkbookPath = "D:\\Datos\\2610_dashboard_data.xlsx"\n\tlineageTag: original\n\nexpression Ajena = 42\n';
+  const previous = 'expression pWorkbookPath = "D:\\Otra carpeta\\2610_dashboard_data.xlsx"\n\tlineageTag: original\n\nexpression Ajena = 42\n';
   const result = expressions(previous, sources);
   assert.equal(result, expressions(result, sources));
   assert.ok(result.includes(previous.trim()));
