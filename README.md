@@ -2,7 +2,7 @@
 
 Un repositorio independiente, un visual SDK compartido **sin cifras incrustadas** y cuatro PBIP: Banco Chile, Banco Peru, Retail Chile y Retail Peru. El flujo predeterminado es **XLSX directo con Power Query M** en `powerbi/`. Windows usa solo **Git Bash + Power BI Desktop**, sin Python, Node ni manejo regular de JSON.
 
-Los cuatro modelos estan configurados, pero **runtime M, paridad numerica migrada, primera carga Desktop y publicacion Service siguen pendientes**. El parser oficial Power Query en Linux valida sintaxis, no ejecucion. La evidencia snapshot `2609-v0.2.0.1` es de otra via, no prueba de XLSX nativo.
+El usuario confirmo **funcionamiento en Desktop el 16/11/2026**, tras retirar hashes y corregir `pWorkbookPath`. No equivale a una aceptacion financiera exhaustiva de los cuatro modelos ni a publicacion Service, aun pendientes. El parser oficial Power Query en Linux valida sintaxis, no ejecucion. La evidencia snapshot `2609-v0.2.0.1` es de otra via, no prueba de XLSX nativo.
 
 ## Preparar en Linux
 
@@ -63,13 +63,15 @@ La ruta es editable por proyecto: se guarda en la primera linea de `powerbi/<neg
 | Retail Chile | `powerbi/retail_chile/retail_chile.pbip` | MMCLP | Pendiente |
 | Retail Peru | `powerbi/retail_peru/retail_peru.pbip` | MMCLP | Pendiente |
 
+Retail Peru no tiene bloque en soles en el agregado 2609: las filas 98-106 pertenecen a RETAIL y los rotulos Soles de la fila 57 corresponden a Banco Peru. No habilitar MSoles cambiando solo el boton ni aplicando el cambio bancario. Se requieren series Retail validadas o una politica de conversion aprobada, y ampliar coherentemente referencia Python, lector M, adaptador DataView y QA.
+
 ## Siguiente cierre
 
 Recibir el nuevo `YYMM_dashboard_data.xlsx` por canal autorizado; actualizar `pWorkbookPath` en los cuatro PBIP, **Refresh, comprobar, Save y publicar manualmente**. Sin cambios de UI/SDK no hay compilacion mensual en Linux ni Windows. Una correccion del mismo archivo requiere verificar procedencia/autorizacion, refrescar y republicar; cambiar parametro si cambia la ruta.
 
 Esquema soportado estricto: un cierre desconocido requiere validacion estructural/financiera. Historia en soles y `No Direccionable` exigen nombre exacto `2609_dashboard_data.xlsx`, cierre 2026-09, Banco Peru, MSoles, encabezados/rangos conocidos y cuadraturas. Esto no certifica identidad binaria del archivo ni autoriza otras correcciones. No inventar historia Retail, soles adicionales ni reclasificar CO. No hay SharePoint, gateway o refresh cloud configurados sobre la ruta local.
 
-La hoja 2609 tiene dimension `B1:CB362`, comprobada con openpyxl. Solo se admite el origen conocido B1/B2 (`Pesos Chilenos`, `Real + Proyección`): si el host lo devuelve en `Column1`, se antepone A vacia; si lo devuelve en `Column2` con A vacia, se conserva. Cualquier otro origen falla, sin adivinar offsets. La representacion efectiva aun requiere Desktop.
+La hoja 2609 tiene dimension `B1:CB362`, comprobada con openpyxl. Solo se admite el origen conocido B1/B2 (`Pesos Chilenos`, `Real + Proyección`): si el host lo devuelve en `Column1`, se antepone A vacia; si lo devuelve en `Column2` con A vacia, se conserva. Cualquier otro origen falla, sin adivinar offsets. La confirmacion operativa no identifica cual representacion utilizo Desktop.
 
 ## Comprobaciones
 
@@ -79,17 +81,24 @@ QA exhaustivo **opcional**, desde Linux y con referencias Python coherentes ya p
 npm run qa:powerquery
 ```
 
-Genera `data/qa/<business>.pq` privados. En una copia de aceptacion Desktop, crear consulta en blanco, pegar el contenido en Editor avanzado, deshabilitar carga y evaluar. Compara los **24 campos**, nulos y numeros sin redondear (tolerancias `1e-10` absoluta y `1e-12` relativa): **3792 posiciones monetarias** entre cuatro negocios para 2609. Registrar resultados solo despues de ejecutarlos; **runtime pendiente**. No son dependencias de produccion y nunca van a Git ni al modelo publicado.
+Genera `data/qa/<business>.pq` privados. En una copia de aceptacion Desktop, crear consulta en blanco, pegar el contenido en Editor avanzado, deshabilitar carga y evaluar. Compara los **24 campos**, nulos y numeros sin redondear (tolerancias `1e-10` absoluta y `1e-12` relativa): **3792 posiciones monetarias** entre cuatro negocios para 2609. Registrar resultados solo despues de ejecutarlos; **QA exhaustivo pendiente**. No son dependencias de produccion y nunca van a Git ni al modelo publicado.
 
 Auditoria opcional previa a publicar: `= Value.Metadata(Cierre)[CierreDiagnostics]` en una consulta en blanco sin carga. Inspeccionar **inmediatamente el resultado del lector en el editor, antes de otras transformaciones**: `history_notes`, `source_findings` y ajustes por moneda en `currencies`. Si `Cierre` ya fue transformada, consultar el resultado original de `fxCierreXlsx`. Los metadatos pueden perderse y no se guardan automaticamente en el modelo; validar su forma en Desktop y conservar diagnosticos fuera del visual.
 
-El codigo fuerza la auditoria Retail con `List.Buffer(Findings)`, aunque no se consulten metadatos. Evidencia local tras retirar hashes: 76 pruebas Python, 20 Node, visual 0.1.0.1 en Chromium/Firefox, 32 definiciones frente a 8 esquemas y MkDocs estricto. Las 3792 posiciones monetarias coinciden exactamente con la referencia anterior. No prueba M ni Desktop/Service.
+El codigo fuerza la auditoria Retail con `List.Buffer(Findings)`, aunque no se consulten metadatos. Evidencia local tras retirar hashes: 76 pruebas Python, 20 Node, visual 0.1.0.1 en Chromium/Firefox, 32 definiciones frente a 8 esquemas y MkDocs estricto. La correccion posterior de ruta elevo Node a 21 pruebas. Las 3792 posiciones monetarias coinciden exactamente con la referencia anterior. Estas pruebas locales no ejecutan M ni Desktop/Service; la confirmacion del usuario es evidencia distinta. No cambiar flags de aceptacion formal a partir de una confirmacion general.
 
-### Desbordamiento de pila al cargar Cierre
+### Resolucion de carga y aprendizajes
 
-Incidencia reportada en los cuatro PBIP el 16/11/2026. Los diagnosticos de Desktop 2.159.1231.0 confirman cuatro caidas Mashup `0xC00000FD` incluso con la mitigacion anterior. No identifican la funcion culpable. Se retira completamente el calculo de hash por decision del usuario; las reglas financieras se conservan. La solucion nativa sigue pendiente de probar en Desktop.
+Incidencia reportada en los cuatro PBIP el 16/11/2026. Los diagnosticos de Desktop 2.159.1231.0 confirman cuatro caidas Mashup `0xC00000FD` incluso con la mitigacion anterior. No identifican la funcion culpable. El commit `e9adacf` retiro hashes de todo el pipeline sin cambiar cifras ni cuadraturas. El posterior `DataSource.NotFound` mostro la antigua ruta; `c7cec1d` actualizo los cuatro parametros y el valor inicial del generador a la ubicacion OneDrive solicitada. Despues el usuario confirmo funcionamiento Desktop. No se demuestra que el hash fuera la causa unica ni por que la primera edicion del parametro no persistio.
 
-Cerrar Desktop y revisar `git status --short`. Preservar y conciliar ediciones locales; cuando la revision este en el remoto, sincronizar con `git pull --ff-only`. Se requieren juntos los modelos, enlaces y recursos compilados nuevos, no solo una funcion M. Reabrir, confirmar `pWorkbookPath` y Actualizar. No ejecutar npm/Python ni configurar JSON en Windows. Retirar consultas diagnosticas creadas manualmente que dependan de la funcion eliminada. Si persiste, registrar paso, version y nuevos diagnosticos; aislar `Excel.Workbook` de `fxCierreXlsx` en una copia de prueba, sin omitir validaciones financieras.
+- Separar acceso al archivo, transformacion M, modelo, visual y publicacion. El mensaje interno y el paso concreto importan mas que el envoltorio OLE DB/ODBC; conservar diagnosticos en privado.
+- Sincronizar modelos, enlaces y visual compatibles como conjunto: retirar solo una funcion deja contratos inconsistentes. No reconstruir ni renombrar los cuatro proyectos para cambiar una ruta.
+- Cada PBIP conserva su parametro; el valor inicial del generador no reemplaza personalizaciones. Aplicar, guardar y comprobar el proyecto realmente abierto. OneDrive local no significa conector cloud ni refresh de Service.
+- La lectura exige contexto y cuadraturas, no hashes. Esos controles no acreditan identidad binaria ni autorizan nuevas correcciones. Preservar excepciones y nulos, sin inventar datos o monedas.
+- Un clon requiere Refresh, no caches, Python, Node, JSON o ZIP obligatorios en Windows. Un cambio compatible de datos no requiere rebuild del visual. Git, carga de datos y publicacion son pasos distintos.
+- Operacion confirmada, paridad numerica completa y permisos/publicacion son evidencias separadas. La cronologia y matriz detalladas se mantienen en MkDocs, no se infieren de la compilacion.
+
+Si el problema reaparece: cerrar Desktop y revisar `git status --short`. Preservar y conciliar ediciones locales; cuando la revision este en el remoto, sincronizar con `git pull --ff-only`. Se requieren juntos los modelos, enlaces y recursos compilados nuevos, no solo una funcion M. Reabrir, confirmar `pWorkbookPath` y Actualizar. No ejecutar npm/Python ni configurar JSON en Windows. Retirar consultas diagnosticas creadas manualmente que dependan de la funcion eliminada. Si persiste, registrar paso, version y nuevos diagnosticos; aislar `Excel.Workbook` de `fxCierreXlsx` en una copia de prueba, sin omitir validaciones financieras.
 
 ## Seguridad y autoridad
 
