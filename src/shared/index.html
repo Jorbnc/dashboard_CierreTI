@@ -15,7 +15,7 @@
       <button id="tab-capex" role="tab" aria-controls="report-panel" aria-selected="false" tabindex="-1" data-page="capex"><i data-lucide="chart-column-increasing"></i>CAPEX</button>
     </div>
     <div class="filters">
-      <label for="month"><i data-lucide="calendar-days"></i><span>Mes de análisis</span><select id="month" aria-describedby="month-status"></select></label>
+      <div class="month-field"><label id="month-caption" for="month"><i data-lucide="calendar-days"></i>Mes de análisis</label><div id="month-picker" class="month-picker"><button id="month" type="button" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="month-options" aria-labelledby="month-caption month-label" aria-describedby="month-status"><span id="month-label"></span><i data-lucide="chevron-down"></i></button><div id="month-options" role="listbox" aria-labelledby="month-caption" hidden></div></div></div>
       /*__CURRENCY__*/
     </div>
   </div>

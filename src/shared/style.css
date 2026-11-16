@@ -39,6 +39,13 @@ a {color: var(--purple)}
 .tabs button:hover:not([aria-selected=true]) {background: var(--lavender)}
 .filters {display: flex; gap: 18px; align-items: center; flex-wrap: wrap}
 .filters label {display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--muted)}
+.month-field {display: flex; align-items: center; gap: 8px}
+.month-picker {position: relative; width: 162px; max-width: 100%; flex-shrink: 0}
+#month {display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 33px; padding: 6px 9px; border: 1px solid #d9cde9; border-radius: 6px; background: #fff; color: var(--purple); font-size: 12px}
+#month-options {position: absolute; z-index: 1100; top: calc(100% + 4px); right: 0; width: 100%; max-height: 288px; overflow-y: auto; overscroll-behavior: contain; padding: 4px; border: 1px solid #d9cde9; border-radius: 6px; background: #fff; color: var(--text); box-shadow: 0 4px 14px #23132d26; font-size: 12px}
+#month-options [role=option] {padding: 9px 8px; cursor: pointer; border-radius: 3px}
+#month-options [aria-selected=true] {font-weight: 700; color: var(--purple)}
+#month-options [role=option]:hover, #month-options .active {background: var(--lavender)}
 select {max-width: 100%; height: 33px; border: 1px solid #d9cde9; background: #fff; color: var(--purple); border-radius: 6px; padding: 0 25px 0 9px; font-size: 12px}
 .currency {display: flex; border: 1px solid #d9cde9; border-radius: 18px; overflow: hidden}
 .currency button {height: 32px; min-width: 76px; padding: 0 12px; font-size: 12px; font-weight: 600; color: var(--purple); background: #fff}

@@ -48,8 +48,8 @@ async function main() {
           await update(dataView(fixture(business)));
           await expect(app).toHaveAttribute('data-currency', scopes[business].default); await ready();
           await expect(app.locator('[role=tab]')).toHaveCount(3);
-          await app.locator('#month').selectOption('3'); await ready();
-          await expect(app.locator('[data-scope=Total][data-kpi="0"] [data-metric=actual-month]')).toContainText(business === 'retail_chile' ? '9,000' : '6,000');
+          await app.locator('#month').click(); await app.locator('[data-month-option="3"]').click(); await ready();
+          await expect(app.locator('[data-scope=Total][data-kpi="0"] [data-metric=actual-month]')).toContainText(business === 'retail_chile' ? '9,000' : business === 'banco_peru' ? '6' : '6,000');
           for (const tab of ['opex', 'capex']) {
             await app.locator(`#tab-${tab}`).click(); await ready();
             await expect(app.locator('#monthly-chart .barlayer .point')).not.toHaveCount(0);
@@ -62,7 +62,7 @@ async function main() {
             await app.locator('[data-currency=MMCLP]').click(); await ready();
             await update(dataView(fixture(business))); await ready();
             await expect(app).toHaveAttribute('data-page', 'capex');
-            await expect(app.locator('#month')).toHaveValue('3');
+            await expect(app.locator('#month')).toHaveAttribute('value', '3');
             await expect(app).toHaveAttribute('data-currency', 'MMCLP');
             await page.screenshot({path: path.join(root, `test-results/${engine.name()}-peru-desktop.png`)});
           }

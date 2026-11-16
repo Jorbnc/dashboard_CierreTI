@@ -112,6 +112,7 @@ let
     ReadCurrency = (definition as record) as record =>
         let
             unit = definition[unit],
+            divisor = if unit = "MSoles" then 1 else 1000,
             location = Locate(definition[marker], unit),
             block = location[block], header = location[header],
             last = block + List.Sum(List.Transform(Record.FieldValues(Config[categories]), each 1 + List.Count(_))),
@@ -170,7 +171,7 @@ let
                             then candidates{0} else 0),
                     rawRows = List.Buffer(List.Transform(parents & {block}, each Amounts(_, 37))),
                     names = Kinds & {"Total"},
-                    prior = Record.FromList(List.Transform(rawRows, each List.Buffer(List.Transform(_, (v) => v / 1000))), names),
+                    prior = Record.FromList(List.Transform(rawRows, each List.Buffer(List.Transform(_, (v) => v / divisor))), names),
                     baseValid = All({
                         headerValid,
                         Require(Cell(block, 36) = Cell(block, 2), "Hist#(00F3)rico de otra entidad o sin identificaci#(00F3)n"),
@@ -180,13 +181,13 @@ let
                             fxCierreSum(List.Transform(Kinds, (kind) => Record.Field(prior, kind){month})), "hist#(00F3)rico por tipo")))
                     }),
                     added = if exception then Amounts(66, 37) else {},
-                    scaledAdded = List.Buffer(List.Transform(added, each _ / 1000)),
+                    scaledAdded = List.Buffer(List.Transform(added, each _ / divisor)),
                     historicalChildren = if exception then List.Buffer(List.Transform({61..65}, each Amounts(_, 37))) else {},
                     adjustmentValid = if not exception then true else All({
                         Require(List.Transform({61..66}, each Cell(_, 36)) = BankCapex & {"No Direccionable"},
                             "Cambi#(00F3) el detalle hist#(00F3)rico CAPEX en soles"),
                         Equal(Cell(66, 49), fxCierreSum(added), "hist#(00F3)rico No Direccionable anual"),
-                        All(List.Transform({0..11}, (month) => Equal(prior[Capex]{month} * 1000,
+                        All(List.Transform({0..11}, (month) => Equal(prior[Capex]{month} * divisor,
                             fxCierreSum(List.Transform(historicalChildren, each _{month})),
                             "hist#(00F3)rico CAPEX sin No Direccionable mes " & N(month + 1))))
                     }),
@@ -228,9 +229,9 @@ let
                 business = Business, entity = Config[entity], brand = Config[brand], default_currency = Config[default_currency],
                 year = Year, cutoff = Cutoff, source = SourceName, sheet = SheetName,
                 unit = unit, level = group[level], kind = group[kind], category = group[category], label = group[label], month = month,
-                actual = if month <= Cutoff then group[values][execution]{month - 1} / 1000 else null,
-                forecast = if month > Cutoff then group[values][execution]{month - 1} / 1000 else null,
-                budget = group[values][budget]{month - 1} / 1000,
+                actual = if month <= Cutoff then group[values][execution]{month - 1} / divisor else null,
+                forecast = if month > Cutoff then group[values][execution]{month - 1} / divisor else null,
+                budget = group[values][budget]{month - 1} / divisor,
                 prior = if group[level] = "category" or history[prior] = null then null else
                     Record.Field(history[prior], if group[level] = "total" then "Total" else group[kind]){month - 1},
                 range_execution_forecast = ranges[execution_forecast], range_budget = ranges[budget], range_prior = ranges[prior],

@@ -172,7 +172,7 @@ globalThis.CierreClassic = {
       $('monthly-legend').innerHTML = legend(legends);
       $('history-note').textContent = focused ? `Histórico ${data.year - 1} no incorporado por categoría.` : selected().history_note;
       const x = Array.from({length: 12}, (_, i) => i + 1);
-      const hover = name => `%{customdata}<br>${name}: %{y:.3f} ${state.currency}<extra></extra>`;
+      const hover = name => `%{customdata}<br>${name}: %{y:${state.currency === 'MSoles' ? ',.0f' : ',.3f'}} ${state.currency}<extra></extra>`;
       const monthly = [
         {type: 'bar', x, y: series.actual, customdata: months, name: 'Real', marker: {color: colors.actual}, hovertemplate: hover('Real')},
         {type: 'bar', x, y: series.forecast, customdata: months, name: 'Forecast', marker: {color: colors.forecast}, hovertemplate: hover('Forecast')},
@@ -189,15 +189,15 @@ globalThis.CierreClassic = {
         text: differences.map(n => signed(n)), textposition: 'outside', textangle: 0,
         textfont: {color: differenceColors, size: 12}, constraintext: 'none', cliponaxis: false,
         hovertext: proposal ? rows.map(proposal.varianceText) : undefined,
-        hovertemplate: proposal ? '%{hovertext}<extra></extra>' : `%{customdata[0]}<br>Real − Ppto: %{x:.3f} ${state.currency}<extra></extra>`}];
+        hovertemplate: proposal ? '%{hovertext}<extra></extra>' : `%{customdata[0]}<br>Real − Ppto: %{x:${state.currency === 'MSoles' ? ',.0f' : ',.3f'}} ${state.currency}<extra></extra>`}];
       const annual = [['Ppto FY', 'budgetYear', colors.budget], ['Forecast FY', 'forecastYear', colors.forecast], ['Real acumulado', 'actualYtd', colors.actual]].map(([name, key, colour]) => ({
         type: 'bar', orientation: 'h', name, x: rows.map(r => r.m[key]), y: ids, customdata,
-        marker: {color: colour, opacity}, hovertemplate: `%{customdata[0]}<br>${name}: %{x:.3f} ${state.currency}<extra></extra>`,
+        marker: {color: colour, opacity}, hovertemplate: `%{customdata[0]}<br>${name}: %{x:${state.currency === 'MSoles' ? ',.0f' : ',.3f'}} ${state.currency}<extra></extra>`,
       }));
       const narrow = width() < 600;
       const monetaryTitle = {text: state.currency, standoff: 8, font: {size: 12}};
       const horizontal = {margin: {l: narrow ? 132 : 174, r: 16, t: 8, b: 50},
-        xaxis: {title: monetaryTitle, automargin: true, fixedrange: true, gridcolor: '#ece7f3', zeroline: true, zerolinecolor: '#8c8c99'},
+        xaxis: {title: monetaryTitle, automargin: true, fixedrange: true, tickformat: state.currency === 'MSoles' ? ',.0f' : undefined, gridcolor: '#ece7f3', zeroline: true, zerolinecolor: '#8c8c99'},
         yaxis: {fixedrange: true, autorange: 'reversed', tickfont: {size: 13}, ticklabelstandoff: 6, type: 'category', categoryorder: 'array', categoryarray: ids,
           tickmode: 'array', tickvals: ids, ticktext: rows.map(r => escape(r.label).replace(/ (?!.* )(?=.{0,15}$)/, narrow && r.label.length > 20 ? '<br>' : ' '))}};
       // Reserve the axis-title space without compressing category rows.
@@ -214,7 +214,7 @@ globalThis.CierreClassic = {
         await Plotly.react('monthly-chart', proposal ? proposal.monthlyTraces(monthly, series) : monthly,
           plotLayout({barmode: 'relative', bargap: 0.3, shapes, ...enhancement,
             xaxis: {fixedrange: true, range: [0.4, 12.6], tickmode: 'array', tickvals: x, ticktext: months.map(m => m.slice(0, 3)), tickfont: {size: 13}, ...enhancement.xaxis},
-            yaxis: {title: monetaryTitle, automargin: true, fixedrange: true, rangemode: 'tozero', gridcolor: '#ece7f3'}, margin: {l: 72, r: 10, t: 12, b: 36}}), plotConfig);
+            yaxis: {title: monetaryTitle, automargin: true, fixedrange: true, tickformat: state.currency === 'MSoles' ? ',.0f' : undefined, rangemode: 'tozero', gridcolor: '#ece7f3'}, margin: {l: 72, r: 10, t: 12, b: 36}}), plotConfig);
       }
       if (changed(['page', 'currency', 'month', 'sortKey', 'sortDirection', 'narrow'])) {
         const varianceLayout = plotLayout({...horizontal, xaxis: {...horizontal.xaxis}});
@@ -228,6 +228,8 @@ globalThis.CierreClassic = {
         stopAnnualObserver();
         const annualChart = $('annual-chart');
         const annualLayout = plotLayout({...horizontal, barmode: 'group', bargap: 0.22});
+        const edgeLabelWidth = Math.max(...annual.flatMap(trace => trace.x).map(n => measure.measureText(fmt(n)).width));
+        annualLayout.margin = {...horizontal.margin, r: Math.max(horizontal.margin.r, Math.ceil(edgeLabelWidth / 2) + 8)};
         annualLayout.xaxis = {...horizontal.xaxis, ...annualAxis(annualChart, annual, annualLayout)};
         await Plotly.react(annualChart, annual, annualLayout, plotConfig);
         observeAnnual(annualChart);

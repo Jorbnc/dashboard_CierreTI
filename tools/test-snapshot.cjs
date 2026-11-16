@@ -56,7 +56,11 @@ async function main() {
           for (const unit of currencies) {
             if (currencies.length > 1) for (const target of [app, reference]) await target.locator(`[data-currency="${unit}"]`).click();
             for (const month of [manifest.source.cutoff, 1, Math.max(1, manifest.source.cutoff - 1)]) {
-              for (const target of [app, reference]) await target.locator('#month').selectOption(String(month));
+              for (const target of [app, reference]) {
+                const control = target.locator('#month');
+                if (await control.evaluate(el => el.tagName === 'SELECT')) await control.selectOption(String(month));
+                else { await control.click(); await target.locator(`[data-month-option="${month}"]`).click(); }
+              }
               await ready();
               // Financial DOM of the SDK must be identical to the independently generated HTML.
               assert.deepEqual(await app.locator('#report-panel [data-metric]').allTextContents(), await reference.locator('#report-panel [data-metric]').allTextContents());
@@ -83,11 +87,11 @@ async function main() {
             assert.equal(await app.locator('#detail-focus').innerText(), await reference.locator('#detail-focus').innerText());
           }
           await page.screenshot({path: path.join(screenshots, `${engine.name()}-${business}-desktop.png`)});
-          const state = await app.locator('#month').inputValue();
+          const state = await app.locator('#month').evaluate(el => el.value);
           await page.setViewportSize({width: 390, height: 844});
           await frame.evaluate(() => {window.harness.update(2); window.harness.update(4); window.harness.update(2);});
           await expect(app).toHaveAttribute('data-page', 'capex');
-          await expect(app.locator('#month')).toHaveValue(state); await ready();
+          await expect.poll(() => app.locator('#month').evaluate(el => el.value)).toBe(state); await ready();
           await page.screenshot({path: path.join(screenshots, `${engine.name()}-${business}-mobile.png`)});
           assert.deepEqual(await frame.evaluate(() => window.harness.events.filter(e => e === 'fail')), []);
           // A renderer failure during resize must fail, clear the app and permit recovery.

@@ -2,9 +2,17 @@
 
 Un repositorio independiente, un visual SDK compartido **sin cifras incrustadas** y cuatro PBIP: Banco Chile, Banco Peru, Retail Chile y Retail Peru. El flujo predeterminado es **XLSX directo con Power Query M** en `powerbi/`. Windows usa solo **Git Bash + Power BI Desktop**, sin Python, Node ni manejo regular de JSON.
 
-El usuario confirmo **funcionamiento en Desktop el 16/11/2026**, tras retirar hashes y corregir `pWorkbookPath`. No equivale a una aceptacion financiera exhaustiva de los cuatro modelos ni a publicacion Service, aun pendientes. El parser oficial Power Query en Linux valida sintaxis, no ejecucion. La evidencia snapshot `2609-v0.2.0.1` es de otra via, no prueba de XLSX nativo.
+El usuario confirmo **funcionamiento en Desktop el 16/11/2026**, tras retirar hashes y corregir `pWorkbookPath`; despues informo acceso de un destinatario a Service con un problema del selector en Opera. No equivale a aceptacion financiera y funcional exhaustiva de los cuatro modelos. El parser oficial Power Query en Linux valida sintaxis, no ejecucion. La evidencia snapshot `2609-v0.2.0.1` es de otra via, no prueba de XLSX nativo.
 
 ## Preparar en Linux
+
+### Migracion 0.1.0.2: escala y selector
+
+En este dashboard **MSoles = miles de soles**, con importes enteros, punto para miles y coma decimal en porcentajes. M conserva los importes del bloque soles sin dividir por 1.000; MMCLP no cambia. Historico y ajustes usan la misma escala; los porcentajes no cambian. No se modifican las reglas del reporte canonico Comite ni Finbot. Consultar las referencias financieras privadas en `previews/`, nunca incorporarlas a Git.
+
+Sincronizar modelo y visual juntos, preservar cambios Windows, confirmar `pWorkbookPath`, **Refresh, comprobar, Save y republicar**. El visual nuevo no debe usarse con la cache anterior en millones. No se requiere otro XLSX ni Node/Python Windows.
+
+El mes usa un listbox dentro del visual, con clic y teclado, en lugar del select nativo. El usuario reporto un problema del desplegable en Service/Opera; no se ha demostrado su causa ni validado esta correccion en ese entorno. Probar tambien en Edge/Chrome, incluidos en la [lista oficial de navegadores soportados](https://learn.microsoft.com/en-us/power-bi/fundamentals/power-bi-browsers). No relajar el sandbox ni pedir habilitar popups.
 
 Desde **CierreGastosTI**, seleccionar el agregado, hoja `Comité`, no un libro completo Base:
 
@@ -28,7 +36,7 @@ npm run check:schemas
 
 `release:local` prueba, compila e instala `artifacts/cierre-gastos-ti.pbiviz` sin datos. Su `package:projects` **ejecuta automaticamente `configure:xlsx`**: no se requiere un segundo comando. Migra solo particiones de origen y parametros/funciones M de los cuatro modelos existentes, preservando layout, identidades, enlaces y `pWorkbookPath` existente. Particiones personalizadas desconocidas deben revisarse, no sobrescribirse.
 
-`npm run configure:xlsx` es opcional para refrescar solo el adaptador. `npm run test:powerquery` comprueba sintaxis con `@microsoft/powerquery-parser` y contratos locales, no el runtime M. La lectura usa solo `powerquery/fxCierreXlsx.pq` y `fxCierreSum.pq`. No se usan hashes en lectura, metadatos, visual ni entrega. La migracion retira funcion, columna y enlace obsoletos; requiere el visual actualizado `0.1.0.1`, con 24 campos.
+`npm run configure:xlsx` es opcional para refrescar solo el adaptador. `npm run test:powerquery` comprueba sintaxis con `@microsoft/powerquery-parser` y contratos locales, no el runtime M. La lectura usa solo `powerquery/fxCierreXlsx.pq` y `fxCierreSum.pq`. No se usan hashes en lectura, metadatos, visual ni entrega. La migracion retira funcion, columna y enlace obsoletos desde `0.1.0.1`; la entrega vigente `0.1.0.2` conserva esos 24 campos y actualiza la escala MSoles.
 
 No ejecutar build/prepare/package simultaneos ni sincronizar datos/assets durante compilacion; `.tmp/build.lock` se comparte con snapshot y no se borra para forzar acceso. Un cambio mensual compatible de datos **no requiere recompilar el visual**.
 
