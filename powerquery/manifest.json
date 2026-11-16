@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "mode": "xlsx",
+  "parameters": [
+    "pWorkbookPath"
+  ],
+  "sheet": "Comité",
+  "functions": {
+    "fxSHA256": "8b750ea2175bbdcaf28145cd99382d6838a8f789cd00ec013518f65e7c2f260c",
+    "fxCierreSum": "b6be27560485c12f4dae80656b1096aabc5a7001ae4e41c0ef22165769a464cd",
+    "fxCierreXlsx": "a5af84f6fd11ec57e5b972fd9a008f4d015179f6a4575bfda0b1cab963b9e519"
+  },
+  "desktopValidated": false,
+  "servicePublished": false
+}

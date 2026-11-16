@@ -155,10 +155,8 @@ table Cierre
 		mode: import
 		source =
 				let
-				    Input = Json.Document(File.Contents(pDataFile)),
-				    Checked = if Input[schema] = 1 and Input[business] = "retail_chile" then Input[rows] else error "Archivo de otro negocio o esquema no compatible",
-				    Scope = if List.Count(Checked) > 0 and List.AllTrue(List.Transform(Checked, each [business] = "retail_chile" and [expected_rows] = List.Count(Checked))) then Checked else error "Negocio incorrecto o entrega incompleta",
-				    Records = Table.FromRecords(Scope, {"id", "business", "entity", "brand", "default_currency", "year", "cutoff", "source", "sheet", "sha256", "unit", "level", "kind", "category", "label", "month", "actual", "forecast", "budget", "prior", "range_execution_forecast", "range_budget", "range_prior", "history_note", "expected_rows"}, MissingField.Error),
-				    Typed = Table.TransformColumnTypes(Records, {{"id", type text}, {"business", type text}, {"entity", type text}, {"brand", type text}, {"default_currency", type text}, {"year", Int64.Type}, {"cutoff", Int64.Type}, {"source", type text}, {"sheet", type text}, {"sha256", type text}, {"unit", type text}, {"level", type text}, {"kind", type text}, {"category", type text}, {"label", type text}, {"month", Int64.Type}, {"actual", type number}, {"forecast", type number}, {"budget", type number}, {"prior", type number}, {"range_execution_forecast", type text}, {"range_budget", type text}, {"range_prior", type text}, {"history_note", type text}, {"expected_rows", Int64.Type}}, "en-US")
+				    SourceName = List.Last(Text.Split(Text.Replace(pWorkbookPath, "\", "/"), "/")),
+				    Workbook = Binary.Buffer(File.Contents(pWorkbookPath)),
+				    Result = fxCierreXlsx(Workbook, SourceName, "retail_chile")
 				in
-				    Typed
+				    Result

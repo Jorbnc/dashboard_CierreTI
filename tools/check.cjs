@@ -16,7 +16,15 @@ for (const business of Object.keys(scopes)) {
   assert.equal(json(`${prefix}.pbip`).artifacts[0].report.path, `${business}.Report`);
   assert.equal(json(`${prefix}.Report/definition.pbir`).datasetReference.byPath.path, `../${business}.SemanticModel`);
   const table = read(`${prefix}.SemanticModel/definition/tables/Cierre.tmdl`);
-  assert.ok(table.includes(`Input[business] = "${business}"`));
+  assert.ok(table.includes(`fxCierreXlsx(Workbook, SourceName, "${business}")`));
+  assert.ok(table.includes('File.Contents(pWorkbookPath)'));
+  assert.ok(!table.includes('pDataFile'));
+  const expressions = read(`${prefix}.SemanticModel/definition/expressions.tmdl`);
+  assert.ok(expressions.includes('expression pWorkbookPath ='));
+  for (const fn of require('./configure-xlsx.cjs').FUNCTIONS) {
+    const source = read(`powerquery/${fn}.pq`).trim().split('\n').map(line => '\t\t' + line).join('\n');
+    assert.ok(expressions.includes(`expression ${fn} =\n${source}\n`), `Funcion M desactualizada: ${fn}`);
+  }
   assert.ok(!table.includes('Web.Contents'));
   const bindings = json(`${prefix}.Report/definition/pages/cierreti000000000001/visuals/cierrevisual000000001/visual.json`).visual;
   assert.equal(bindings.visualType, manifest.guid);

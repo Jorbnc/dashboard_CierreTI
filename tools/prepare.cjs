@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const root = path.resolve(__dirname, '..');
+require('./build-lock.cjs').assertBuildAccess(root);
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const provenance = JSON.parse(read('src/shared/provenance.json'));
 for (const [file, hash] of Object.entries(provenance.sha256)) {
@@ -9,6 +10,7 @@ for (const [file, hash] of Object.entries(provenance.sha256)) {
     throw new Error(`Copia compartida modificada: ${file}. Sincronizar desde CierreGastosTI.`);
 }
 const out = path.join(root, 'src/generated'); fs.mkdirSync(out, {recursive: true});
+fs.writeFileSync(path.join(out, 'source.ts'), 'export const snapshot: {business: string; rows: any[]} | null = null;\n');
 for (const name of ['app', 'model', 'classic', 'proposal']) {
   let source = read(`src/shared/${name}.js`);
   if (['classic', 'proposal'].includes(name)) {

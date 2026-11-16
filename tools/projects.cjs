@@ -6,6 +6,7 @@ const {unzipSync} = require('fflate');
 const {scopes} = require('../src/adapter');
 const fields = require('../src/fields.json');
 const root = path.resolve(__dirname, '..');
+require('./build-lock.cjs').assertBuildAccess(root);
 require('./build-manifest.cjs').verify();
 const config = require('../pbiviz.json');
 const guid = config.visual.guid;
@@ -42,21 +43,12 @@ for (const [business, scope] of Object.entries(scopes)) {
   write(path.join(model, 'definition/database.tmdl'), 'database\n\tcompatibilityLevel: 1606\n');
   write(path.join(model, 'definition/model.tmdl'), 'model Model\n\tculture: es-ES\n\tdefaultPowerBIDataSourceVersion: powerBI_V3\n\tsourceQueryCulture: en-US\n\nannotation __PBI_TimeIntelligenceEnabled = 0\n\nref table Cierre\n');
   write(path.join(model, 'definition/expressions.tmdl'), `expression pDataFile = "C:\\CierreTI\\data\\${business}.json" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]\n\tlineageTag: ${uuid(business + ':parameter')}\n`);
-  const mTypes = {string: 'type text', int64: 'Int64.Type', double: 'type number'};
-  const query = [
-    'let', '    Input = Json.Document(File.Contents(pDataFile)),',
-    `    Checked = if Input[schema] = 1 and Input[business] = "${business}" then Input[rows] else error "Archivo de otro negocio o esquema no compatible",`,
-    `    Scope = if List.Count(Checked) > 0 and List.AllTrue(List.Transform(Checked, each [business] = "${business}" and [expected_rows] = List.Count(Checked))) then Checked else error "Negocio incorrecto o entrega incompleta",`,
-    `    Records = Table.FromRecords(Scope, {${columns.map(c => `"${c}"`).join(', ')}}, MissingField.Error),`,
-    `    Typed = Table.TransformColumnTypes(Records, {${Object.entries(fields).map(([k, t]) => `{"${k}", ${mTypes[t]}}`).join(', ')}}, "en-US")`,
-    'in', '    Typed',
-  ];
   const table = ['table Cierre', `\tlineageTag: ${uuid(business + ':table')}`, ''];
   for (const [column, type] of Object.entries(fields)) {
     table.push(`\tcolumn ${column}`, `\t\tdataType: ${type}`, `\t\tlineageTag: ${uuid(business + ':' + column)}`,
       '\t\tsummarizeBy: none', `\t\tsourceColumn: ${column}`, '');
   }
-  table.push('\tpartition Cierre = m', '\t\tmode: import', '\t\tsource =', ...query.map(line => '\t\t\t\t' + line), '');
+  table.push(require('./configure-xlsx.cjs').partition(business));
   write(path.join(model, 'definition/tables/Cierre.tmdl'), table.join('\n'));
   write(path.join(report, 'definition/version.json'), {$schema: schema('versionMetadata', '1.0.0'), version: '2.0.0'});
   const reportPath = path.join(report, 'definition/report.json');
@@ -85,8 +77,9 @@ for (const [business, scope] of Object.entries(scopes)) {
 fs.mkdirSync(path.join(root, 'artifacts'), {recursive: true});
 fs.writeFileSync(path.join(root, 'artifacts/cierre-gastos-ti.pbiviz'), archive);
 fs.copyFileSync(path.join(root, '.tmp/drop/visual.js.LICENSE.txt'), path.join(root, 'artifacts/THIRD_PARTY_LICENSES.txt'));
+require('./configure-xlsx.cjs').configure(root);
 const sources = {};
-for (const folder of ['src', 'tools', 'style']) {
+for (const folder of ['src', 'tools', 'style', 'powerquery']) {
   for (const file of fs.readdirSync(path.join(root, folder), {recursive: true})) {
     const relative = `${folder}/${file}`.replaceAll('\\', '/');
     if (relative.startsWith('src/generated/') || !fs.statSync(path.join(root, relative)).isFile()) continue;
@@ -96,4 +89,4 @@ for (const folder of ['src', 'tools', 'style']) {
 for (const file of ['package.json', 'package-lock.json', 'capabilities.json', 'pbiviz.json', 'tsconfig.json']) sources[file] = hash(fs.readFileSync(path.join(root, file)));
 write(path.join(root, 'artifacts/cierre-gastos-ti.manifest.json'), {guid, version: config.visual.version, apiVersion: config.apiVersion,
   sha256: hash(archive), dataEmbedded: false, sourceHashes: sources, desktopValidated: false, servicePublished: false}, false);
-console.log('Cuatro PBIP preparados. Parámetros y diseños existentes conservados; falta validación en Desktop/Service.');
+console.log('Cuatro PBIP preparados para XLSX local. Parámetros y diseños existentes conservados; falta validación en Desktop/Service.');

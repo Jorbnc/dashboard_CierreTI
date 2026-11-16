@@ -1,5 +1,6 @@
 /data/
 /previews/
+/releases/
 /node_modules/
 /dist/
 /.tmp/

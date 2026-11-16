@@ -1,81 +1,112 @@
 # Dashboard Cierre TI
 
-Repositorio de entrega independiente: **cuatro proyectos Power BI, un visual SDK compartido** y cuatro previews HTML locales. Estado: preparación y pruebas locales; apertura en Desktop y publicación en Service pendientes. Sin remoto configurado.
+Un repositorio independiente, un visual SDK compartido **sin cifras incrustadas** y cuatro PBIP: Banco Chile, Banco Peru, Retail Chile y Retail Peru. El flujo predeterminado es **XLSX directo con Power Query M** en `powerbi/`. Windows usa solo **Git Bash + Power BI Desktop**, sin Python, Node ni manejo regular de JSON.
 
-| Negocio | Proyecto | Preview privado | Enlace Service |
-| --- | --- | --- | --- |
-| Banco Ripley Chile | [banco_chile.pbip](powerbi/banco_chile/banco_chile.pbip) | `previews/banco_chile.html` | Pendiente de publicación |
-| Banco Ripley Perú | [banco_peru.pbip](powerbi/banco_peru/banco_peru.pbip) | `previews/banco_peru.html` | Pendiente de publicación |
-| Retail Chile | [retail_chile.pbip](powerbi/retail_chile/retail_chile.pbip) | `previews/retail_chile.html` | Pendiente de publicación |
-| Retail Perú | [retail_peru.pbip](powerbi/retail_peru/retail_peru.pbip) | `previews/retail_peru.html` | Pendiente de publicación |
+Los cuatro modelos estan configurados, pero **runtime M, paridad numerica migrada, primera carga Desktop y publicacion Service siguen pendientes**. El parser oficial Power Query en Linux valida sintaxis, no ejecucion. La evidencia snapshot `2609-v0.2.0.1` es de otra via, no prueba de XLSX nativo.
 
-## Responsabilidades
+## Preparar en Linux
 
-- CierreGastosTI conserva Python, reglas financieras y assets originales. `src/shared/` es una copia sincronizada con huellas; no editarla aquí.
-- Este repositorio mantiene el adaptador DataView, paquete SDK, definiciones PBIP, pruebas y entrega. No contiene una segunda implementación de cálculos financieros.
-- `data/`, `previews/`, `.pbi/`, PBIX y XLSX son privados e ignorados. Los modelos importados en Desktop/Service sí contienen cifras; aplicar permisos por negocio en el workspace.
-- `artifacts/cierre-gastos-ti.pbiviz` contiene código, estilos y marcas, no cifras del cierre. No usa endpoints ni Python dentro de Service.
-
-## Preparar una entrega
-
-Desde **CierreGastosTI**, con su entorno Python:
+Desde **CierreGastosTI**, seleccionar el agregado, hoja `Comité`, no un libro completo Base:
 
 ```bash
 source activate_venv.sh
 python tools/reportes_visuals/cierre_mensual/preparar_powerbi.py \
-  --source input/dashboard_cierre_gastos_TI/2609_dashboard_data.xlsx \
+  --source input/datos/dashboard_cierre/2609_dashboard_data.xlsx \
   --deployment-dir deploy/dashboard_CierreTI
 ```
 
-Revisar y resumir `previews/informe_generacion.md`. El comando verifica todos los negocios antes de escribir, copia los assets, genera cuatro JSON y cuatro HTML. No cambia proyectos guardados en Desktop ni publica. Usar una fuente explícita en cada cierre.
+Python sigue siendo referencia/generador Linux. Sincroniza `src/shared/` con hashes y genera `data/*.json`, `data/preparation.json`, cuatro HTML y `previews/informe_generacion.md`. Revisar y resumir excepciones, faltantes y discrepancias; no aprobar fallos fatales ni nuevas correcciones. Estos archivos son privados, no la fuente del modelo Windows.
 
-Desde **este repositorio**, Node >=22.13:
+Para instalacion inicial o cambios de UI/SDK, desde **este repositorio, solo Linux**, con Node >=22.13:
 
 ```bash
 npm ci
-npm test
-npm run build
-npm run test:visual
-npm run package:projects
-npm run check
+npx playwright install chromium firefox
+npm run release:local
+npm run check:schemas
 ```
 
-La comprobación adicional `npm run check:schemas` descarga solo esquemas públicos de Microsoft y valida las definiciones localmente; no transmite datos ni reemplaza una apertura en Desktop.
+`release:local` prueba, compila e instala `artifacts/cierre-gastos-ti.pbiviz` sin datos. Su `package:projects` **ejecuta automaticamente `configure:xlsx`**: no se requiere un segundo comando. Migra solo particiones de origen y parametros/funciones M de los cuatro modelos existentes, preservando layout, identidades, enlaces y `pWorkbookPath` existente. Particiones personalizadas desconocidas deben revisarse, no sobrescribirse.
 
-La prueba de navegador necesita Chromium y Firefox de Playwright (`npx playwright install chromium firefox`). Usa datos sintéticos, un host simulado, el JS del paquete real y red bloqueada. No certifica el motor de Power Query/TMDL, los permisos del tenant ni Desktop/Service.
+`npm run configure:xlsx` es opcional para refrescar solo el adaptador. `npm run test:powerquery` comprueba sintaxis con `@microsoft/powerquery-parser` y contratos locales, no el runtime M. La lectura usa `powerquery/fxCierreXlsx.pq`, `fxCierreSum.pq` y `fxSHA256.pq`: hash del binario completo en M puro, sin extension Crypto, con rendimiento y ejecucion nativa pendientes.
 
-`package:projects` crea las definiciones solo si no existen; después actualiza los recursos de nuestro visual. Conserva rutas configuradas, diseños y versiones de esquema guardados por Desktop. `check` detecta enlaces incompatibles; no los repara silenciosamente. Un cambio de esquema de datos requiere migración explícita, no borrar y regenerar proyectos publicados.
+No ejecutar build/prepare/package simultaneos ni sincronizar datos/assets durante compilacion; `.tmp/build.lock` se comparte con snapshot y no se borra para forzar acceso. Un cambio mensual compatible de datos **no requiere recompilar el visual**.
 
-La compilación registra sus entradas y la huella del paquete. Si código, dependencias o paquete cambiaron después, `package:projects` exige recompilar antes de instalar recursos; no atribuye fuentes nuevas a un binario antiguo. `npm run release:local` reúne pruebas, compilación, simulación, preparación y control, sin publicar ni hacer commit/push.
+## Sincronizar Linux a Windows
 
-## Abrir y publicar
+Git lleva solo codigo, plantillas y recursos compilados sin cifras. El XLSX y las referencias se reciben por un canal privado autorizado. El libro contiene cuatro negocios: solo para operadores autorizados para todos, no usuarios finales de uno.
 
-1. En Windows, obtener este repo privado y transferir **por canal autorizado** los JSON de `data/`. No agregar los JSON al commit.
-2. Habilitar PBIP/TMDL/PBIR si la versión de Desktop lo requiere. Abrir primero `powerbi/banco_peru/banco_peru.pbip`.
-3. En Transformar datos → Administrar parámetros, cambiar `pDataFile` a la ruta absoluta del JSON de ese negocio. `C:\CierreTI\data\banco_peru.json` es un valor inicial de ejemplo. Aplicar y actualizar.
-4. Revisar Gastos TI, OPEX y CAPEX, mes, moneda y categorías. Banco Perú ofrece MSoles/MMCLP; los demás, MMCLP. Comprobar cifras contra el HTML de la misma generación.
-5. Guardar, cerrar y reabrir el PBIP. Publicar manualmente al workspace autorizado y probar el reporte en Service. La política del tenant debe permitir este visual privado; no es un visual certificado.
-6. Repetir con los otros tres PBIP. Cada uno tiene su propio modelo y solo importa su JSON; no usa un filtro visual como control de acceso.
-7. Registrar los cuatro enlaces de reporte en la tabla anterior. No usar «Publicar en web». No crear un remoto ni hacer push sin confirmar URL privada y permisos.
+En **Git Bash**, para un clon nuevo y codigo previamente aprobado/enviado:
 
-## Actualización por cierre
+```bash
+git clone git@github.com:Jorbnc/dashboard_CierreTI.git
+cd dashboard_CierreTI
+git status --short
+```
 
-Regenerar los JSON con Python, revisar el informe, reemplazar los archivos privados en Windows, actualizar cada modelo en Desktop y volver a publicar al mismo destino. Mantener IDs y nombres para conservar los enlaces. El FCST anual corresponde al cierre fuente; cambiar el mes dentro del visual no reconstruye proyecciones pasadas.
+En clones existentes, cerrar Desktop y revisar cambios locales, rama y remoto antes de sincronizar. No borrar ni resetear trabajo Windows; conservar copias privadas. No se hace push automatico ni se han verificado permisos remotos. No ejecutar npm/Python en Windows ni transferir caches como sustituto de Refresh.
 
-No programar refresh en Service contra `File.Contents` de una ruta personal: este flujo es manual. SharePoint/gateway y automatización son una fase posterior. Un push a GitHub no actualiza datos ni publica reportes.
+1. Recibir el XLSX explicito. `pWorkbookPath` inicia en `C:\CierreTI\datos\2609_dashboard_data.xlsx`; usar una ruta absoluta Windows, no `/c/...` de Git Bash. Fuente: hoja `Comité` del agregado, no Base; no se busca automaticamente el archivo mas reciente.
+2. Abrir `powerbi/banco_peru/banco_peru.pbip` **del clon raiz**, con sus carpetas `.Report` y `.SemanticModel`, no un PBIP de `releases/`.
+3. En **Transformar datos > Administrar parametros**, confirmar o cambiar `pWorkbookPath`. Se configura una vez por PBIP mientras la ruta siga igual; si cambia el nombre mensual, cambia el parametro.
+4. Aplicar y **Actualizar / Refresh**. Un clon fresco no contiene datos importados porque `.pbi/cache.abf` se excluye de Git. Si solo aparece `pDataFile`, revisar la migracion Linux, no introducir JSON en este flujo.
+5. Comparar con el HTML del mismo XLSX: importes, precision, nulos, mes actual/anterior, Gastos TI/OPEX/CAPEX, categoria, orden, ambas monedas de Banco Peru, historia y CO. No dar por probada la paridad solo porque abra.
+6. **Guardar / Save**, cerrar, reabrir y comprobar. Repetir carga y aceptacion en los otros tres modelos.
+7. Publicar manualmente al workspace autorizado, **nunca Publicar en web**. Verificar cifras y permisos por negocio en Service y registrar los cuatro enlaces reales. Guardar o hacer push no publica datos.
 
-Para cambios de interfaz o adaptador: sincronizar, probar, incrementar versión del visual, compilar, instalar el paquete en los cuatro proyectos, abrir/validar en Desktop y publicar. Versionar definiciones y `artifacts/` en un commit coherente; no incluir cachés ni capturas con datos.
+| Negocio | Ruta desde este repositorio | Monedas | Service |
+| --- | --- | --- | --- |
+| Banco Chile | `powerbi/banco_chile/banco_chile.pbip` | MMCLP | Pendiente |
+| Banco Peru | `powerbi/banco_peru/banco_peru.pbip` | MSoles y MMCLP | Pendiente |
+| Retail Chile | `powerbi/retail_chile/retail_chile.pbip` | MMCLP | Pendiente |
+| Retail Peru | `powerbi/retail_peru/retail_peru.pbip` | MMCLP | Pendiente |
 
-## Controles y límites
+## Siguiente cierre
 
-Se exige un negocio/cierre/fuente, monedas admitidas, identificadores únicos, doce meses por serie, ventanas REAL/FCST válidas y cuadraturas por nivel. `expected_rows` detecta filtros externos o entregas parciales; los filtros mes/categoría se manejan dentro del visual. Subtotales y categorías no deben sumarse conjuntamente como una tabla transaccional.
+Recibir el nuevo `YYMM_dashboard_data.xlsx` por canal autorizado; actualizar `pWorkbookPath` en los cuatro PBIP, **Refresh, comprobar, Save y publicar manualmente**. Sin cambios de UI/SDK no hay compilacion mensual en Linux ni Windows. Una correccion del mismo archivo requiere verificar procedencia/autorizacion, refrescar y republicar; cambiar parametro si cambia la ruta.
 
-Las irregularidades conocidas se revisan en el informe privado: histórico Retail ausente, excepción autorizada en Banco Perú y subtotales auxiliares no conciliados. No se incrustan advertencias financieras en la interfaz ni se ocultan errores de carga.
+Esquema soportado estricto: un cierre desconocido requiere validacion estructural/financiera. Las excepciones de historia en soles y `No Direccionable` estan ligadas a la fuente confirmada, no a cualquier archivo con nombre parecido. No inventar historia Retail, soles adicionales ni reclasificar CO. No hay SharePoint, gateway o refresh cloud configurados sobre la ruta local.
 
-El SDK puede advertir sobre funciones opcionales de visuales públicos (selección cruzada, formato, exportación). Aquí el reporte usa un visual de página completa con controles propios. El auditor npm registra dependencias de desarrollo con avisos; revisar antes de actualizar el SDK. No ejecutar `audit fix --force` sin una validación completa.
+La hoja 2609 tiene dimension `B1:CB362`, comprobada con openpyxl. Solo se admite el origen conocido B1/B2 (`Pesos Chilenos`, `Real + Proyección`): si el host lo devuelve en `Column1`, se antepone A vacia; si lo devuelve en `Column2` con A vacia, se conserva. Cualquier otro origen falla, sin adivinar offsets. La representacion efectiva aun requiere Desktop.
 
-## Evidencia local inicial
+## Comprobaciones
 
-Comprobado el 12/11/2026: siete pruebas de contrato; paquete SDK en Chromium y Firefox con los cuatro negocios, dos instancias aisladas, navegación, redimensionado, texto hostil y carga parcial; 32 definiciones contra ocho esquemas Microsoft. La exportación/reconstrucción conserva exactamente las 3.792 posiciones monetarias de los cuatro HTML de referencia (incluidos nulos). La fuente y el HTML histórico alternativo conservan sus hashes.
+QA exhaustivo **opcional**, desde Linux y con referencias Python coherentes ya preparadas:
 
-El repositorio analítico pasó 74 pruebas Python y la regresión de 94 pruebas de interfaz. La guía del área pasó construcción, enlaces y cuatro pruebas de navegador. Son evidencias locales, no ejecución de Desktop/Service. No se incluyen cifras privadas ni capturas reales en este repositorio. `npm audit --omit=dev` no reportó vulnerabilidades de producción; el SDK conserva diez avisos moderados en dependencias de desarrollo.
+```bash
+npm run qa:powerquery
+```
+
+Genera `data/qa/<business>.pq` privados. En una copia de aceptacion Desktop, crear consulta en blanco, pegar el contenido en Editor avanzado, deshabilitar carga y evaluar. Compara los **25 campos**, nulos y numeros sin redondear (tolerancias `1e-10` absoluta y `1e-12` relativa): **3792 posiciones monetarias** entre cuatro negocios para 2609. Incluye SHA256 conocido de cadena vacia y `abc`. Registrar resultados solo despues de ejecutarlos; **runtime pendiente**. No son dependencias de produccion y nunca van a Git ni al modelo publicado.
+
+Auditoria opcional previa a publicar: `= Value.Metadata(Cierre)[CierreDiagnostics]` en una consulta en blanco sin carga. Inspeccionar **inmediatamente el resultado del lector en el editor, antes de otras transformaciones**: `history_notes`, `source_findings` y ajustes por moneda en `currencies`. Si `Cierre` ya fue transformada, consultar el resultado original de `fxCierreXlsx`. Los metadatos pueden perderse y no se guardan automaticamente en el modelo; validar su forma en Desktop y conservar diagnosticos fuera del visual.
+
+El codigo fuerza la auditoria Retail con `List.Buffer(Findings)`, aunque no se consulten metadatos. El resultado nativo sigue pendiente. Evidencia Linux informada por la implementacion: 75 pruebas Python, 19 Node, visual sin cifras en Chromium/Firefox, 32 definiciones frente a 8 esquemas, MkDocs estricto y 21 pruebas UI documentales aprobadas (una omitida). No prueba M ni Desktop/Service.
+
+## Seguridad y autoridad
+
+- Sincronizar assets originales solo mediante `preparar_powerbi.py`; no editar `src/shared/` a mano.
+- `data/` (incluido QA), `previews/`, `releases/`, `dist/`, `.tmp/`, `src/generated/`, `.pbi/`, XLSX/PBIX, informes y credenciales son privados e ignorados. Nunca Git, incluso privado; las consultas QA tambien contienen cifras.
+- `powerbi/` y `artifacts/cierre-gastos-ti.pbiviz` contienen definiciones y codigo sin cifras. No copiar recursos snapshot con datos a esas rutas. Revisar diffs y usar rutas Git explicitas; nunca forzar ignorados ni hacer `git add .`.
+- Las ediciones Windows no vuelven automaticamente a Linux. Revisar incorporacion de codigo/definiciones, sin parametros personales, caches ni consultas QA financieras.
+- Cada modelo carga solo su negocio; filtros y pestanas no son permisos. No se presupone RLS implementado y RLS no protege cifras incrustadas en snapshot.
+
+## Snapshot opcional congelado
+
+Alternativa privada construida en Linux, **no ZIP obligatorio para Windows**. `npm run release:snapshot -- --version 0.2.0.2` requiere una version nueva disponible de cuatro partes por cierre/correccion. Crea `releases/<cierre>-v<version>/` con cuatro PBIP/paquetes con cifras y GUID distintos estables, previews/informe, manifiesto e instrucciones, mas ZIP/SHA256. No sobrescribe releases ni modelos raiz. Incluye controles exactos, host simulado y esquemas antes de completar la entrega.
+
+Revalidacion opcional de la evidencia historica:
+
+```bash
+npm run check:snapshot -- releases/2609-v0.2.0.1
+npm run test:snapshot -- releases/2609-v0.2.0.1
+npm run check:schemas -- releases/2609-v0.2.0.1
+```
+
+Solo al elegir snapshot, transferir ZIP/checksum por canal autorizado al publicador de los cuatro negocios; verificar con `sha256sum -c 2609-v0.2.0.1.zip.sha256` en Git Bash junto a ambos archivos. El ZIP incluye la carpeta de version: extraer a su padre, sin destino existente. Abrir sus PBIP, comparar HTML y publicar manualmente; conservar originales y copias privadas de trabajo. No configurar `pDataFile`/`pWorkbookPath` ni refrescar fuente externa: modelo tecnico vacio, sin DataView; cifras incrustadas. Cada cambio requiere version/rebuild y republicacion. La evidencia `0.2.0.1` de 3792 posiciones exactas y host simulado no valida M, Desktop ni Service.
+
+## Alternativa con modelo importado
+
+El modelo **JSON** anterior, con `pDataFile`, evita duplicar la lectura Python en M. No es el modelo XLSX nativo ni un paso Windows obligatorio. Elegirlo solo en una copia separada con esas particiones; `package:projects` vigente configura XLSX automaticamente. Para JSON, transferir referencias privadas, configurar su ruta, Refresh, comprobar y publicar; no revertir los cuatro modelos raiz por defecto.
+
+Guia completa y evidencia en MkDocs de CierreGastosTI: **Reportes y dashboards > Dashboards > Dashboard de cierre TI > Entrega en Power BI**. Apertura documental en Linux: `npm run docs` desde el principal.

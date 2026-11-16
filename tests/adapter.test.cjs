@@ -26,6 +26,7 @@ function dataView(rows) {
   const names = Object.keys(fields).reverse();
   return {metadata: {}, table: {columns: names.map(name => ({roles: {[name]: true}})), rows: rows.map(row => names.map(key => row[key]))}};
 }
+if (require.main === module) {
 for (const business of Object.keys(scopes)) test(`reconstruye ${business} con meses, monedas e historia`, () => {
   const payload = fromDataView(dataView(fixture(business).reverse()));
   assert.equal(payload.business, business);
@@ -61,4 +62,5 @@ test('exige entrega final y roles únicos del DataView', () => {
   delete view.metadata.segment; view.table.columns[0].roles = {};
   assert.throws(() => fromDataView(view), /Enlace faltante/);
 });
+}
 module.exports = {fixture, dataView};
