@@ -5,6 +5,8 @@ const crypto = require('node:crypto');
 const {unzipSync} = require('fflate');
 const {scopes} = require('../src/adapter');
 const fields = require('../src/fields.json');
+const {projectPaths, selectedBusinesses} = require('./project-paths.cjs');
+const businesses = selectedBusinesses(process.argv.slice(2));
 const root = path.resolve(__dirname, '..');
 require('./build-lock.cjs').assertBuildAccess(root);
 require('./build-manifest.cjs').verify();
@@ -25,16 +27,16 @@ const metadata = decode('package.json'), resource = decode(resourceName);
 if (metadata.visual.guid !== guid || metadata.visual.version !== config.visual.version || resource.capabilities.privileges.length)
   throw new Error('Identidad o permisos inesperados en el paquete.');
 const columns = Object.keys(fields);
-for (const [business, scope] of Object.entries(scopes)) {
-  const project = path.join(root, 'powerbi', business);
-  const report = path.join(project, `${business}.Report`), model = path.join(project, `${business}.SemanticModel`);
-  write(path.join(project, `${business}.pbip`), {
+for (const business of businesses) {
+  const scope = scopes[business];
+  const {name, pbip, report, model} = projectPaths(root, business);
+  write(pbip, {
     $schema: 'https://developer.microsoft.com/json-schemas/fabric/pbip/pbipProperties/1.0.0/schema.json', version: '1.0',
-    artifacts: [{report: {path: `${business}.Report`}}], settings: {enableAutoRecovery: true},
+    artifacts: [{report: {path: `${name}.Report`}}], settings: {enableAutoRecovery: true},
   });
   write(path.join(report, 'definition.pbir'), {
     $schema: 'https://developer.microsoft.com/json-schemas/fabric/item/report/definitionProperties/2.0.0/schema.json',
-    version: '4.0', datasetReference: {byPath: {path: `../${business}.SemanticModel`}},
+    version: '4.0', datasetReference: {byPath: {path: `../${name}.SemanticModel`}},
   });
   write(path.join(model, 'definition.pbism'), {
     $schema: 'https://developer.microsoft.com/json-schemas/fabric/item/semanticModel/definitionProperties/1.0.0/schema.json', version: '4.2', settings: {},
@@ -54,8 +56,10 @@ for (const [business, scope] of Object.entries(scopes)) {
   const definition = fs.existsSync(reportPath) ? JSON.parse(fs.readFileSync(reportPath)) : {$schema: schema('report', '3.3.0'), themeCollection: {}, settings: {exportDataMode: 'None'}};
   definition.themeCollection ||= {};
   const registration = {name: guid, type: 'CustomVisual', items: [{name: `${guid}.pbiviz.json`, path: `${guid}.pbiviz.json`, type: 'CustomVisualMetadata'}]};
-  definition.resourcePackages = [...(definition.resourcePackages || []).filter(p => p.name !== guid), registration];
-  write(reportPath, definition, false);
+  if (!(definition.resourcePackages || []).some(p => p.name === guid)) {
+    definition.resourcePackages = [...(definition.resourcePackages || []), registration];
+    write(reportPath, definition, false);
+  }
   write(path.join(report, 'CustomVisuals', guid, 'package.json'), metadata, false);
   write(path.join(report, 'CustomVisuals', guid, resourceName), resource, false);
   const page = 'cierreti000000000001', instance = 'cierrevisual000000001';
@@ -76,7 +80,7 @@ for (const [business, scope] of Object.entries(scopes)) {
 fs.mkdirSync(path.join(root, 'artifacts'), {recursive: true});
 fs.writeFileSync(path.join(root, 'artifacts/cierre-gastos-ti.pbiviz'), archive);
 fs.copyFileSync(path.join(root, '.tmp/drop/visual.js.LICENSE.txt'), path.join(root, 'artifacts/THIRD_PARTY_LICENSES.txt'));
-require('./configure-xlsx.cjs').configure(root);
+require('./configure-xlsx.cjs').configure(root, businesses);
 const sources = {};
 for (const folder of ['src', 'tools', 'style', 'powerquery']) {
   for (const file of fs.readdirSync(path.join(root, folder), {recursive: true})) {
@@ -87,5 +91,5 @@ for (const folder of ['src', 'tools', 'style', 'powerquery']) {
 }
 for (const file of ['package.json', 'package-lock.json', 'capabilities.json', 'pbiviz.json', 'tsconfig.json']) sources[file] = fs.statSync(path.join(root, file)).size;
 write(path.join(root, 'artifacts/cierre-gastos-ti.manifest.json'), {guid, version: config.visual.version, apiVersion: config.apiVersion,
-  bytes: archive.length, dataEmbedded: false, sourceFiles: sources, desktopValidated: false, servicePublished: false}, false);
-console.log('Cuatro PBIP preparados para XLSX local. Parámetros y diseños existentes conservados; falta validación en Desktop/Service.');
+  bytes: archive.length, dataEmbedded: false, businesses, sourceFiles: sources, desktopValidated: false, servicePublished: false}, false);
+console.log(`PBIP preparados: ${businesses.join(', ')}. Parámetros y diseños existentes conservados; falta validación en Desktop/Service.`);

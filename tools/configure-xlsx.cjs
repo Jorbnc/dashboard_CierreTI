@@ -4,6 +4,7 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const {scopes} = require('../src/adapter');
 const fields = require('../src/fields.json');
+const {projectPaths, selectedBusinesses} = require('./project-paths.cjs');
 const DEFAULT_PATH = String.raw`C:\Users\jnunezca\OneDrive - Ripley Corp\dashboards\input\CierreTI\2609_dashboard_data.xlsx`;
 const FUNCTIONS = ['fxCierreSum', 'fxCierreXlsx'];
 const expression = (name, code) => `expression ${name} =\n${code.trim().split('\n').map(line => '\t\t' + line).join('\n')}\n`;
@@ -39,7 +40,13 @@ function expressions(previous, sources) {
   assert.ok(!retained.some(block => /\bfxSHA256\b/.test(block)),
     'Otra expresion depende de fxSHA256: retirar esa consulta antes de migrar');
   if (!retained.some(block => name(block) === 'pWorkbookPath')) retained.unshift(parameter().trim());
-  return retained.join('\n\n') + '\n\n' + FUNCTIONS.map(fn => expression(fn, sources[fn])).join('\n');
+  const functions = FUNCTIONS.map(fn => {
+    const old = blocks.find(block => name(block) === fn);
+    const metadata = old?.match(/\n(\t[^\t\n][\s\S]*)$/)?.[1];
+    return expression(fn, sources[fn]) + (metadata ? metadata + '\n' : '');
+  });
+  const result = retained.join('\n\n') + '\n\n' + functions.join('\n');
+  return result.trimEnd() === previous.trimEnd() ? previous : result;
 }
 function replacePartition(previous, business) {
   assert.equal((previous.match(/^\tpartition /gm) || []).length, 1, 'Se esperaba una sola particion Cierre');
@@ -52,22 +59,25 @@ function replacePartition(previous, business) {
     'La particion fue personalizada: no se sobrescribe');
   const columns = previous.slice(0, start).replace(/^\tcolumn sha256\n(?:\t\t[^\n]*\n|\n)*/m, '');
   assert.ok(!/\bsha256\b/i.test(columns), 'Referencia local a la columna retirada: revisar antes de migrar');
+  if (columns === previous.slice(0, start) && normalized(tail) === normalized(partition(business))) return previous;
   return columns + partition(business);
 }
-function configure(root) {
+function configure(root, businesses = Object.keys(scopes)) {
   require('./build-lock.cjs').assertBuildAccess(root);
   const sources = Object.fromEntries(FUNCTIONS.map(fn => [fn, fs.readFileSync(path.join(root, 'powerquery', `${fn}.pq`), 'utf8')]));
   const changes = [];
-  for (const business of Object.keys(scopes)) {
-    const definition = path.join(root, 'powerbi', business, `${business}.SemanticModel/definition`);
+  for (const business of businesses) {
+    const {model, report} = projectPaths(root, business);
+    const definition = path.join(model, 'definition');
     const expr = path.join(definition, 'expressions.tmdl'), table = path.join(definition, 'tables/Cierre.tmdl');
     changes.push([expr, expressions(fs.readFileSync(expr, 'utf8'), sources)]);
     changes.push([table, replacePartition(fs.readFileSync(table, 'utf8'), business)]);
-    const visualFile = path.join(root, 'powerbi', business, `${business}.Report/definition/pages/cierreti000000000001/visuals/cierrevisual000000001/visual.json`);
+    const visualFile = path.join(report, 'definition/pages/cierreti000000000001/visuals/cierrevisual000000001/visual.json');
     const visual = JSON.parse(fs.readFileSync(visualFile, 'utf8'));
+    const hadObsoleteField = Object.hasOwn(visual.visual.query.queryState, 'sha256');
     delete visual.visual.query.queryState.sha256;
     assert.ok(!/\bsha256\b/i.test(JSON.stringify(visual)), 'Referencia local al campo retirado en el visual');
-    changes.push([visualFile, JSON.stringify(visual, null, 2) + '\n']);
+    if (hadObsoleteField) changes.push([visualFile, JSON.stringify(visual, null, 2) + '\n']);
   }
   // Validate all projects before writing any; unknown local edits stop the migration.
   for (const [file, value] of changes) if (fs.readFileSync(file, 'utf8') !== value) fs.writeFileSync(file, value);
@@ -78,7 +88,8 @@ function configure(root) {
   return changes.map(([file]) => path.relative(root, file));
 }
 if (require.main === module) {
-  configure(path.resolve(__dirname, '..'));
-  console.log('4 PBIP conectados a XLSX; pWorkbookPath existente y layouts conservados. Ejecutar Actualizar en Desktop.');
+  const businesses = selectedBusinesses(process.argv.slice(2));
+  configure(path.resolve(__dirname, '..'), businesses);
+  console.log(`${businesses.length} PBIP conectados a XLSX; pWorkbookPath existente y layouts conservados. Ejecutar Actualizar en Desktop.`);
 }
 module.exports = {configure, expressions, replacePartition, partition, legacyPartition, DEFAULT_PATH, FUNCTIONS};

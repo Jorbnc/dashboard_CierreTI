@@ -47,8 +47,13 @@ async function main() {
         for (const business of ['banco_peru', 'banco_chile', 'retail_chile', 'retail_peru']) {
           await update(dataView(fixture(business)));
           await expect(app).toHaveAttribute('data-currency', scopes[business].default); await ready();
+          const sourceLabel = business === 'banco_peru' ? 'Fuente XLSX' : 'Cierre fuente';
+          await expect(app.locator('#snapshot')).toHaveText(`${sourceLabel}: Mayo 2030`);
+          await expect(app.locator('.snapshot')).toHaveCSS('background-color', business === 'banco_peru' ? 'rgb(35, 123, 181)' : 'rgb(255, 240, 196)');
+          if (business === 'banco_peru') await expect(app.locator('.snapshot')).toHaveCSS('color', 'rgb(255, 255, 255)');
           await expect(app.locator('[role=tab]')).toHaveCount(3);
           await app.locator('#month').click(); await app.locator('[data-month-option="3"]').click(); await ready();
+          await expect(app.locator('#snapshot')).toHaveText(`${sourceLabel}: Mayo 2030`);
           await expect(app.locator('[data-scope=Total][data-kpi="0"] [data-metric=actual-month]')).toHaveText(`${business === 'retail_chile' ? '9' : '6'}${scopes[business].default}`);
           await expect(app.locator('#unit-label')).toContainText(business === 'banco_peru' ? 'Miles de soles' : 'Millones de Pesos');
           for (const tab of ['opex', 'capex']) {

@@ -6,6 +6,29 @@ El usuario confirmo **funcionamiento en Desktop el 16/11/2026**, tras retirar ha
 
 ## Preparar en Linux
 
+### Prueba de renombre: Banco Peru (0.1.0.5)
+
+El usuario renombro reporte/modelo en Service a **Gastos TI BR PE**, descargo el PBIX y lo guardo desde Desktop como PBIP en la carpeta existente. Confirmo nombre y enlace conservados; la republicacion con un cambio nuevo sigue pendiente. Modificar solo `displayName` en el proyecto anterior no resolvio su prueba.
+
+El proyecto activo es **`powerbi/banco_peru/Gastos TI BR PE.pbip`**, junto a `Gastos TI BR PE.Report` y `Gastos TI BR PE.SemanticModel`. Se retiran los tres elementos antiguos `banco_peru.*`, no objetos de Service. `tools/project-paths.cjs` separa el nombre del proyecto de la clave financiera `banco_peru`. Se conservan identidades, conexiones, parametro y diseno del proyecto guardado por Desktop.
+
+El marcador **Fuente XLSX: Septiembre 2026**, azul con letras blancas, se aplica solo a Banco Peru, tambien en su HTML de referencia. Sigue indicando el cierre fuente al cambiar de mes. Solo ese PBIP recibe el visual 0.1.0.5; los otros tres conservan 0.1.0.4. Despues de preparar los assets desde el principal, la entrega acotada en Linux es:
+
+```bash
+npm test
+npm run build
+npm run test:visual
+npm run package:projects -- --business banco_peru
+npm run check
+npm run check:schemas
+```
+
+`package:projects` y `configure:xlsx` aceptan `--business banco_peru`; sin esa opcion operan los cuatro proyectos. El manifiesto registra los negocios actualizados; `check` contrasta su nuevo paquete y revisa enlaces/modelos de los cuatro. **No ejecutar `release:local` para esta prueba aislada**, pues instalaria el paquete en todos.
+
+**Pendiente en Windows:** cerrar Desktop, revisar cambios locales y sincronizar la revision enviada al remoto. Abrir el PBIP activo, comprobar el marcador, guardar y publicar al workspace original verificando destino/reemplazo. Abrir el enlace previamente compartido: debe mostrar el marcador, conservar el nombre y no generar duplicados. Comparar los IDs actuales antes/despues. Si aparece otra copia, no borrar el original ni declarar exito. Solo entonces extender a otros negocios. No repetir la descarga PBIX por cada cambio ni versionar ese archivo o caches.
+
+Validacion local del experimento: 26 pruebas Node, paquete real en Chromium/Firefox y modelos/enlaces correctos. Los tres PBIP restantes y las definiciones del nuevo Banco Peru (excepto sus recursos SDK) se conservan byte por byte; los cuatro datasets financieros tampoco cambian. `check:schemas` no puede completarse: Desktop guardo `report/3.4.0` y `visualContainer/2.14.0`, cuyas URLs oficiales devuelven 404. Se validaron por separado las otras 38 definiciones, incluidos `.platform`; las dos no verificables se preservan, sin cambiar versiones ni declararlas validadas.
+
 ### Migracion 0.1.0.3: MMCLP en millones
 
 En los cuatro dashboards **MMCLP = millones de CLP**; **MSoles = miles de soles** se mantiene en Banco Peru desde 0.1.0.2. Importes enteros, punto para miles y coma decimal en porcentajes. Python y M conservan los importes de ambos bloques, sin dividir nuevamente por 1.000. Historico, PPTO, FCST y ajustes usan la misma escala; los importes economicos y porcentajes no cambian. No se modifican las reglas de Comite canonico, Steerco ni Finbot. Consultar las referencias financieras privadas en `previews/`, nunca incorporarlas a Git.
@@ -57,19 +80,19 @@ git status --short
 En clones existentes, cerrar Desktop y revisar cambios locales, rama y remoto antes de sincronizar. No borrar ni resetear trabajo Windows; conservar copias privadas. No se hace push automatico ni se han verificado permisos remotos. No ejecutar npm/Python en Windows ni transferir caches como sustituto de Refresh.
 
 1. Recibir el XLSX explicito. `pWorkbookPath` inicia en `C:\Users\jnunezca\OneDrive - Ripley Corp\dashboards\input\CierreTI\2609_dashboard_data.xlsx`; usar una ruta absoluta Windows, no `/c/...` de Git Bash. Fuente: hoja `Comité` del agregado, no Base; no se busca automaticamente el archivo mas reciente.
-2. Abrir `powerbi/banco_peru/banco_peru.pbip` **del clon raiz**, con sus carpetas `.Report` y `.SemanticModel`, no un PBIP de `releases/`.
+2. Abrir `powerbi/banco_peru/Gastos TI BR PE.pbip` **del clon raiz**, con sus carpetas `.Report` y `.SemanticModel`, no un PBIP de `releases/`.
 3. En **Transformar datos > Administrar parametros**, confirmar o cambiar `pWorkbookPath`. Se configura una vez por PBIP mientras la ruta siga igual; si cambia el nombre mensual, cambia el parametro.
 4. Aplicar y **Actualizar / Refresh**. Un clon fresco no contiene datos importados porque `.pbi/cache.abf` se excluye de Git. Si solo aparece `pDataFile`, revisar la migracion Linux, no introducir JSON en este flujo.
 5. Comparar con el HTML del mismo XLSX: importes, precision, nulos, mes actual/anterior, Gastos TI/OPEX/CAPEX, categoria, orden, ambas monedas de Banco Peru, historia y CO. No dar por probada la paridad solo porque abra.
 6. **Guardar / Save**, cerrar, reabrir y comprobar. Repetir carga y aceptacion en los otros tres modelos.
 7. Publicar manualmente al workspace autorizado, **nunca Publicar en web**. Verificar cifras y permisos por negocio en Service y registrar los cuatro enlaces reales. Guardar o hacer push no publica datos.
 
-La ruta es editable por proyecto: se guarda en la primera linea de `powerbi/<negocio>/<negocio>.SemanticModel/definition/expressions.tmdl`. El valor inicial para proyectos nuevos esta en `tools/configure-xlsx.cjs`; el generador conserva rutas existentes. `Cierre` usa `File.Contents(pWorkbookPath)`, sin otra carpeta fija. Si un error sigue mostrando la ruta anterior, revisar el valor actual en el PBIP abierto, aplicar/guardar y reabrir la revision sincronizada con Desktop cerrado. Cambiar un parametro no actualiza los otros tres proyectos. La ruta OneDrive es local y su disponibilidad se comprueba en Windows, no desde Linux.
+La ruta es editable por proyecto: se guarda en `definition/expressions.tmdl` de la carpeta `.SemanticModel` vinculada al PBIP (Banco Peru: `Gastos TI BR PE.SemanticModel`). El valor inicial para proyectos nuevos esta en `tools/configure-xlsx.cjs`; el generador conserva rutas existentes. `Cierre` usa `File.Contents(pWorkbookPath)`, sin otra carpeta fija. Si un error sigue mostrando la ruta anterior, revisar el valor actual en el PBIP abierto, aplicar/guardar y reabrir la revision sincronizada con Desktop cerrado. Cambiar un parametro no actualiza los otros tres proyectos. La ruta OneDrive es local y su disponibilidad se comprueba en Windows, no desde Linux.
 
 | Negocio | Ruta desde este repositorio | Monedas | Service |
 | --- | --- | --- | --- |
 | Banco Chile | `powerbi/banco_chile/banco_chile.pbip` | MMCLP | Pendiente |
-| Banco Peru | `powerbi/banco_peru/banco_peru.pbip` | MSoles y MMCLP | Pendiente |
+| Banco Peru | `powerbi/banco_peru/Gastos TI BR PE.pbip` | MSoles y MMCLP | Renombre/enlace confirmados; republicacion 0.1.0.5 pendiente |
 | Retail Chile | `powerbi/retail_chile/retail_chile.pbip` | MMCLP | Pendiente |
 | Retail Peru | `powerbi/retail_peru/retail_peru.pbip` | MMCLP | Pendiente |
 

@@ -369,7 +369,9 @@
     $('report-panel').setAttribute('aria-labelledby', `tab-${state.page}`);
     if ($('context')) $('context').textContent = `FUENTE · CIERRE ${closure.toUpperCase()} ${data.year}`;
     $('page-title').textContent = `${state.page === 'summary' ? classic ? 'Gastos Tecnológicos' : 'Gastos tecnológicos' : kind().toUpperCase()} | ${classic && state.month === data.cutoff ? 'Cierre ' : ''}${month()} ${data.year}`;
-    $('snapshot').textContent = `Cierre fuente: ${closure} ${data.year}`;
+    const sourceLabelExperiment = data.business === 'banco_peru';
+    $('snapshot').textContent = `${sourceLabelExperiment ? 'Fuente XLSX' : 'Cierre fuente'}: ${closure} ${data.year}`;
+    $('snapshot').parentElement.classList.toggle('snapshot-info', sourceLabelExperiment);
     $('unit-label').textContent = state.currency === 'MSoles' ? 'MSoles · Miles de soles' : 'MMCLP · Millones de Pesos';
     $('footer-cutoff').textContent = `${closure} ${data.year} · ${state.currency}`;
     $('layout-label').hidden = !integrated || state.page !== 'summary';

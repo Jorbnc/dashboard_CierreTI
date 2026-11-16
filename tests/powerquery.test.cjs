@@ -53,6 +53,16 @@ test('solo reemplaza particion conocida, sin cambiar columnas ni lineage', () =>
   assert.throws(() => replacePartition(old + '\tpartition Otro = m\n', 'banco_chile'), /una sola/);
   assert.throws(() => partition('unknown'), /desconocido/);
 });
+test('actualizar funciones conserva sus lineageTag y anotaciones guardadas por Desktop', () => {
+  const sources = Object.fromEntries(FUNCTIONS.map(fn => [fn, '(x) => x + 1']));
+  const previous = FUNCTIONS.map(fn => `expression ${fn} =\n\t\t(x) => x\n\tlineageTag: ${fn}-id\n\n\tannotation Local = keep\n`).join('\n');
+  const result = expressions(previous, sources);
+  for (const fn of FUNCTIONS) {
+    assert.ok(result.includes(`expression ${fn} =\n\t\t(x) => x + 1\n\tlineageTag: ${fn}-id`));
+  }
+  assert.equal((result.match(/annotation Local = keep/g) || []).length, 2);
+  assert.equal(expressions(result, sources), result);
+});
 test('lector sin fuentes remotas, Python, Node ni cero para invalidos', () => {
   const code = fs.readFileSync(path.join(root, 'powerquery/fxCierreXlsx.pq'), 'utf8');
   assert.ok(code.includes('Excel.Workbook'));
