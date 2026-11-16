@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "banco_chile"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "e0cf5577-3217-4f1a-ae0e-84dd3cbc8ff6"
+  }
+}

@@ -1,7 +1,20 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.3.0/schema.json",
-  "settings": {
-    "exportDataMode": "None"
+  "themeCollection": {},
+  "objects": {
+    "outspacePane": [
+      {
+        "properties": {
+          "expanded": {
+            "expr": {
+              "Literal": {
+                "Value": "false"
+              }
+            }
+          }
+        }
+      }
+    ]
   },
   "resourcePackages": [
     {
@@ -16,5 +29,8 @@
       ]
     }
   ],
-  "themeCollection": {}
+  "settings": {
+    "exportDataMode": "None",
+    "useEnhancedTooltips": false
+  }
 }
