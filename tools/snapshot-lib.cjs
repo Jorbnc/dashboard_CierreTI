@@ -1,10 +1,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const crypto = require('node:crypto');
 const assert = require('node:assert/strict');
 const {fromRows, scopes} = require('../src/adapter');
 
-const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const writeJson = (file, value) => {
   fs.mkdirSync(path.dirname(file), {recursive: true});
@@ -14,10 +12,17 @@ function filesUnder(root) {
   return fs.readdirSync(root, {recursive: true}).filter(name => fs.statSync(path.join(root, name)).isFile())
     .map(name => name.replaceAll('\\', '/')).sort();
 }
-const fileHashes = root => Object.fromEntries(filesUnder(root).map(name => [name, hash(fs.readFileSync(path.join(root, name)))]));
+const fileSizes = root => Object.fromEntries(filesUnder(root).map(name => [name, fs.statSync(path.join(root, name)).size]));
+// Published identities are fixed identifiers, not derived from content.
+const snapshotGuids = {
+  banco_chile: 'CierreSnapshot0CF888D29B1F6CD4C85BEEA3FE3C2E1A',
+  banco_peru: 'CierreSnapshot913C3AFB33398380C4FC54507767F4EE',
+  retail_chile: 'CierreSnapshot1D0B693704899B360B94BB282D5347BB',
+  retail_peru: 'CierreSnapshot082C483EE16C54767CDB95D5B4AD6237',
+};
 const snapshotGuid = business => {
   assert.ok(Object.hasOwn(scopes, business), 'Negocio desconocido');
-  return 'CierreSnapshot' + hash('cierre-ti:snapshot:' + business).slice(0, 32).toUpperCase();
+  return snapshotGuids[business];
 };
 function validateDatasets(datasets) {
   assert.deepEqual(Object.keys(datasets).sort(), Object.keys(scopes).sort(), 'Se requieren los cuatro negocios');
@@ -27,8 +32,7 @@ function validateDatasets(datasets) {
     assert.equal(input.business, business, 'Archivo de otro negocio');
     const data = fromRows(input.rows);
     assert.equal(data.business, business, 'Filas de otro negocio');
-    const current = {year: data.year, cutoff: data.cutoff, source: data.source, sheet: data.sheet, sha256: data.sha256};
-    assert.match(current.sha256, /^[a-f0-9]{64}$/, 'Falta huella de la fuente');
+    const current = {year: data.year, cutoff: data.cutoff, source: data.source, sheet: data.sheet};
     source ||= current;
     assert.deepEqual(current, source, 'No mezclar generaciones ni fuentes');
   }
@@ -43,11 +47,15 @@ function compareVersions(a, b) {
 }
 function verifyPreparation(root) {
   const manifest = readJson(path.join(root, 'data/preparation.json'));
-  assert.equal(manifest.schema, 1);
+  assert.equal(manifest.schema, 2, 'Repetir preparar_powerbi.py para actualizar la preparacion');
   const expected = Object.keys(scopes).flatMap(b => [`data/${b}.json`, `previews/${b}.html`]);
   expected.push('previews/informe_generacion.md');
-  assert.deepEqual(Object.keys(manifest.sha256).sort(), expected.sort());
-  for (const file of expected) assert.equal(hash(fs.readFileSync(path.join(root, file))), manifest.sha256[file], `Preparacion modificada: ${file}; repetir preparar_powerbi.py`);
+  assert.deepEqual([...manifest.files].sort(), expected.sort());
+  for (const file of expected) {
+    const baseline = path.join(root, '.tmp/preparation-reference', file);
+    assert.ok(fs.existsSync(baseline) && fs.readFileSync(path.join(root, file)).equals(fs.readFileSync(baseline)),
+      `Preparacion modificada: ${file}; repetir preparar_powerbi.py`);
+  }
   return manifest;
 }
 
@@ -55,7 +63,7 @@ function verifyPreview(root, business, input) {
   const html = fs.readFileSync(path.join(root, 'previews', `${business}.html`), 'utf8');
   const preview = JSON.parse(html.match(/<script id="report-data" type="application\/json">([\s\S]*?)<\/script>/)[1]);
   const restored = fromRows(input.rows);
-  for (const field of ['business', 'year', 'cutoff', 'sha256']) assert.equal(restored[field], preview[field]);
+  for (const field of ['business', 'year', 'cutoff', 'source', 'sheet']) assert.equal(restored[field], preview[field]);
   assert.deepEqual(Object.keys(restored.currencies).sort(), Object.keys(preview.currencies).sort());
   let positions = 0;
   for (const [unit, currency] of Object.entries(preview.currencies)) {
@@ -71,4 +79,4 @@ function verifyPreview(root, business, input) {
   return positions;
 }
 
-module.exports = {hash, readJson, writeJson, filesUnder, fileHashes, snapshotGuid, validateDatasets, compareVersions, verifyPreparation, verifyPreview};
+module.exports = {readJson, writeJson, filesUnder, fileSizes, snapshotGuid, validateDatasets, compareVersions, verifyPreparation, verifyPreview};

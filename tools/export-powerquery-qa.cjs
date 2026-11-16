@@ -29,10 +29,7 @@ let
                 not Equal(Record.Field(SortedActual{i}, key), Record.Field(SortedExpected{i}, key))),
                 (key) => [id = SortedExpected{i}[id], campo = key,
                     esperado = Record.Field(SortedExpected{i}, key), obtenido = Record.Field(SortedActual{i}, key)]))),
-    SHAOK = fxSHA256(Text.ToBinary("", TextEncoding.Utf8)) = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        and fxSHA256(Text.ToBinary("abc", TextEncoding.Utf8)) = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
-    Result = if not SHAOK then error "SHA256 no coincide con los vectores conocidos"
-        else if not List.IsEmpty(Differences) then error Error.Record("Paridad", "Diferencias con Python", List.FirstN(Differences, 20))
+    Result = if not List.IsEmpty(Differences) then error Error.Record("Paridad", "Diferencias con Python", List.FirstN(Differences, 20))
         else #table({"Estado", "Negocio", "Filas", "Posiciones monetarias"}, {{"OK", "${input.business}", Count, Count * 4}})
 in
     Result

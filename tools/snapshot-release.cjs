@@ -6,7 +6,7 @@ const {spawnSync} = require('node:child_process');
 const {parseArgs} = require('node:util');
 const {unzipSync, zipSync} = require('fflate');
 const {scopes} = require('../src/adapter');
-const {hash, readJson, writeJson, filesUnder, fileHashes, snapshotGuid, validateDatasets, compareVersions, verifyPreparation, verifyPreview} = require('./snapshot-lib.cjs');
+const {readJson, writeJson, filesUnder, fileSizes, snapshotGuid, validateDatasets, compareVersions, verifyPreparation, verifyPreview} = require('./snapshot-lib.cjs');
 const {acquireBuildLock} = require('./build-lock.cjs');
 const root = path.resolve(__dirname, '..');
 const run = (script, args = []) => {
@@ -87,7 +87,7 @@ function main() {
   const sourceInputs = Object.fromEntries(['src', 'tools', 'style', 'powerbi'].flatMap(folder => filesUnder(path.join(root, folder))
     .map(file => `${folder}/${file}`)).filter(file => !file.startsWith('src/generated/') && !file.includes('/.pbi/'))
     .concat(['package.json', 'package-lock.json', 'pbiviz.json', 'capabilities.json', 'tsconfig.json'])
-    .map(file => [file, hash(fs.readFileSync(path.join(root, file)))]));
+    .map(file => [file, fs.readFileSync(path.join(root, file))]));
     run(path.join(root, 'tools/prepare.cjs'));
     const packages = {};
     for (const [business, data] of Object.entries(datasets)) {
@@ -105,18 +105,18 @@ function main() {
       fs.mkdirSync(path.join(stage, 'artifacts'), {recursive: true});
       fs.writeFileSync(path.join(stage, 'artifacts', `${business}.pbiviz`), archive);
       project(business, stage, config, archive);
-      packages[business] = {guid, sha256: hash(archive), rows: data.rows.length, dataSha256: preparation.sha256[`data/${business}.json`]};
+      packages[business] = {guid, bytes: archive.length, rows: data.rows.length};
     }
     fs.copyFileSync(path.join(root, '.tmp/drop/visual.js.LICENSE.txt'), path.join(stage, 'artifacts/THIRD_PARTY_LICENSES.txt'));
     fs.cpSync(path.join(root, 'previews'), path.join(stage, 'previews'), {recursive: true,
-      filter: file => file === path.join(root, 'previews') || Object.keys(preparation.sha256).includes(path.relative(root, file).replaceAll('\\', '/'))});
+      filter: file => file === path.join(root, 'previews') || preparation.files.includes(path.relative(root, file).replaceAll('\\', '/'))});
     for (const file of ['pbiviz.json', 'capabilities.json']) fs.unlinkSync(path.join(stage, file));
     fs.writeFileSync(path.join(stage, 'LEEME.txt'), `Entrega privada ${id}\nContiene cifras financieras: no subir a Git ni publicar en web.\nAbrir powerbi/<negocio>/<negocio>.pbip con Power BI Desktop.\nNo configurar JSON, no vincular campos, no actualizar una fuente externa.\nValidar contra previews/<negocio>.html y revisar previews/informe_generacion.md.\nLa tabla oculta Entrega es tecnica y vacia: las cifras viven en el visual.\nPestanas, mes y moneda funcionan internamente; no se aplica RLS del modelo a los datos incrustados.\nDesktop y Service pendientes de validacion real. Publicacion manual autorizada.\nConservar toda la carpeta: copiar solo el PBIP no basta. No mezclar con entregas anteriores.\n`);
     assert.deepEqual(verifyPreparation(root), preparation, 'La preparacion cambio durante la compilacion');
-    for (const [file, digest] of Object.entries(sourceInputs)) assert.equal(hash(fs.readFileSync(path.join(root, file))), digest, `Fuente cambiada durante compilacion: ${file}`);
-    writeJson(path.join(stage, 'manifest.json'), {schema: 1, mode: 'snapshot', id, version, source, packages,
-      dataEmbedded: true, desktopValidated: false, servicePublished: false, sourceHashes: sourceInputs,
-      files: fileHashes(stage)});
+    for (const [file, bytes] of Object.entries(sourceInputs)) assert.ok(fs.readFileSync(path.join(root, file)).equals(bytes), `Fuente cambiada durante compilacion: ${file}`);
+    writeJson(path.join(stage, 'manifest.json'), {schema: 2, mode: 'snapshot', id, version, source, packages,
+      dataEmbedded: true, desktopValidated: false, servicePublished: false, sourceFiles: Object.keys(sourceInputs),
+      files: fileSizes(stage)});
     run(path.join(root, 'tools/check-snapshot.cjs'), [stage]);
     run(path.join(root, 'tools/test-snapshot.cjs'), [stage]);
     run(path.join(root, 'tools/check-schemas.cjs'), [stage]);
@@ -126,8 +126,7 @@ function main() {
     const zip = zipSync(Object.fromEntries(filesUnder(stage).map(file => [`${id}/${file}`, new Uint8Array(fs.readFileSync(path.join(stage, file)))])), {level: 6});
     fs.renameSync(stage, destination);
     fs.writeFileSync(destination + '.zip', zip);
-    fs.writeFileSync(destination + '.zip.sha256', `${hash(zip)}  ${id}.zip\n`);
-    console.log(`Entrega privada: ${destination}.zip\nSHA256: ${hash(zip)}\nDesktop/Service pendientes; no se publico ni se hizo push.`);
+    console.log(`Entrega privada: ${destination}.zip\nDesktop/Service pendientes; no se publico ni se hizo push.`);
   } finally {
     // Do not leave the last business as the default for the code-only build.
     try {fs.writeFileSync(path.join(root, 'src/generated/source.ts'), 'export const snapshot: {business: string; rows: any[]} | null = null;\n');}

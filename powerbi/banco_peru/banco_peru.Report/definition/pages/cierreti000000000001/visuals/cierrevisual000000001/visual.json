@@ -175,24 +175,6 @@
             }
           ]
         },
-        "sha256": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "Cierre"
-                    }
-                  },
-                  "Property": "sha256"
-                }
-              },
-              "queryRef": "Cierre.sha256",
-              "nativeQueryRef": "sha256"
-            }
-          ]
-        },
         "unit": {
           "projections": [
             {

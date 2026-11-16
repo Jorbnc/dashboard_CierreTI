@@ -1,20 +1,20 @@
 {
   "source": "src/cierre_gastos_ti/visuals/cierre_mensual_assets",
-  "sha256": {
-    "app.js": "794b3fc447ab9da2420e6e66787289809c994ecd0265922ab1f00769dfd95069",
-    "branding/banco_ripley.png": "3e78b77f5c55d21f52cb96f4c7e558efdf4e0cccdde880e7f97419539195657e",
-    "branding/chile.svg": "532d4801ab84235f0b2818a0fe11f95e4c65b98a09fc7f7f878dd0874e0bdc37",
-    "branding/peru.svg": "4d82ff9a89cb3e873dc6111d6a78a9184023395ae8ebc4ce9a11104f7f210ac3",
-    "branding/retail_monograma.png": "a4878b6aced539a3e31cd4da311943e3a77fa9a24ebdd539c48a987ae64cd19b",
-    "branding/retail_palette.json": "96f8f584a2e873fb19380ddf8aa6ac41d2fd09eb6fb91dfef53518d9ab279e78",
-    "branding/retail_ripley.png": "7c93f47aaa652cb20d64a0d5d2e0246de3a26fe8313804f91eadbe38eba261a9",
-    "classic.css": "3173fbe26be0be2f461e9ee6e8cbf9e695998514c15e7e299071e362debfe570",
-    "classic.js": "47e9fc1c7dc5d3c23755a9066b10fe2f2e022f93713ff9436e7bc17988e724d7",
-    "index.html": "7aecde5b355ab90eb479450289acd29f96b6901e74e9a831850b993ab81e3074",
-    "integrated.css": "588d181822916e9c40aace6d5193cd366ec6dcfbf492bd3774fc773d25a030dc",
-    "model.js": "d0ab34d4f47f5e49d1ebcf60137484a40a3df01d1582636d89b1bb1d65ba18b4",
-    "proposal.css": "79777ca5a73b04d0922a09e485c33c2dc315cca2436e104cb63771b47656f062",
-    "proposal.js": "ca9e6746e679bac08ff144afadf0ba84e632e38d8d25a6f00b7b0f187b376702",
-    "style.css": "964759b889a23c589509ebbfbd8e444191bea79607cf3ca47808f59174a5deea"
-  }
+  "files": [
+    "app.js",
+    "branding/banco_ripley.png",
+    "branding/chile.svg",
+    "branding/peru.svg",
+    "branding/retail_monograma.png",
+    "branding/retail_palette.json",
+    "branding/retail_ripley.png",
+    "classic.css",
+    "classic.js",
+    "index.html",
+    "integrated.css",
+    "model.js",
+    "proposal.css",
+    "proposal.js",
+    "style.css"
+  ]
 }

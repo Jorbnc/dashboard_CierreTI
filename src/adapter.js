@@ -16,10 +16,10 @@ function fromRows(rows) {
   requireThat(first.entity === scope.entity && first.brand === scope.brand && first.default_currency === scope.default, 'Identidad o moneda del negocio incorrecta.');
   requireThat(Number.isInteger(first.year) && first.year >= 2000 && Number.isInteger(first.cutoff) && first.cutoff >= 1 && first.cutoff <= 12, 'Cierre inválido.');
   requireThat(first.expected_rows === rows.length, 'Entrega incompleta o filtrada; no se muestran totales parciales.');
-  const common = ['business', 'entity', 'brand', 'default_currency', 'year', 'cutoff', 'source', 'sheet', 'sha256', 'expected_rows'];
+  const common = ['business', 'entity', 'brand', 'default_currency', 'year', 'cutoff', 'source', 'sheet', 'expected_rows'];
   const result = {schema: 3, business: first.business, entity: first.entity, brand: first.brand,
     default_currency: first.default_currency, year: first.year, cutoff: first.cutoff, source: first.source,
-    sheet: first.sheet, sha256: first.sha256, currencies: {}, aliases: {}, history_notes: []};
+    sheet: first.sheet, currencies: {}, aliases: {}, history_notes: []};
   const groups = new Map(), ids = new Set();
   for (const row of rows) {
     for (const key of common) requireThat(row[key] === first[key], 'Se mezclaron negocios, cierres o fuentes.');

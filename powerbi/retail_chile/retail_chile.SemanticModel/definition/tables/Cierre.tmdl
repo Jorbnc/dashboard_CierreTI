@@ -55,12 +55,6 @@ table Cierre
 		summarizeBy: none
 		sourceColumn: sheet
 
-	column sha256
-		dataType: string
-		lineageTag: 8d8abec5-84bd-46f6-af86-5893238c85c8
-		summarizeBy: none
-		sourceColumn: sha256
-
 	column unit
 		dataType: string
 		lineageTag: 80b2a65c-97ff-472a-a8f2-769bcf3a9814

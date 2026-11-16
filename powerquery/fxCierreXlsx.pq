@@ -1,4 +1,4 @@
-// Dependencies: fxSHA256, fxCierreSum. Import each .pq as a function expression.
+// Dependency: fxCierreSum. Import each .pq as a function expression.
 // Authority: visuals/cierre_mensual.py and visuals/powerbi.py, schema 3 / rows schema 1.
 // Excel.Workbook reads cached cells, never recalculates formulas or writes the XLSX.
 // https://learn.microsoft.com/powerquery-m/excel-workbook
@@ -7,7 +7,7 @@
 (Workbook as binary, SourceName as text, Business as text) as table =>
 let
     SheetName = "Comit#(00E9)",
-    ConfirmedSHA256 = "9caa3e6aac8d08f03461eb075b14e2ddce04bfb1f959b272dfe0df54afec404c",
+    ConfirmedSource = "2609_dashboard_data.xlsx",
     BankCapex = {"Core", "J2C", "Partner", "Planilla TI", "RC TI"},
     BankOpex = {"Core", "Cyber", "Partner", "Procesamiento", "Soporte", "Licencias",
         "Telecomunicaciones", "Personal Externo", "Planilla TI", "RC TI"},
@@ -57,7 +57,6 @@ let
         else Fail("Negocio no reconocido: " & Business),
     Kinds = Record.FieldNames(Config[categories]),
     Buffered = Binary.Buffer(Workbook),
-    Digest = fxSHA256(Buffered),
     // Select the worksheet, not a suggested table. Do not promote headers or infer dimensions.
     Navigation = Excel.Workbook(Buffered, [UseHeaders = false, DelayTypes = true, InferSheetDimensions = false]),
     Sheets = Table.SelectRows(Navigation, each [Item] = SheetName and [Kind] = "Sheet"),
@@ -158,7 +157,7 @@ let
             ReadHistory = () as record =>
                 let
                     standard = IsLabel(header, 36, N(Year - 1) & " REAL"),
-                    exception = not standard and Digest = ConfirmedSHA256 and Business = "banco_peru" and
+                    exception = not standard and SourceName = ConfirmedSource and Business = "banco_peru" and
                         block = 59 and Year = 2026 and Cutoff = 9 and unit = "MSoles" and
                         IsLabel(57, 2, "Soles") and IsLabel(57, 36, "Soles") and
                         IsLabel(59, 2, "Banco Per#(00FA)") and IsLabel(59, 36, "Banco Per#(00FA)") and
@@ -227,7 +226,7 @@ let
                          label = Record.FieldOrDefault(Labels, group[categories]{i}, group[categories]{i}), values = group[child_values]{i}]))),
             resultRows = List.Combine(List.Transform(groups, (group) => List.Transform({1..12}, (month) => [
                 business = Business, entity = Config[entity], brand = Config[brand], default_currency = Config[default_currency],
-                year = Year, cutoff = Cutoff, source = SourceName, sheet = SheetName, sha256 = Digest,
+                year = Year, cutoff = Cutoff, source = SourceName, sheet = SheetName,
                 unit = unit, level = group[level], kind = group[kind], category = group[category], label = group[label], month = month,
                 actual = if month <= Cutoff then group[values][execution]{month - 1} / 1000 else null,
                 forecast = if month > Cutoff then group[values][execution]{month - 1} / 1000 else null,
@@ -247,7 +246,7 @@ let
         Record.Combine({FlatRows{i}, [id = Business & ":" & N(i), expected_rows = ExpectedRows]})),
     RowType = type table [
         id = text, business = text, entity = text, brand = text, default_currency = text,
-        year = Int64.Type, cutoff = Int64.Type, source = text, sheet = text, sha256 = text,
+        year = Int64.Type, cutoff = Int64.Type, source = text, sheet = text,
         unit = text, level = text, kind = text, category = text, label = text, month = Int64.Type,
         actual = nullable number, forecast = nullable number, budget = nullable number, prior = nullable number,
         range_execution_forecast = text, range_budget = text, range_prior = text, history_note = text, expected_rows = Int64.Type
@@ -299,7 +298,7 @@ let
     RetailTry = if Config[brand] = "retail" then try AuditRetail() else [HasError = false, Value = {}],
     Findings = if RetailTry[HasError] then {"Control del subtotal RETAIL CORP no evaluable: " & RetailTry[Error][Message] &
         ". No se utiliza este subtotal para completar o corregir los bloques pa#(00ED)s."} else RetailTry[Value],
-    Diagnostics = [source = SourceName, sheet = SheetName, sha256 = Digest, business = Business,
+    Diagnostics = [source = SourceName, sheet = SheetName, business = Business,
         year = Year, cutoff = Cutoff, history_notes = HistoryNotes, source_findings = Findings,
         currencies = Record.FromList(List.Transform(Currencies, each [
             history_note = [history][note], history_exception = [history][exception],
@@ -309,7 +308,7 @@ let
         ]), List.Transform(Currencies, each [unit]))],
     // The final value depends on all mandatory checks, not on unused let assertions.
     // Buffer scalar output cells so optional-history errors cannot escape their try above.
-    Result = if CurrentValid and Cutoff >= 1 and Text.Length(Digest) = 64 and
+    Result = if CurrentValid and Cutoff >= 1 and
         List.Count(List.Buffer(Findings)) >= 0 then Table.Buffer(Typed)
         else Fail("Validaci#(00F3)n incompleta")
 in

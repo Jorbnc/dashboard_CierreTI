@@ -3,14 +3,15 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const {unzipSync} = require('fflate');
 const {scopes} = require('../src/adapter');
-const {hash, readJson, fileHashes, filesUnder, snapshotGuid} = require('./snapshot-lib.cjs');
+const {readJson, fileSizes, filesUnder, snapshotGuid} = require('./snapshot-lib.cjs');
 function check(directory) {
   const manifest = readJson(path.join(directory, 'manifest.json'));
+  assert.equal(manifest.schema, 2, 'Entrega anterior: conservarla y validarla con su version de herramientas');
   assert.equal(manifest.mode, 'snapshot'); assert.equal(manifest.dataEmbedded, true);
   assert.deepEqual(Object.keys(manifest.packages).sort(), Object.keys(scopes).sort());
-  const hashes = fileHashes(directory); delete hashes['manifest.json'];
-  assert.deepEqual(hashes, manifest.files, 'Entrega modificada o con archivos extra');
-  for (const name of Object.keys(hashes)) {
+  const inventory = fileSizes(directory); delete inventory['manifest.json'];
+  assert.deepEqual(inventory, manifest.files, 'Inventario o tamanos de entrega distintos');
+  for (const name of Object.keys(inventory)) {
     assert.ok(!name.includes('/.pbi/') && !name.startsWith('data/') && !/\.(xlsx|pbix)$/i.test(name), 'Archivo privado no previsto en la entrega');
   }
   for (const [business, metadata] of Object.entries(manifest.packages)) {
@@ -20,7 +21,7 @@ function check(directory) {
     assert.equal(readJson(path.join(project, `${business}.pbip`)).artifacts[0].report.path, `${business}.Report`);
     assert.equal(readJson(path.join(report, 'definition.pbir')).datasetReference.byPath.path, `../${business}.SemanticModel`);
     const archive = fs.readFileSync(path.join(directory, 'artifacts', `${business}.pbiviz`));
-    assert.equal(hash(archive), metadata.sha256);
+    assert.equal(archive.length, metadata.bytes);
     const entries = unzipSync(archive), decode = name => JSON.parse(Buffer.from(entries[name]).toString());
     const resource = decode(`resources/${guid}.pbiviz.json`);
     assert.equal(resource.visual.guid, guid); assert.equal(resource.visual.version, manifest.version);
@@ -45,10 +46,11 @@ function check(directory) {
     assert.ok(tmdl.includes('#table(type table [Estado = text], {})'));
     const preview = fs.readFileSync(path.join(directory, 'previews', `${business}.html`), 'utf8');
     const data = JSON.parse(preview.match(/<script id="report-data" type="application\/json">([\s\S]*?)<\/script>/)[1]);
-    assert.equal(data.business, business); assert.equal(data.sha256, manifest.source.sha256);
+    assert.equal(data.business, business); assert.equal(data.source, manifest.source.source);
+    assert.equal(data.sheet, manifest.source.sheet);
     assert.equal(data.cutoff, manifest.source.cutoff); assert.equal(data.year, manifest.source.year);
   }
-  console.log('Snapshot: cuatro PBIP autonomos, GUIDs por negocio, recursos, previews y hashes verificados.');
+  console.log('Snapshot: cuatro PBIP autonomos, identidades, inventario, recursos y metadatos verificados. No acredita identidad binaria de la entrega original.');
   return manifest;
 }
 if (require.main === module) {try {assert.ok(process.argv[2], 'Indicar carpeta de entrega'); check(path.resolve(process.argv[2]));} catch (e) {console.error(e); process.exitCode = 1;}}

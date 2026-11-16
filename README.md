@@ -15,7 +15,7 @@ python tools/reportes_visuals/cierre_mensual/preparar_powerbi.py \
   --deployment-dir deploy/dashboard_CierreTI
 ```
 
-Python sigue siendo referencia/generador Linux. Sincroniza `src/shared/` con hashes y genera `data/*.json`, `data/preparation.json`, cuatro HTML y `previews/informe_generacion.md`. Revisar y resumir excepciones, faltantes y discrepancias; no aprobar fallos fatales ni nuevas correcciones. Estos archivos son privados, no la fuente del modelo Windows.
+Python sigue siendo referencia/generador Linux. Sincroniza `src/shared/` y genera `data/*.json`, `data/preparation.json`, cuatro HTML y `previews/informe_generacion.md`. La preparacion y compilacion comparan bytes con copias privadas en `.tmp/preparation-reference/` y `.tmp/build-reference/`, sin hashes. Revisar excepciones, faltantes y discrepancias; no aprobar fallos fatales ni nuevas correcciones. Estos archivos son privados, no la fuente del modelo Windows.
 
 Para instalacion inicial o cambios de UI/SDK, desde **este repositorio, solo Linux**, con Node >=22.13:
 
@@ -28,7 +28,7 @@ npm run check:schemas
 
 `release:local` prueba, compila e instala `artifacts/cierre-gastos-ti.pbiviz` sin datos. Su `package:projects` **ejecuta automaticamente `configure:xlsx`**: no se requiere un segundo comando. Migra solo particiones de origen y parametros/funciones M de los cuatro modelos existentes, preservando layout, identidades, enlaces y `pWorkbookPath` existente. Particiones personalizadas desconocidas deben revisarse, no sobrescribirse.
 
-`npm run configure:xlsx` es opcional para refrescar solo el adaptador. `npm run test:powerquery` comprueba sintaxis con `@microsoft/powerquery-parser` y contratos locales, no el runtime M. La lectura usa `powerquery/fxCierreXlsx.pq`, `fxCierreSum.pq` y `fxSHA256.pq`: hash del binario completo en M puro, sin extension Crypto, con rendimiento y ejecucion nativa pendientes.
+`npm run configure:xlsx` es opcional para refrescar solo el adaptador. `npm run test:powerquery` comprueba sintaxis con `@microsoft/powerquery-parser` y contratos locales, no el runtime M. La lectura usa solo `powerquery/fxCierreXlsx.pq` y `fxCierreSum.pq`. No se usan hashes en lectura, metadatos, visual ni entrega. La migracion retira funcion, columna y enlace obsoletos; requiere el visual actualizado `0.1.0.1`, con 24 campos.
 
 No ejecutar build/prepare/package simultaneos ni sincronizar datos/assets durante compilacion; `.tmp/build.lock` se comparte con snapshot y no se borra para forzar acceso. Un cambio mensual compatible de datos **no requiere recompilar el visual**.
 
@@ -65,7 +65,7 @@ En clones existentes, cerrar Desktop y revisar cambios locales, rama y remoto an
 
 Recibir el nuevo `YYMM_dashboard_data.xlsx` por canal autorizado; actualizar `pWorkbookPath` en los cuatro PBIP, **Refresh, comprobar, Save y publicar manualmente**. Sin cambios de UI/SDK no hay compilacion mensual en Linux ni Windows. Una correccion del mismo archivo requiere verificar procedencia/autorizacion, refrescar y republicar; cambiar parametro si cambia la ruta.
 
-Esquema soportado estricto: un cierre desconocido requiere validacion estructural/financiera. Las excepciones de historia en soles y `No Direccionable` estan ligadas a la fuente confirmada, no a cualquier archivo con nombre parecido. No inventar historia Retail, soles adicionales ni reclasificar CO. No hay SharePoint, gateway o refresh cloud configurados sobre la ruta local.
+Esquema soportado estricto: un cierre desconocido requiere validacion estructural/financiera. Historia en soles y `No Direccionable` exigen nombre exacto `2609_dashboard_data.xlsx`, cierre 2026-09, Banco Peru, MSoles, encabezados/rangos conocidos y cuadraturas. Esto no certifica identidad binaria del archivo ni autoriza otras correcciones. No inventar historia Retail, soles adicionales ni reclasificar CO. No hay SharePoint, gateway o refresh cloud configurados sobre la ruta local.
 
 La hoja 2609 tiene dimension `B1:CB362`, comprobada con openpyxl. Solo se admite el origen conocido B1/B2 (`Pesos Chilenos`, `Real + Proyección`): si el host lo devuelve en `Column1`, se antepone A vacia; si lo devuelve en `Column2` con A vacia, se conserva. Cualquier otro origen falla, sin adivinar offsets. La representacion efectiva aun requiere Desktop.
 
@@ -77,17 +77,17 @@ QA exhaustivo **opcional**, desde Linux y con referencias Python coherentes ya p
 npm run qa:powerquery
 ```
 
-Genera `data/qa/<business>.pq` privados. En una copia de aceptacion Desktop, crear consulta en blanco, pegar el contenido en Editor avanzado, deshabilitar carga y evaluar. Compara los **25 campos**, nulos y numeros sin redondear (tolerancias `1e-10` absoluta y `1e-12` relativa): **3792 posiciones monetarias** entre cuatro negocios para 2609. Incluye SHA256 conocido de cadena vacia y `abc`. Registrar resultados solo despues de ejecutarlos; **runtime pendiente**. No son dependencias de produccion y nunca van a Git ni al modelo publicado.
+Genera `data/qa/<business>.pq` privados. En una copia de aceptacion Desktop, crear consulta en blanco, pegar el contenido en Editor avanzado, deshabilitar carga y evaluar. Compara los **24 campos**, nulos y numeros sin redondear (tolerancias `1e-10` absoluta y `1e-12` relativa): **3792 posiciones monetarias** entre cuatro negocios para 2609. Registrar resultados solo despues de ejecutarlos; **runtime pendiente**. No son dependencias de produccion y nunca van a Git ni al modelo publicado.
 
 Auditoria opcional previa a publicar: `= Value.Metadata(Cierre)[CierreDiagnostics]` en una consulta en blanco sin carga. Inspeccionar **inmediatamente el resultado del lector en el editor, antes de otras transformaciones**: `history_notes`, `source_findings` y ajustes por moneda en `currencies`. Si `Cierre` ya fue transformada, consultar el resultado original de `fxCierreXlsx`. Los metadatos pueden perderse y no se guardan automaticamente en el modelo; validar su forma en Desktop y conservar diagnosticos fuera del visual.
 
-El codigo fuerza la auditoria Retail con `List.Buffer(Findings)`, aunque no se consulten metadatos. El resultado nativo sigue pendiente. Evidencia Linux informada por la implementacion: 75 pruebas Python, 19 Node, visual sin cifras en Chromium/Firefox, 32 definiciones frente a 8 esquemas, MkDocs estricto y 21 pruebas UI documentales aprobadas (una omitida). No prueba M ni Desktop/Service.
+El codigo fuerza la auditoria Retail con `List.Buffer(Findings)`, aunque no se consulten metadatos. Evidencia local tras retirar hashes: 76 pruebas Python, 20 Node, visual 0.1.0.1 en Chromium/Firefox, 32 definiciones frente a 8 esquemas y MkDocs estricto. Las 3792 posiciones monetarias coinciden exactamente con la referencia anterior. No prueba M ni Desktop/Service.
 
 ### Desbordamiento de pila al cargar Cierre
 
-Incidencia reportada en los cuatro PBIP en Desktop el 16/11/2026; causa exacta y resolucion nativa pendientes. Se reemplazo el fold SHA256 del archivo completo por `List.Generate` con un buffer plano de nueve escalares por paso, y el localizador de bloques por secciones independientes. El archivo de referencia tiene 19631 bloques SHA; el hash y las reglas financieras no cambian. Linux actualiza las cuatro copias M mediante `npm run package:projects`, sin recompilar el visual; Windows no ejecuta npm.
+Incidencia reportada en los cuatro PBIP el 16/11/2026. Los diagnosticos de Desktop 2.159.1231.0 confirman cuatro caidas Mashup `0xC00000FD` incluso con la mitigacion anterior. No identifican la funcion culpable. Se retira completamente el calculo de hash por decision del usuario; las reglas financieras se conservan. La solucion nativa sigue pendiente de probar en Desktop.
 
-Cerrar Desktop, preservar ediciones locales, sincronizar la revision, reabrir, confirmar `pWorkbookPath` y Actualizar. Sin sincronizacion Git, se pueden reemplazar `fxSHA256` y `fxCierreXlsx` en el Editor avanzado con sus `.pq` corregidos, sin cambiar nombres ni parametros. Si persiste, probar primero en consulta en blanco sin carga `fxSHA256(Binary.Buffer(File.Contents(pWorkbookPath)))`; luego `Cierre`. La consulta opcional `powerquery/diagnostics/sha256_stress.pq` comprueba cuatro vectores publicos, incluidos uno y dos millones de letras `a` (31251 bloques, mas que el XLSX actual); debe producir cuatro `OK`, pero aun no se ejecuto en Desktop. No omitir el hash, las excepciones restringidas ni las validaciones para forzar una carga.
+Cerrar Desktop y revisar `git status --short`. Preservar y conciliar ediciones locales; cuando la revision este en el remoto, sincronizar con `git pull --ff-only`. Se requieren juntos los modelos, enlaces y recursos compilados nuevos, no solo una funcion M. Reabrir, confirmar `pWorkbookPath` y Actualizar. No ejecutar npm/Python ni configurar JSON en Windows. Retirar consultas diagnosticas creadas manualmente que dependan de la funcion eliminada. Si persiste, registrar paso, version y nuevos diagnosticos; aislar `Excel.Workbook` de `fxCierreXlsx` en una copia de prueba, sin omitir validaciones financieras.
 
 ## Seguridad y autoridad
 
@@ -99,17 +99,17 @@ Cerrar Desktop, preservar ediciones locales, sincronizar la revision, reabrir, c
 
 ## Snapshot opcional congelado
 
-Alternativa privada construida en Linux, **no ZIP obligatorio para Windows**. `npm run release:snapshot -- --version 0.2.0.2` requiere una version nueva disponible de cuatro partes por cierre/correccion. Crea `releases/<cierre>-v<version>/` con cuatro PBIP/paquetes con cifras y GUID distintos estables, previews/informe, manifiesto e instrucciones, mas ZIP/SHA256. No sobrescribe releases ni modelos raiz. Incluye controles exactos, host simulado y esquemas antes de completar la entrega.
+Alternativa privada construida en Linux, **no ZIP obligatorio para Windows**. `npm run release:snapshot -- --version 0.2.0.2` requiere una version nueva disponible por cierre/correccion. Crea `releases/<cierre>-v<version>/` con cuatro PBIP/paquetes con cifras y GUID distintos estables, previews/informe, manifiesto e instrucciones, mas ZIP sin checksum. No sobrescribe releases ni modelos raiz. Incluye comparacion de cifras, recursos, host simulado y esquemas. El manifiesto esquema 2 registra archivos y tamanos, no acredita identidad binaria.
 
-Revalidacion opcional de la evidencia historica:
+Revalidacion opcional de una nueva entrega (usar su identificador real). Las releases anteriores al esquema 2 se conservan y usan sus herramientas de origen:
 
 ```bash
-npm run check:snapshot -- releases/2609-v0.2.0.1
-npm run test:snapshot -- releases/2609-v0.2.0.1
-npm run check:schemas -- releases/2609-v0.2.0.1
+npm run check:snapshot -- releases/<id>
+npm run test:snapshot -- releases/<id>
+npm run check:schemas -- releases/<id>
 ```
 
-Solo al elegir snapshot, transferir ZIP/checksum por canal autorizado al publicador de los cuatro negocios; verificar con `sha256sum -c 2609-v0.2.0.1.zip.sha256` en Git Bash junto a ambos archivos. El ZIP incluye la carpeta de version: extraer a su padre, sin destino existente. Abrir sus PBIP, comparar HTML y publicar manualmente; conservar originales y copias privadas de trabajo. No configurar `pDataFile`/`pWorkbookPath` ni refrescar fuente externa: modelo tecnico vacio, sin DataView; cifras incrustadas. Cada cambio requiere version/rebuild y republicacion. La evidencia `0.2.0.1` de 3792 posiciones exactas y host simulado no valida M, Desktop ni Service.
+Solo al elegir snapshot, transferir el ZIP por canal autorizado al publicador de los cuatro negocios; confirmar procedencia/version y extraer a una carpeta nueva. Abrir sus PBIP, comparar HTML y publicar manualmente; conservar originales y copias privadas de trabajo. No configurar `pDataFile`/`pWorkbookPath` ni refrescar fuente externa: modelo tecnico vacio, sin DataView; cifras incrustadas. Cada cambio requiere version/rebuild y republicacion. La evidencia historica `0.2.0.1` no valida este cambio, M, Desktop ni Service.
 
 ## Alternativa con modelo importado
 

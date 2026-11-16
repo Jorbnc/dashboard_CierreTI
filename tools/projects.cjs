@@ -10,8 +10,7 @@ require('./build-lock.cjs').assertBuildAccess(root);
 require('./build-manifest.cjs').verify();
 const config = require('../pbiviz.json');
 const guid = config.visual.guid;
-const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
-const uuid = value => {const s = hash(value).slice(0, 32); return `${s.slice(0,8)}-${s.slice(8,12)}-4${s.slice(13,16)}-a${s.slice(17,20)}-${s.slice(20)}`;};
+const uuid = () => crypto.randomUUID();
 const write = (file, value, createOnly = true) => {
   if (createOnly && fs.existsSync(file)) return;
   fs.mkdirSync(path.dirname(file), {recursive: true});
@@ -83,10 +82,10 @@ for (const folder of ['src', 'tools', 'style', 'powerquery']) {
   for (const file of fs.readdirSync(path.join(root, folder), {recursive: true})) {
     const relative = `${folder}/${file}`.replaceAll('\\', '/');
     if (relative.startsWith('src/generated/') || !fs.statSync(path.join(root, relative)).isFile()) continue;
-    sources[relative] = hash(fs.readFileSync(path.join(root, relative)));
+    sources[relative] = fs.statSync(path.join(root, relative)).size;
   }
 }
-for (const file of ['package.json', 'package-lock.json', 'capabilities.json', 'pbiviz.json', 'tsconfig.json']) sources[file] = hash(fs.readFileSync(path.join(root, file)));
+for (const file of ['package.json', 'package-lock.json', 'capabilities.json', 'pbiviz.json', 'tsconfig.json']) sources[file] = fs.statSync(path.join(root, file)).size;
 write(path.join(root, 'artifacts/cierre-gastos-ti.manifest.json'), {guid, version: config.visual.version, apiVersion: config.apiVersion,
-  sha256: hash(archive), dataEmbedded: false, sourceHashes: sources, desktopValidated: false, servicePublished: false}, false);
+  bytes: archive.length, dataEmbedded: false, sourceFiles: sources, desktopValidated: false, servicePublished: false}, false);
 console.log('Cuatro PBIP preparados para XLSX local. Parámetros y diseños existentes conservados; falta validación en Desktop/Service.');

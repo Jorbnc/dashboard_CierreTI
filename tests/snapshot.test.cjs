@@ -5,9 +5,9 @@ const os = require('node:os');
 const path = require('node:path');
 const {fixture} = require('./adapter.test.cjs');
 const {scopes, fromRows} = require('../src/adapter');
-const {snapshotGuid, validateDatasets, compareVersions, verifyPreparation, verifyPreview, hash, writeJson} = require('../tools/snapshot-lib.cjs');
+const {snapshotGuid, validateDatasets, compareVersions, verifyPreparation, verifyPreview, writeJson} = require('../tools/snapshot-lib.cjs');
 const {assertBuildAccess, acquireBuildLock} = require('../tools/build-lock.cjs');
-const datasets = () => Object.fromEntries(Object.keys(scopes).map(b => [b, {schema: 1, business: b, rows: fixture(b).map(r => ({...r, sha256: 'a'.repeat(64)}))}]));
+const datasets = () => Object.fromEntries(Object.keys(scopes).map(b => [b, {schema: 1, business: b, rows: fixture(b)}]));
 test('snapshot mantiene cuatro identidades estables y versiones monotonas', () => {
   const guids = Object.keys(scopes).map(snapshotGuid);
   assert.equal(new Set(guids).size, 4);
@@ -21,7 +21,7 @@ test('rechaza mezclas de negocio, fuente, corte y series parciales antes de comp
   assert.equal(validateDatasets(datasets()).cutoff, 5);
   const wrong = datasets(); wrong.banco_peru = wrong.banco_chile;
   assert.throws(() => validateDatasets(wrong), /otro negocio/);
-  const mixed = datasets(); mixed.banco_peru.rows.forEach(r => {r.sha256 = 'b'.repeat(64);});
+  const mixed = datasets(); mixed.banco_peru.rows.forEach(r => {r.source = 'other.xlsx';});
   assert.throws(() => validateDatasets(mixed), /mezclar/);
   const partial = datasets(); partial.retail_chile.rows.pop();
   assert.throws(() => validateDatasets(partial), /incompleta/);
@@ -29,12 +29,16 @@ test('rechaza mezclas de negocio, fuente, corte y series parciales antes de comp
 test('la preparacion vincula JSON, previews e informe de una generacion', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'snapshot-test-'));
   try {
-    const hashes = {};
+    const files = [];
     for (const b of Object.keys(scopes)) for (const file of [`data/${b}.json`, `previews/${b}.html`]) {
-      fs.mkdirSync(path.dirname(path.join(dir, file)), {recursive: true}); fs.writeFileSync(path.join(dir, file), 'fixture'); hashes[file] = hash('fixture');
+      fs.mkdirSync(path.dirname(path.join(dir, file)), {recursive: true}); fs.writeFileSync(path.join(dir, file), 'fixture'); files.push(file);
     }
-    fs.writeFileSync(path.join(dir, 'previews/informe_generacion.md'), 'fixture'); hashes['previews/informe_generacion.md'] = hash('fixture');
-    writeJson(path.join(dir, 'data/preparation.json'), {schema: 1, sha256: hashes});
+    fs.writeFileSync(path.join(dir, 'previews/informe_generacion.md'), 'fixture'); files.push('previews/informe_generacion.md');
+    for (const file of files) {
+      const baseline = path.join(dir, '.tmp/preparation-reference', file);
+      fs.mkdirSync(path.dirname(baseline), {recursive: true}); fs.copyFileSync(path.join(dir, file), baseline);
+    }
+    writeJson(path.join(dir, 'data/preparation.json'), {schema: 2, files});
     verifyPreparation(dir);
     fs.writeFileSync(path.join(dir, 'previews/banco_peru.html'), 'changed');
     assert.throws(() => verifyPreparation(dir), /Preparacion modificada/);

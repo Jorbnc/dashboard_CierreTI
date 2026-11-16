@@ -2,11 +2,10 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
-const crypto = require('node:crypto');
 const {scopes} = require('../src/adapter');
 const fields = require('../src/fields.json');
 const DEFAULT_PATH = 'C:\\CierreTI\\datos\\2609_dashboard_data.xlsx';
-const FUNCTIONS = ['fxSHA256', 'fxCierreSum', 'fxCierreXlsx'];
+const FUNCTIONS = ['fxCierreSum', 'fxCierreXlsx'];
 const expression = (name, code) => `expression ${name} =\n${code.trim().split('\n').map(line => '\t\t' + line).join('\n')}\n`;
 const parameter = () => `expression pWorkbookPath = "${DEFAULT_PATH}" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]\n`;
 function partition(business) {
@@ -34,9 +33,11 @@ function expressions(previous, sources) {
     'Expresiones no reconocidas; revisar manualmente antes de migrar');
   const name = block => block.match(/^expression ([A-Za-z][A-Za-z0-9_]*)\s*=/)[1];
   assert.equal(new Set(blocks.map(name)).size, blocks.length, 'Expresiones duplicadas');
-  const retained = blocks.filter(block => ![...FUNCTIONS, 'pDataFile'].includes(name(block)));
+  const retained = blocks.filter(block => ![...FUNCTIONS, 'fxSHA256', 'pDataFile'].includes(name(block)));
   assert.ok(!retained.some(block => /\bpDataFile\b/.test(block)),
     'Otra expresion depende de pDataFile: revisar la migracion antes de quitar el parametro');
+  assert.ok(!retained.some(block => /\bfxSHA256\b/.test(block)),
+    'Otra expresion depende de fxSHA256: retirar esa consulta antes de migrar');
   if (!retained.some(block => name(block) === 'pWorkbookPath')) retained.unshift(parameter().trim());
   return retained.join('\n\n') + '\n\n' + FUNCTIONS.map(fn => expression(fn, sources[fn])).join('\n');
 }
@@ -49,7 +50,9 @@ function replacePartition(previous, business) {
   const normalized = text => text.replaceAll('\r\n', '\n').trimEnd();
   assert.ok([partition(business), legacyPartition(business)].some(known => normalized(tail) === normalized(known)),
     'La particion fue personalizada: no se sobrescribe');
-  return previous.slice(0, start) + partition(business);
+  const columns = previous.slice(0, start).replace(/^\tcolumn sha256\n(?:\t\t[^\n]*\n|\n)*/m, '');
+  assert.ok(!/\bsha256\b/i.test(columns), 'Referencia local a la columna retirada: revisar antes de migrar');
+  return columns + partition(business);
 }
 function configure(root) {
   require('./build-lock.cjs').assertBuildAccess(root);
@@ -60,11 +63,16 @@ function configure(root) {
     const expr = path.join(definition, 'expressions.tmdl'), table = path.join(definition, 'tables/Cierre.tmdl');
     changes.push([expr, expressions(fs.readFileSync(expr, 'utf8'), sources)]);
     changes.push([table, replacePartition(fs.readFileSync(table, 'utf8'), business)]);
+    const visualFile = path.join(root, 'powerbi', business, `${business}.Report/definition/pages/cierreti000000000001/visuals/cierrevisual000000001/visual.json`);
+    const visual = JSON.parse(fs.readFileSync(visualFile, 'utf8'));
+    delete visual.visual.query.queryState.sha256;
+    assert.ok(!/\bsha256\b/i.test(JSON.stringify(visual)), 'Referencia local al campo retirado en el visual');
+    changes.push([visualFile, JSON.stringify(visual, null, 2) + '\n']);
   }
   // Validate all projects before writing any; unknown local edits stop the migration.
   for (const [file, value] of changes) if (fs.readFileSync(file, 'utf8') !== value) fs.writeFileSync(file, value);
   const manifest = {schema: 1, mode: 'xlsx', parameters: ['pWorkbookPath'], sheet: 'Comité',
-    functions: Object.fromEntries(FUNCTIONS.map(fn => [fn, crypto.createHash('sha256').update(sources[fn]).digest('hex')])),
+    functions: FUNCTIONS,
     desktopValidated: false, servicePublished: false};
   fs.writeFileSync(path.join(root, 'powerquery/manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
   return changes.map(([file]) => path.relative(root, file));

@@ -28,6 +28,8 @@ test('migracion idempotente conserva ruta local y expresiones ajenas', () => {
   assert.ok(!expressions('expression pDataFile = "old.json"\n', sources).includes('old.json'));
   assert.throws(() => expressions('texto desconocido', sources), /no reconocidas/);
   assert.throws(() => expressions('expression pDataFile = "old.json"\nexpression LocalAudit = Json.Document(File.Contents(pDataFile))\n', sources), /depende de pDataFile/);
+  assert.ok(!expressions(previous + '\nexpression fxSHA256 = (x) => x\n', sources).includes('fxSHA256'));
+  assert.throws(() => expressions('expression Audit = fxSHA256(null)\n', sources), /depende de fxSHA256/);
 });
 test('solo reemplaza particion conocida, sin cambiar columnas ni lineage', () => {
   const prefix = 'table Cierre\n\tlineageTag: keep\n\tcolumn actual\n\t\tdataType: double\n\n';
@@ -45,27 +47,20 @@ test('lector sin fuentes remotas, Python, Node ni cero para invalidos', () => {
   assert.ok(code.includes('Excel.Workbook'));
   for (const banned of ['Web.Contents', 'Python.Execute', 'R.Execute', 'otherwise 0', 'pDataFile']) assert.ok(!code.includes(banned), banned);
 });
-test('SHA de archivo no encadena un fold por cada bloque ni acumula todo el historial', () => {
-  const source = fs.readFileSync(path.join(root, 'powerquery/fxSHA256.pq'), 'utf8');
-  const compute = source.slice(source.indexOf('    Compute ='), source.indexOf('    // Fail closed'));
-  assert.ok(compute.includes('List.Generate('));
-  assert.ok(compute.includes('() => List.Buffer({0} & Initial)'));
-  assert.ok(compute.includes('(state) => state{0} <= blockCount'));
-  assert.ok(compute.includes('else List.Buffer({state{0} + 1} & Compress'));
-  assert.ok(compute.includes('List.Range(List.Last(states), 1, 8)'));
-  assert.ok(!compute.includes('List.Accumulate'));
-  assert.ok(!compute.includes('List.Buffer(states)'));
+test('lector sin hashes mantiene excepcion delimitada y localizador sin fold', () => {
   const reader = fs.readFileSync(path.join(root, 'powerquery/fxCierreXlsx.pq'), 'utf8');
+  assert.ok(!/sha256|digest|hash/i.test(reader));
+  assert.deepEqual(FUNCTIONS, ['fxCierreSum', 'fxCierreXlsx']);
+  assert.ok(reader.includes('SourceName = ConfirmedSource and Business = "banco_peru"'));
+  assert.ok(!fs.existsSync(path.join(root, 'powerquery/fxSHA256.pq')));
   const locate = reader.slice(reader.indexOf('    Locate ='), reader.indexOf('    ReadCurrency ='));
   assert.ok(locate.includes('headers = List.Buffer'));
   assert.ok(!locate.includes('List.Accumulate'));
 });
-test('diagnostico M de volumen: sintaxis y vector publico correcto, no ejecucion nativa', async () => {
-  const source = fs.readFileSync(path.join(root, 'powerquery/diagnostics/sha256_stress.pq'), 'utf8');
-  await parses(source, 'SHA stress');
-  for (const size of [1000000, 2000000]) {
-    const hash = require('node:crypto').createHash('sha256').update('a'.repeat(size)).digest('hex');
-    assert.ok(source.includes(hash));
-    assert.ok(source.includes(`Text.Repeat("a", ${size})`));
-  }
+test('migracion retira solo la columna obsoleta y mantiene las otras identidades', () => {
+  const before = 'table Cierre\n\tlineageTag: table-id\n\n';
+  const obsolete = '\tcolumn sha256\n\t\tdataType: string\n\t\tlineageTag: old\n\t\tsourceColumn: sha256\n\n';
+  const after = '\tcolumn actual\n\t\tdataType: double\n\t\tlineageTag: amount-id\n\n';
+  assert.equal(replacePartition(before + obsolete + after + partition('banco_peru'), 'banco_peru'), before + after + partition('banco_peru'));
+  assert.ok(!/sha256/i.test(acceptanceQuery({business: 'banco_chile', rows: fixture()})));
 });

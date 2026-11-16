@@ -46,11 +46,6 @@
       "kind": "Grouping"
     },
     {
-      "name": "sha256",
-      "displayName": "sha256",
-      "kind": "Grouping"
-    },
-    {
       "name": "unit",
       "displayName": "unit",
       "kind": "Grouping"
@@ -166,10 +161,6 @@
             "min": 1,
             "max": 1
           },
-          "sha256": {
-            "min": 1,
-            "max": 1
-          },
           "unit": {
             "min": 1,
             "max": 1
@@ -278,11 +269,6 @@
             {
               "for": {
                 "in": "sheet"
-              }
-            },
-            {
-              "for": {
-                "in": "sha256"
               }
             },
             {
