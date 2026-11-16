@@ -72,8 +72,18 @@ let
             padded = if size <= 9007199254740927 then Binary.Combine({buffered,
                 Binary.FromList({128} & List.Repeat({0}, zeros) & lengthBytes)})
                 else error Error.Record("SHA256.Length", "Binary length exceeds exact M integer arithmetic.", null),
-            // Buffer each eight-word state, not a growing history of intermediate states.
-            digest = List.Accumulate(Binary.Split(padded, 64), Initial, Compress)
+            bytes = Binary.Buffer(padded),
+            blockCount = Number.IntegerDivide(Binary.Length(bytes), 64),
+            // A whole-file fold can defer thousands of dependent hashes onto the M stack.
+            // Buffer nine scalars (counter + words), rather than a nested deferred state.
+            // Select the last state without explicitly buffering the history; verify in Desktop.
+            states = List.Generate(
+                () => List.Buffer({0} & Initial),
+                (state) => state{0} <= blockCount,
+                (state) => if state{0} = blockCount then {blockCount + 1}
+                    else List.Buffer({state{0} + 1} & Compress(List.Range(state, 1, 8),
+                        Binary.Range(bytes, state{0} * 64, 64)))),
+            digest = List.Range(List.Last(states), 1, 8)
         in Text.Lower(Binary.ToText(Binary.FromList(List.Combine(List.Transform(digest, Bytes))), BinaryEncoding.Hex), "en-US"),
     // Fail closed on hosts with incompatible bitwise semantics. Public, nonfinancial vectors.
     SelfTest = Compute(#binary({})) = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" and

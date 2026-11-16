@@ -97,15 +97,17 @@ let
     Series = (row as number) as record => [execution = Amounts(row, 3), budget = Amounts(row, 18)],
     Locate = (marker as text, unit as text) as record =>
         let
-            scanned = List.Accumulate(List.Numbers(3, List.Max({0, RowCount - 2})), [header = null, matches = {}],
-                (state, row) =>
-                    let
-                        header = if IsLabel(row - 1, 2, "Real + Proyecci#(00F3)n") then
-                            (if IsLabel(row - 2, 2, marker) then row - 1 else null) else state[header],
-                        matches = if header <> null and IsLabel(row, 2, Config[source_label]) then
-                            state[matches] & {[block = row, header = header]} else state[matches]
-                    in [header = header, matches = matches]),
-            found = scanned[matches]
+            // Independent bounded sections, not a chain of deferred header/match records.
+            headers = List.Buffer(List.Select(List.Numbers(2, List.Max({0, RowCount - 2})),
+                each IsLabel(_, 2, "Real + Proyecci#(00F3)n"))),
+            found = List.Combine(List.Transform(List.Positions(headers), (i) =>
+                let
+                    header = headers{i},
+                    last = if i + 1 < List.Count(headers) then headers{i + 1} - 1 else RowCount,
+                    matches = if IsLabel(header - 1, 2, marker) then
+                        List.Select(List.Numbers(header + 1, last - header), each IsLabel(_, 2, Config[source_label]))
+                        else {}
+                in List.Transform(matches, (row) => [block = row, header = header])))
         in if Require(List.Count(found) = 1, "Bloque de " & Config[entity] & " ambiguo o ausente: " & unit)
             then found{0} else [],
     ReadCurrency = (definition as record) as record =>

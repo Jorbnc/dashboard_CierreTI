@@ -83,6 +83,12 @@ Auditoria opcional previa a publicar: `= Value.Metadata(Cierre)[CierreDiagnostic
 
 El codigo fuerza la auditoria Retail con `List.Buffer(Findings)`, aunque no se consulten metadatos. El resultado nativo sigue pendiente. Evidencia Linux informada por la implementacion: 75 pruebas Python, 19 Node, visual sin cifras en Chromium/Firefox, 32 definiciones frente a 8 esquemas, MkDocs estricto y 21 pruebas UI documentales aprobadas (una omitida). No prueba M ni Desktop/Service.
 
+### Desbordamiento de pila al cargar Cierre
+
+Incidencia reportada en los cuatro PBIP en Desktop el 16/11/2026; causa exacta y resolucion nativa pendientes. Se reemplazo el fold SHA256 del archivo completo por `List.Generate` con un buffer plano de nueve escalares por paso, y el localizador de bloques por secciones independientes. El archivo de referencia tiene 19631 bloques SHA; el hash y las reglas financieras no cambian. Linux actualiza las cuatro copias M mediante `npm run package:projects`, sin recompilar el visual; Windows no ejecuta npm.
+
+Cerrar Desktop, preservar ediciones locales, sincronizar la revision, reabrir, confirmar `pWorkbookPath` y Actualizar. Sin sincronizacion Git, se pueden reemplazar `fxSHA256` y `fxCierreXlsx` en el Editor avanzado con sus `.pq` corregidos, sin cambiar nombres ni parametros. Si persiste, probar primero en consulta en blanco sin carga `fxSHA256(Binary.Buffer(File.Contents(pWorkbookPath)))`; luego `Cierre`. La consulta opcional `powerquery/diagnostics/sha256_stress.pq` comprueba cuatro vectores publicos, incluidos uno y dos millones de letras `a` (31251 bloques, mas que el XLSX actual); debe producir cuatro `OK`, pero aun no se ejecuto en Desktop. No omitir el hash, las excepciones restringidas ni las validaciones para forzar una carga.
+
 ## Seguridad y autoridad
 
 - Sincronizar assets originales solo mediante `preparar_powerbi.py`; no editar `src/shared/` a mano.

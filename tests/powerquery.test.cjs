@@ -45,3 +45,27 @@ test('lector sin fuentes remotas, Python, Node ni cero para invalidos', () => {
   assert.ok(code.includes('Excel.Workbook'));
   for (const banned of ['Web.Contents', 'Python.Execute', 'R.Execute', 'otherwise 0', 'pDataFile']) assert.ok(!code.includes(banned), banned);
 });
+test('SHA de archivo no encadena un fold por cada bloque ni acumula todo el historial', () => {
+  const source = fs.readFileSync(path.join(root, 'powerquery/fxSHA256.pq'), 'utf8');
+  const compute = source.slice(source.indexOf('    Compute ='), source.indexOf('    // Fail closed'));
+  assert.ok(compute.includes('List.Generate('));
+  assert.ok(compute.includes('() => List.Buffer({0} & Initial)'));
+  assert.ok(compute.includes('(state) => state{0} <= blockCount'));
+  assert.ok(compute.includes('else List.Buffer({state{0} + 1} & Compress'));
+  assert.ok(compute.includes('List.Range(List.Last(states), 1, 8)'));
+  assert.ok(!compute.includes('List.Accumulate'));
+  assert.ok(!compute.includes('List.Buffer(states)'));
+  const reader = fs.readFileSync(path.join(root, 'powerquery/fxCierreXlsx.pq'), 'utf8');
+  const locate = reader.slice(reader.indexOf('    Locate ='), reader.indexOf('    ReadCurrency ='));
+  assert.ok(locate.includes('headers = List.Buffer'));
+  assert.ok(!locate.includes('List.Accumulate'));
+});
+test('diagnostico M de volumen: sintaxis y vector publico correcto, no ejecucion nativa', async () => {
+  const source = fs.readFileSync(path.join(root, 'powerquery/diagnostics/sha256_stress.pq'), 'utf8');
+  await parses(source, 'SHA stress');
+  for (const size of [1000000, 2000000]) {
+    const hash = require('node:crypto').createHash('sha256').update('a'.repeat(size)).digest('hex');
+    assert.ok(source.includes(hash));
+    assert.ok(source.includes(`Text.Repeat("a", ${size})`));
+  }
+});

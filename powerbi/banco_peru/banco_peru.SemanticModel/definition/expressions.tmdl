@@ -75,8 +75,18 @@ expression fxSHA256 =
 		            padded = if size <= 9007199254740927 then Binary.Combine({buffered,
 		                Binary.FromList({128} & List.Repeat({0}, zeros) & lengthBytes)})
 		                else error Error.Record("SHA256.Length", "Binary length exceeds exact M integer arithmetic.", null),
-		            // Buffer each eight-word state, not a growing history of intermediate states.
-		            digest = List.Accumulate(Binary.Split(padded, 64), Initial, Compress)
+		            bytes = Binary.Buffer(padded),
+		            blockCount = Number.IntegerDivide(Binary.Length(bytes), 64),
+		            // A whole-file fold can defer thousands of dependent hashes onto the M stack.
+		            // Buffer nine scalars (counter + words), rather than a nested deferred state.
+		            // Select the last state without explicitly buffering the history; verify in Desktop.
+		            states = List.Generate(
+		                () => List.Buffer({0} & Initial),
+		                (state) => state{0} <= blockCount,
+		                (state) => if state{0} = blockCount then {blockCount + 1}
+		                    else List.Buffer({state{0} + 1} & Compress(List.Range(state, 1, 8),
+		                        Binary.Range(bytes, state{0} * 64, 64)))),
+		            digest = List.Range(List.Last(states), 1, 8)
 		        in Text.Lower(Binary.ToText(Binary.FromList(List.Combine(List.Transform(digest, Bytes))), BinaryEncoding.Hex), "en-US"),
 		    // Fail closed on hosts with incompatible bitwise semantics. Public, nonfinancial vectors.
 		    SelfTest = Compute(#binary({})) = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" and
@@ -227,15 +237,17 @@ expression fxCierreXlsx =
 		    Series = (row as number) as record => [execution = Amounts(row, 3), budget = Amounts(row, 18)],
 		    Locate = (marker as text, unit as text) as record =>
 		        let
-		            scanned = List.Accumulate(List.Numbers(3, List.Max({0, RowCount - 2})), [header = null, matches = {}],
-		                (state, row) =>
-		                    let
-		                        header = if IsLabel(row - 1, 2, "Real + Proyecci#(00F3)n") then
-		                            (if IsLabel(row - 2, 2, marker) then row - 1 else null) else state[header],
-		                        matches = if header <> null and IsLabel(row, 2, Config[source_label]) then
-		                            state[matches] & {[block = row, header = header]} else state[matches]
-		                    in [header = header, matches = matches]),
-		            found = scanned[matches]
+		            // Independent bounded sections, not a chain of deferred header/match records.
+		            headers = List.Buffer(List.Select(List.Numbers(2, List.Max({0, RowCount - 2})),
+		                each IsLabel(_, 2, "Real + Proyecci#(00F3)n"))),
+		            found = List.Combine(List.Transform(List.Positions(headers), (i) =>
+		                let
+		                    header = headers{i},
+		                    last = if i + 1 < List.Count(headers) then headers{i + 1} - 1 else RowCount,
+		                    matches = if IsLabel(header - 1, 2, marker) then
+		                        List.Select(List.Numbers(header + 1, last - header), each IsLabel(_, 2, Config[source_label]))
+		                        else {}
+		                in List.Transform(matches, (row) => [block = row, header = header])))
 		        in if Require(List.Count(found) = 1, "Bloque de " & Config[entity] & " ambiguo o ausente: " & unit)
 		            then found{0} else [],
 		    ReadCurrency = (definition as record) as record =>
