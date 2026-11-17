@@ -97,6 +97,16 @@ test('historico AJ/AV estricto y FORECAST auxiliar solo diagnostico', () => {
   assert.ok(code.includes('findings = AuditForecast(header, block, last, unit)'));
   assert.ok(code.includes('List.Count(List.Buffer(Findings))'));
 });
+test('excepcion 2610 explicita mantiene comprobaciones y rango propio, sin heredar a otros cierres', () => {
+  const code = fs.readFileSync(path.join(root, 'powerquery/fxCierreXlsx.pq'), 'utf8');
+  for (const text of ['exception2610 = standard and SourceName = "2610_dashboard_data.xlsx" and Business = "banco_peru"',
+    'block = 59 and Year = 2026 and Cutoff = 10 and unit = "MSoles" and historyColumn = 48',
+    'IsLabel(58, 61, "R25")', 'Date.Year(Cell(58, 49)) = 2026',
+    'if exception then CheckDates(header, historyColumn + 1, Year)',
+    'Amounts(66, historyColumn + 1)', 'Cell(66, historyColumn + 13)',
+    'ColumnName(historyColumn + 1) & "66:"', 'CAPEX sin No Direccionable',
+    'All({baseValid, adjustmentValid, finalValid, forcedValid})']) assert.ok(code.includes(text), text);
+});
 test('migracion retira solo la columna obsoleta y mantiene las otras identidades', () => {
   const before = 'table Cierre\n\tlineageTag: table-id\n\n';
   const obsolete = '\tcolumn sha256\n\t\tdataType: string\n\t\tlineageTag: old\n\t\tsourceColumn: sha256\n\n';

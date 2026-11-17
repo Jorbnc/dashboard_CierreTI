@@ -242,13 +242,19 @@ expression fxCierreXlsx =
 		                    standard = if Require(List.Count(historyColumns) <= 1,
 		                        "Hist#(00F3)rico ambiguo: m#(00E1)s de un bloque REAL del a#(00F1)o anterior")
 		                        then List.Count(historyColumns) = 1 else false,
-		                    exception = not standard and SourceName = ConfirmedSource and Business = "banco_peru" and
+		                    exception2609 = not standard and SourceName = ConfirmedSource and Business = "banco_peru" and
 		                        block = 59 and Year = 2026 and Cutoff = 9 and unit = "MSoles" and
 		                        IsLabel(57, 2, "Soles") and IsLabel(57, 36, "Soles") and
 		                        IsLabel(59, 2, "Banco Per#(00FA)") and IsLabel(59, 36, "Banco Per#(00FA)") and
 		                        IsLabel(58, 36, "Presupuesto") and IsLabel(58, 49, "P26"),
-		                    headerValid = if standard then CheckDates(header, historyColumn + 1, Year - 1)
-		                        else if exception then CheckDates(block - 1, 37, Year) else Fail(unavailable),
+		                    exception2610 = standard and SourceName = "2610_dashboard_data.xlsx" and Business = "banco_peru" and
+		                        block = 59 and Year = 2026 and Cutoff = 10 and unit = "MSoles" and historyColumn = 48 and
+		                        IsLabel(57, 2, "Soles") and IsLabel(57, 48, "Soles") and
+		                        IsLabel(59, 2, "Banco Per#(00FA)") and IsLabel(59, 48, "Banco Per#(00FA)") and
+		                        IsLabel(58, 61, "R25") and (try Date.Year(Cell(58, 49)) = 2026 otherwise false),
+		                    exception = exception2609 or exception2610,
+		                    headerValid = if exception then CheckDates(header, historyColumn + 1, Year)
+		                        else if standard then CheckDates(header, historyColumn + 1, Year - 1) else Fail(unavailable),
 		                    parents = List.Transform(Kinds, (kind) =>
 		                        let candidates = List.Select(List.Numbers(block + 1, last - block + 2), each IsLabel(_, historyColumn, kind))
 		                        in if Require(List.Count(candidates) = 1, "Hist#(00F3)rico ambiguo: " & kind)
@@ -264,13 +270,13 @@ expression fxCierreXlsx =
 		                        All(List.Transform({0..11}, (month) => Equal(prior[Total]{month},
 		                            fxCierreSum(List.Transform(Kinds, (kind) => Record.Field(prior, kind){month})), "hist#(00F3)rico por tipo")))
 		                    }),
-		                    added = if exception then Amounts(66, 37) else {},
+		                    added = if exception then Amounts(66, historyColumn + 1) else {},
 		                    scaledAdded = List.Buffer(List.Transform(added, each _ / divisor)),
-		                    historicalChildren = if exception then List.Buffer(List.Transform({61..65}, each Amounts(_, 37))) else {},
+		                    historicalChildren = if exception then List.Buffer(List.Transform({61..65}, each Amounts(_, historyColumn + 1))) else {},
 		                    adjustmentValid = if not exception then true else All({
-		                        Require(List.Transform({61..66}, each Cell(_, 36)) = BankCapex & {"No Direccionable"},
+		                        Require(List.Transform({61..66}, each Cell(_, historyColumn)) = BankCapex & {"No Direccionable"},
 		                            "Cambi#(00F3) el detalle hist#(00F3)rico CAPEX en soles"),
-		                        Equal(Cell(66, 49), fxCierreSum(added), "hist#(00F3)rico No Direccionable anual"),
+		                        Equal(Cell(66, historyColumn + 13), fxCierreSum(added), "hist#(00F3)rico No Direccionable anual"),
 		                        All(List.Transform({0..11}, (month) => Equal(prior[Capex]{month} * divisor,
 		                            fxCierreSum(List.Transform(historicalChildren, each _{month})),
 		                            "hist#(00F3)rico CAPEX sin No Direccionable mes " & N(month + 1))))
@@ -291,7 +297,8 @@ expression fxCierreXlsx =
 		                in if valid then [prior = adjustedRecord, exception = exception,
 		                    note = "REAL " & N(Year - 1) & (if exception then " confirmado" else " validado") &
 		                        " para total, OPEX y CAPEX; no para categor#(00ED)as.",
-		                    adjustment = if exception then [category = "No Direccionable", source_range = "AK66:AV66",
+		                    adjustment = if exception then [category = "No Direccionable",
+		                        source_range = ColumnName(historyColumn + 1) & "66:" & ColumnName(historyColumn + 12) & "66",
 		                        added = scaledAdded, original_capex = prior[Capex], original_total = prior[Total]] else null]
 		                    else Fail("Hist#(00F3)rico no validado"),
 		            historyTry = try ReadHistory(),
@@ -343,11 +350,17 @@ expression fxCierreXlsx =
 		         {"actual", Double.Type}, {"forecast", Double.Type}, {"budget", Double.Type}, {"prior", Double.Type}}, "en-US"),
 		    ExceptionUsed = List.AnyTrue(List.Transform(Currencies, each [history][exception])),
 		    HistoryNotes = if not ExceptionUsed then {} else {
-		        "Excepci#(00F3)n confirmada por el usuario para esta fuente 2609: el bloque en soles " &
+		        if SourceName = "2610_dashboard_data.xlsx" then
+		        "Excepci#(00F3)n confirmada para 2610: AW59:BH77, con totales anuales en BI, es REAL 2025 " &
+		        "en soles. AV58 dice 2025 REAL y BI58 R25, pero AW58:BH58 conserva fechas de 2026. " &
+		        "Se interpreta como enero-diciembre de 2025 sin modificar el Excel ni convertir monedas; " &
+		        "solo para esta fuente, cierre, entidad, moneda, encabezados, rangos y cuadraturas."
+		        else "Excepci#(00F3)n confirmada por el usuario para esta fuente 2609: el bloque en soles " &
 		        "AK59:AV77, con totales anuales en AW, corresponde a REAL 2025 aunque AJ58 indique " &
 		        "Presupuesto, AK58:AV58 contenga fechas de 2026 y AW58 diga P26. No se modifica " &
 		        "el Excel ni se aplica una conversi#(00F3)n monetaria.",
-		        "Ajuste autorizado: se incorpora No Direccionable (AK66:AV66) al CAPEX y Total " &
+		        "Ajuste autorizado: se incorpora No Direccionable (" &
+		        (if SourceName = "2610_dashboard_data.xlsx" then "AW66:BH66" else "AK66:AV66") & ") al CAPEX y Total " &
 		        "REAL 2025 en soles, como ya ocurre en CLP. Posible omisi#(00F3)n manual del subtotal " &
 		        "original; causa pendiente de confirmar en la fuente. Se conservan los subtotales " &
 		        "originales en la trazabilidad del ajuste. OPEX 2025 y todos los importes 2026 no cambian."
