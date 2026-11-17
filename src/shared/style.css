@@ -64,8 +64,7 @@ select {max-width: 100%; height: 33px; border: 1px solid #d9cde9; background: #f
 main {max-width: 1680px; margin: 0 auto; padding: 12px 36px 20px}
 .page-heading {display: flex; justify-content: flex-end; margin-bottom: 16px}
 .heading-meta {display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 12px; font-size: 11px; color: var(--muted)}
-.snapshot {display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 14px; background: #fff0c4; color: #6a4900; font-weight: 600}
-.snapshot.snapshot-info {background: #237bb5; color: #fff}
+.snapshot {display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 14px; background: #237bb5; color: #fff; font-weight: 600}
 .snapshot svg {width: 13px; height: 13px}
 #month-status {font-size: 12px; color: #745617; background: #fff3d1; border-left: 3px solid var(--gold); padding: 10px 14px; margin: 0 0 18px; line-height: 1.5}
 #report-panel {outline-offset: 7px}

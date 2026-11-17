@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const {scopes} = require('../src/adapter');
 
 // Desktop-saved project names are independent of the financial business key.
-const projectNames = {banco_peru: 'Gastos TI BR PE'};
+const projectNames = {banco_chile: 'Gastos TI BR CL', banco_peru: 'Gastos TI BR PE'};
 function projectPaths(root, business) {
   assert.ok(Object.hasOwn(scopes, business), 'Negocio desconocido');
   const name = projectNames[business] || business;

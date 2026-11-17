@@ -47,10 +47,10 @@ async function main() {
         for (const business of ['banco_peru', 'banco_chile', 'retail_chile', 'retail_peru']) {
           await update(dataView(fixture(business)));
           await expect(app).toHaveAttribute('data-currency', scopes[business].default); await ready();
-          const sourceLabel = business === 'banco_peru' ? 'Fuente XLSX' : 'Cierre fuente';
+          const sourceLabel = 'Fuente XLSX';
           await expect(app.locator('#snapshot')).toHaveText(`${sourceLabel}: Mayo 2030`);
-          await expect(app.locator('.snapshot')).toHaveCSS('background-color', business === 'banco_peru' ? 'rgb(35, 123, 181)' : 'rgb(255, 240, 196)');
-          if (business === 'banco_peru') await expect(app.locator('.snapshot')).toHaveCSS('color', 'rgb(255, 255, 255)');
+          await expect(app.locator('.snapshot')).toHaveCSS('background-color', 'rgb(35, 123, 181)');
+          await expect(app.locator('.snapshot')).toHaveCSS('color', 'rgb(255, 255, 255)');
           await expect(app.locator('[role=tab]')).toHaveCount(3);
           await app.locator('#month').click(); await app.locator('[data-month-option="3"]').click(); await ready();
           await expect(app.locator('#snapshot')).toHaveText(`${sourceLabel}: Mayo 2030`);

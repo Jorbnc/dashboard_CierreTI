@@ -6,28 +6,27 @@ El usuario confirmo **funcionamiento en Desktop el 16/11/2026**, tras retirar ha
 
 ## Preparar en Linux
 
-### Prueba de renombre: Banco Peru (0.1.0.5)
+### Nombres activos y formato 0.1.0.6
 
-El usuario renombro reporte/modelo en Service a **Gastos TI BR PE**, descargo el PBIX y lo guardo desde Desktop como PBIP en la carpeta existente. Confirmo nombre y enlace conservados; la republicacion con un cambio nuevo sigue pendiente. Modificar solo `displayName` en el proyecto anterior no resolvio su prueba.
+Banco Chile usa **Gastos TI BR CL.pbip** y Banco Peru **Gastos TI BR PE.pbip**, con sus carpetas homonimas `.Report` y `.SemanticModel` dentro de la carpeta tecnica del negocio. Se retiran los antiguos `banco_chile.*` y `banco_peru.*`, no objetos de Service. `tools/project-paths.cjs` conserva las claves financieras y dirige los generadores a los proyectos guardados por Desktop, sin reconstruirlos ni sustituir sus identidades.
 
-El proyecto activo es **`powerbi/banco_peru/Gastos TI BR PE.pbip`**, junto a `Gastos TI BR PE.Report` y `Gastos TI BR PE.SemanticModel`. Se retiran los tres elementos antiguos `banco_peru.*`, no objetos de Service. `tools/project-paths.cjs` separa el nombre del proyecto de la clave financiera `banco_peru`. Se conservan identidades, conexiones, parametro y diseno del proyecto guardado por Desktop.
+Los cuatro HTML y PBIP muestran **Fuente XLSX: [Mes] [Ano]**, fondo azul `#237bb5` y texto blanco. La fecha corresponde al cierre fuente, no al mes seleccionado. El visual **0.1.0.6** generaliza el formato probado en Banco Peru y conserva las mejoras anteriores, sin cambiar cifras, escalas o calculos. **Retail queda en espera:** conserva ambos nombres y modelos separados; recibe solo la actualizacion visual local. No se fusiona ni se publica automaticamente.
 
-El marcador **Fuente XLSX: Septiembre 2026**, azul con letras blancas, se aplica solo a Banco Peru, tambien en su HTML de referencia. Sigue indicando el cierre fuente al cambiar de mes. Solo ese PBIP recibe el visual 0.1.0.5; los otros tres conservan 0.1.0.4. Despues de preparar los assets desde el principal, la entrega acotada en Linux es:
+### Procedimiento de renombre
 
-```bash
-npm test
-npm run build
-npm run test:visual
-npm run package:projects -- --business banco_peru
-npm run check
-npm run check:schemas
-```
+El usuario confirma que el recorrido **Service -> descarga PBIX -> Desktop -> guardado PBIP** conserva enlaces y permisos compartidos. Esta es evidencia reportada de los casos realizados, no una garantia universal ni la aceptacion cloud de cada nueva compilacion. Cambiar solo `displayName` no resolvio el intento anterior; no se toma como procedimiento suficiente.
 
-`package:projects` y `configure:xlsx` aceptan `--business banco_peru`; sin esa opcion operan los cuatro proyectos. El manifiesto registra los negocios actualizados; `check` contrasta su nuevo paquete y revisa enlaces/modelos de los cuatro. **No ejecutar `release:local` para esta prueba aislada**, pues instalaria el paquete en todos.
+1. Registrar enlace, IDs y permisos actuales; renombrar el reporte y modelo existentes en Service.
+2. Descargar el PBIX del reporte renombrado, abrirlo en Desktop y guardar como PBIP en la carpeta de su negocio. Conservar el anterior hasta comprobar el nuevo proyecto y su modelo local.
+3. Revisar definiciones, conexiones, `pWorkbookPath`, identidades y cifras; incorporar solo archivos versionables. Actualizar `tools/project-paths.cjs` y retirar el PBIP anterior con sus carpetas una vez validado. No copiar identidades del proyecto retirado sobre el nuevo.
+4. Sincronizar los cambios de codigo entre Windows y Linux con revision y commits acotados, sin PBIX, XLSX, `.pbi/` ni cifras. No se hace push automatico.
+5. Abrir el PBIP activo, guardar y publicar al workspace original verificando destino/reemplazo. Comprobar el enlace previamente compartido, ausencia de duplicados, IDs/asociacion y acceso de un destinatario con sus permisos anteriores. Si el destino es dudoso, cancelar; no borrar el objeto original.
 
-**Pendiente en Windows:** cerrar Desktop, revisar cambios locales y sincronizar la revision enviada al remoto. Abrir el PBIP activo, comprobar el marcador, guardar y publicar al workspace original verificando destino/reemplazo. Abrir el enlace previamente compartido: debe mostrar el marcador, conservar el nombre y no generar duplicados. Comparar los IDs actuales antes/despues. Si aparece otra copia, no borrar el original ni declarar exito. Solo entonces extender a otros negocios. No repetir la descarga PBIX por cada cambio ni versionar ese archivo o caches.
+La descarga se realiza para el renombre, **no para cada actualizacion**. Tras sincronizar 0.1.0.6, verificar el nuevo formato y comportamiento antes de republicar los bancos. Retail permanece en espera. `release:local` prepara los cuatro proyectos en Linux sin publicar; `package:projects` y `configure:xlsx` tambien admiten `--business <negocio>` para entregas acotadas.
 
-Validacion local del experimento: 26 pruebas Node, paquete real en Chromium/Firefox y modelos/enlaces correctos. Los tres PBIP restantes y las definiciones del nuevo Banco Peru (excepto sus recursos SDK) se conservan byte por byte; los cuatro datasets financieros tampoco cambian. `check:schemas` no puede completarse: Desktop guardo `report/3.4.0` y `visualContainer/2.14.0`, cuyas URLs oficiales devuelven 404. Se validaron por separado las otras 38 definiciones, incluidos `.platform`; las dos no verificables se preservan, sin cambiar versiones ni declararlas validadas.
+Los proyectos guardados por Desktop referencian `report/3.4.0` y `visualContainer/2.14.0`. Si sus URLs oficiales siguen devolviendo 404, `check:schemas` no puede completarse: registrar la limitacion sin rebajar versiones ni declarar esos archivos validados. Las pruebas Linux no sustituyen Desktop/Service.
+
+Comprobacion local de 0.1.0.6: 29 pruebas Node y el paquete real en Chromium/Firefox correctos; 56 archivos PBIP/definiciones conservados byte por byte y cuatro datasets numericamente identicos. Los recursos SDK son la unica modificacion dentro de los proyectos retenidos. La comprobacion adicional de esquemas valida 36 definiciones; otras cuatro (dos por banco) quedan pendientes por los 404 anteriores. La nueva publicacion y sus permisos se verifican en Windows/Service, no desde estas pruebas.
 
 ### Migracion 0.1.0.3: MMCLP en millones
 
@@ -35,7 +34,7 @@ En los cuatro dashboards **MMCLP = millones de CLP**; **MSoles = miles de soles*
 
 Sincronizar modelo y visual juntos, revisar cambios Windows, confirmar `pWorkbookPath`, **Refresh, comprobar, Save y republicar los cuatro PBIP**. La cache CLP anterior esta en miles de millones y no debe reutilizarse con la nueva unidad. No se requiere otro XLSX ni Node/Python Windows. Los snapshots historicos conservan su escala/version congelada y no se sobrescriben.
 
-La version vigente **0.1.0.4** cambia solo la interfaz: **Millones de Pesos** como descripcion de MMCLP y etiquetas REAL/PPTO del mes seleccionado en la evolucion mensual de OPEX/CAPEX. Responden a mes, moneda y categoria; no cambian datos, M ni parametros. Desde 0.1.0.3 ya migrada, sincronizar con Desktop cerrado, comprobar, Save y republicar. Un clon sin cache requiere Refresh; para versiones anteriores aplicar la migracion de escala descrita arriba.
+La actualizacion **0.1.0.4**, incluida en 0.1.0.6, cambia solo la interfaz: **Millones de Pesos** como descripcion de MMCLP y etiquetas REAL/PPTO del mes seleccionado en la evolucion mensual de OPEX/CAPEX. Responden a mes, moneda y categoria; no cambian datos, M ni parametros. Desde 0.1.0.3 ya migrada, sincronizar con Desktop cerrado, comprobar, Save y republicar los negocios autorizados. Un clon sin cache requiere Refresh; para versiones anteriores aplicar la migracion de escala descrita arriba.
 
 El mes usa un listbox dentro del visual, con clic y teclado, en lugar del select nativo. El usuario reporto un problema del desplegable en Service/Opera; no se ha demostrado su causa ni validado esta correccion en ese entorno. Probar tambien en Edge/Chrome, incluidos en la [lista oficial de navegadores soportados](https://learn.microsoft.com/en-us/power-bi/fundamentals/power-bi-browsers). No relajar el sandbox ni pedir habilitar popups.
 
@@ -61,7 +60,7 @@ npm run check:schemas
 
 `release:local` prueba, compila e instala `artifacts/cierre-gastos-ti.pbiviz` sin datos. Su `package:projects` **ejecuta automaticamente `configure:xlsx`**: no se requiere un segundo comando. Migra solo particiones de origen y parametros/funciones M de los cuatro modelos existentes, preservando layout, identidades, enlaces y `pWorkbookPath` existente. Particiones personalizadas desconocidas deben revisarse, no sobrescribirse.
 
-`npm run configure:xlsx` es opcional para refrescar solo el adaptador. `npm run test:powerquery` comprueba sintaxis con `@microsoft/powerquery-parser` y contratos locales, no el runtime M. La lectura usa solo `powerquery/fxCierreXlsx.pq` y `fxCierreSum.pq`. No se usan hashes en lectura, metadatos, visual ni entrega. La migracion retira funcion, columna y enlace obsoletos desde `0.1.0.1`; la entrega vigente `0.1.0.4` conserva esos 24 campos y usa las escalas indicadas arriba.
+`npm run configure:xlsx` es opcional para refrescar solo el adaptador. `npm run test:powerquery` comprueba sintaxis con `@microsoft/powerquery-parser` y contratos locales, no el runtime M. La lectura usa solo `powerquery/fxCierreXlsx.pq` y `fxCierreSum.pq`. No se usan hashes en lectura, metadatos, visual ni entrega. La migracion retira funcion, columna y enlace obsoletos desde `0.1.0.1`; la entrega vigente `0.1.0.6` conserva esos 24 campos y usa las escalas indicadas arriba.
 
 No ejecutar build/prepare/package simultaneos ni sincronizar datos/assets durante compilacion; `.tmp/build.lock` se comparte con snapshot y no se borra para forzar acceso. Un cambio mensual compatible de datos **no requiere recompilar el visual**.
 
@@ -84,23 +83,23 @@ En clones existentes, cerrar Desktop y revisar cambios locales, rama y remoto an
 3. En **Transformar datos > Administrar parametros**, confirmar o cambiar `pWorkbookPath`. Se configura una vez por PBIP mientras la ruta siga igual; si cambia el nombre mensual, cambia el parametro.
 4. Aplicar y **Actualizar / Refresh**. Un clon fresco no contiene datos importados porque `.pbi/cache.abf` se excluye de Git. Si solo aparece `pDataFile`, revisar la migracion Linux, no introducir JSON en este flujo.
 5. Comparar con el HTML del mismo XLSX: importes, precision, nulos, mes actual/anterior, Gastos TI/OPEX/CAPEX, categoria, orden, ambas monedas de Banco Peru, historia y CO. No dar por probada la paridad solo porque abra.
-6. **Guardar / Save**, cerrar, reabrir y comprobar. Repetir carga y aceptacion en los otros tres modelos.
-7. Publicar manualmente al workspace autorizado, **nunca Publicar en web**. Verificar cifras y permisos por negocio en Service y registrar los cuatro enlaces reales. Guardar o hacer push no publica datos.
+6. **Guardar / Save**, cerrar, reabrir y comprobar. Repetir carga y aceptacion en cada modelo que vaya a actualizarse.
+7. Publicar manualmente solo los negocios autorizados al workspace correspondiente, **nunca Publicar en web**. Verificar cifras, enlace previo y permisos en Service; Retail permanece en espera. Guardar o hacer push no publica datos.
 
 La ruta es editable por proyecto: se guarda en `definition/expressions.tmdl` de la carpeta `.SemanticModel` vinculada al PBIP (Banco Peru: `Gastos TI BR PE.SemanticModel`). El valor inicial para proyectos nuevos esta en `tools/configure-xlsx.cjs`; el generador conserva rutas existentes. `Cierre` usa `File.Contents(pWorkbookPath)`, sin otra carpeta fija. Si un error sigue mostrando la ruta anterior, revisar el valor actual en el PBIP abierto, aplicar/guardar y reabrir la revision sincronizada con Desktop cerrado. Cambiar un parametro no actualiza los otros tres proyectos. La ruta OneDrive es local y su disponibilidad se comprueba en Windows, no desde Linux.
 
 | Negocio | Ruta desde este repositorio | Monedas | Service |
 | --- | --- | --- | --- |
-| Banco Chile | `powerbi/banco_chile/banco_chile.pbip` | MMCLP | Pendiente |
-| Banco Peru | `powerbi/banco_peru/Gastos TI BR PE.pbip` | MSoles y MMCLP | Renombre/enlace confirmados; republicacion 0.1.0.5 pendiente |
-| Retail Chile | `powerbi/retail_chile/retail_chile.pbip` | MMCLP | Pendiente |
-| Retail Peru | `powerbi/retail_peru/retail_peru.pbip` | MMCLP | Pendiente |
+| Banco Chile | `powerbi/banco_chile/Gastos TI BR CL.pbip` | MMCLP | Renombrado por usuario; verificar nueva entrega al publicar |
+| Banco Peru | `powerbi/banco_peru/Gastos TI BR PE.pbip` | MSoles y MMCLP | Renombrado por usuario; verificar nueva entrega al publicar |
+| Retail Chile | `powerbi/retail_chile/retail_chile.pbip` | MMCLP | En espera; solo formato local |
+| Retail Peru | `powerbi/retail_peru/retail_peru.pbip` | MMCLP | En espera; solo formato local |
 
 Retail Peru no tiene bloque en soles en el agregado 2609: las filas 98-106 pertenecen a RETAIL y los rotulos Soles de la fila 57 corresponden a Banco Peru. No habilitar MSoles cambiando solo el boton ni aplicando el cambio bancario. Se requieren series Retail validadas o una politica de conversion aprobada, y ampliar coherentemente referencia Python, lector M, adaptador DataView y QA.
 
 ## Siguiente cierre
 
-Recibir el nuevo `YYMM_dashboard_data.xlsx` por canal autorizado; actualizar `pWorkbookPath` en los cuatro PBIP, **Refresh, comprobar, Save y publicar manualmente**. Sin cambios de UI/SDK no hay compilacion mensual en Linux ni Windows. Una correccion del mismo archivo requiere verificar procedencia/autorizacion, refrescar y republicar; cambiar parametro si cambia la ruta.
+Recibir el nuevo `YYMM_dashboard_data.xlsx` por canal autorizado; actualizar `pWorkbookPath` en los PBIP que vayan a actualizarse, **Refresh, comprobar, Save y publicar manualmente**. Mantener Retail en espera hasta nueva indicacion. Sin cambios de UI/SDK no hay compilacion mensual en Linux ni Windows. Una correccion del mismo archivo requiere verificar procedencia/autorizacion, refrescar y republicar; cambiar parametro si cambia la ruta.
 
 Esquema soportado estricto: un cierre desconocido requiere validacion estructural/financiera. Historia en soles y `No Direccionable` exigen nombre exacto `2609_dashboard_data.xlsx`, cierre 2026-09, Banco Peru, MSoles, encabezados/rangos conocidos y cuadraturas. Esto no certifica identidad binaria del archivo ni autoriza otras correcciones. No inventar historia Retail, soles adicionales ni reclasificar CO. No hay SharePoint, gateway o refresh cloud configurados sobre la ruta local.
 
