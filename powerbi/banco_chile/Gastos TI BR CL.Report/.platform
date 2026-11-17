@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "Gastos TI BR CL"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "88d42647-677d-48f3-9b89-68d6fdc0c0d6"
+  }
+}
