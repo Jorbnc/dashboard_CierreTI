@@ -84,6 +84,19 @@ test('lector sin hashes mantiene excepcion delimitada y localizador sin fold', (
   assert.ok(locate.includes('headers = List.Buffer'));
   assert.ok(!locate.includes('List.Accumulate'));
 });
+test('historico AJ/AV estricto y FORECAST auxiliar solo diagnostico', () => {
+  const code = fs.readFileSync(path.join(root, 'powerquery/fxCierreXlsx.pq'), 'utf8');
+  assert.ok(code.includes('List.Select({36, 48}'));
+  assert.ok(code.includes('Require(List.Count(historyColumns) <= 1'));
+  assert.ok(code.includes('CheckDates(header, historyColumn + 1, Year - 1)'));
+  assert.ok(code.includes('Amounts(_, historyColumn + 1)'));
+  assert.ok(code.includes('historyColumn + 13'));
+  assert.ok(code.includes('ColumnName(historyColumn + 12)'));
+  assert.ok(code.includes('block = 59 and Year = 2026 and Cutoff = 9'));
+  assert.ok(code.includes('Series = (row as number) as record => [execution = Amounts(row, 3), budget = Amounts(row, 18)]'));
+  assert.ok(code.includes('findings = AuditForecast(header, block, last, unit)'));
+  assert.ok(code.includes('List.Count(List.Buffer(Findings))'));
+});
 test('migracion retira solo la columna obsoleta y mantiene las otras identidades', () => {
   const before = 'table Cierre\n\tlineageTag: table-id\n\n';
   const obsolete = '\tcolumn sha256\n\t\tdataType: string\n\t\tlineageTag: old\n\t\tsourceColumn: sha256\n\n';

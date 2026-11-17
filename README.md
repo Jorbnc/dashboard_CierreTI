@@ -99,6 +99,20 @@ Retail Peru no tiene bloque en soles en el agregado 2609: las filas 98-106 perte
 
 ## Siguiente cierre
 
+### Agregado 2610: lector actualizado, visual sin cambios
+
+Inspeccion del 17/11/2026: C:N (REAL + Proyeccion) y R:AC (PPTO) conservan posiciones y categorias. El historico bancario se movio a AW:BH, anual BI. `fxCierreXlsx` acepta las dos posiciones conocidas AJ/AV con etiqueta, fechas y cuadraturas estrictas; duplicados o errores historicos quedan N/D. El FORECAST separado AF:AS se audita en `CierreDiagnostics`, sin reemplazar C:N ni corregir sus cifras. Los diagnosticos no se muestran en el visual.
+
+En 2610 el titulo del historico de Banco Peru en MSoles indica 2025, pero sus fechas siguen siendo 2026: queda N/D. No se heredan la excepcion de 2609 ni el ajuste No Direccionable; tambien deben revisarse los subtotales originales antes de autorizar esa historia. Retail sigue sin historico ni moneda adicional.
+
+La actualizacion local instala el lector en los cuatro modelos con `npm run package:projects`, que invoca `configure:xlsx` y actualiza el manifiesto de entrega reutilizando el paquete compilado, **sin recompilar ni incrementar la version del visual 0.1.0.6**. Conserva identidades, layout y `pWorkbookPath`. Sincronizar con Desktop cerrado, cambiar el parametro al XLSX privado **2610**, Actualizar, comprobar y Guardar; publicar solo los bancos autorizados. Retail permanece en espera. Los cambios de ruta no se aplican automaticamente en Linux.
+
+Las referencias privadas de `data/`, `previews/` y las consultas opcionales de `data/qa/` corresponden a 2610. Python se contrasto directamente contra las celdas, incluyendo nulos; los tests de M en Linux validan sintaxis, no ejecutan el motor Desktop. Esta entrega no implica publicacion ni aceptacion Desktop/Service de octubre.
+
+Evidencia local: 81 pruebas Python, 30 Node y ocho pruebas HTML en Chromium/Firefox; 3.792 posiciones monetarias comparadas directamente con el XLSX. Regresion 2609 sin cambios de payload. Dentro de los PBIP solo se actualizaron los cuatro `expressions.tmdl`; los otros 60 archivos se conservaron byte por byte. `npm run check` confirma enlaces, recursos y funciones instaladas.
+
+### Operacion mensual
+
 Recibir el nuevo `YYMM_dashboard_data.xlsx` por canal autorizado; actualizar `pWorkbookPath` en los PBIP que vayan a actualizarse, **Refresh, comprobar, Save y publicar manualmente**. Mantener Retail en espera hasta nueva indicacion. Sin cambios de UI/SDK no hay compilacion mensual en Linux ni Windows. Una correccion del mismo archivo requiere verificar procedencia/autorizacion, refrescar y republicar; cambiar parametro si cambia la ruta.
 
 Esquema soportado estricto: un cierre desconocido requiere validacion estructural/financiera. Historia en soles y `No Direccionable` exigen nombre exacto `2609_dashboard_data.xlsx`, cierre 2026-09, Banco Peru, MSoles, encabezados/rangos conocidos y cuadraturas. Esto no certifica identidad binaria del archivo ni autoriza otras correcciones. No inventar historia Retail, soles adicionales ni reclasificar CO. No hay SharePoint, gateway o refresh cloud configurados sobre la ruta local.

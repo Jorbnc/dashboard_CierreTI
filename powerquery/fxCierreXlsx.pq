@@ -94,6 +94,39 @@ let
             Date.Year(value) = year and Date.Month(value) = month,
             "Per#(00ED)odo inesperado: " & SheetName & "!" & Address(row, start + month - 1)))),
     Series = (row as number) as record => [execution = Amounts(row, 3), budget = Amounts(row, 18)],
+    // This optional block is not a replacement for the validated REAL + projection.
+    AuditForecast = (header as number, block as number, last as number, unit as text) as list =>
+        if not IsLabel(header, 32, "FORECAST") then {} else
+        let
+            prefix = unit & ", FORECAST AF:AS (encabezado fila " & N(header) & ")",
+            audit = try (
+                let
+                    checked = CheckDates(header, 33, Year),
+                    matched = List.Buffer(List.Select({block..last}, each IsLabel(_, 32, Cell(_, 2)))),
+                    labels = List.Transform(List.Difference({block..last}, matched), each "B" & N(_) & "/AF" & N(_)),
+                    cells = List.Buffer(List.Combine(List.Transform(matched, (row) =>
+                        List.Transform({0..11}, (month) =>
+                            let reference = try Cell(row, 33 + month), current = Cell(row, 3 + month),
+                                valid = not reference[HasError] and Finite(reference[Value]),
+                                same = if valid then (try Equal(reference[Value], current, "FORECAST"))[HasError] = false else false
+                            in [invalid = if valid then null else Address(row, 33 + month),
+                                difference = if valid and not same then Address(row, 3 + month) & "/" & Address(row, 33 + month) else null])))),
+                    invalid = List.RemoveNulls(List.Transform(cells, each [invalid])),
+                    differences = List.RemoveNulls(List.Transform(cells, each [difference])),
+                    annual = List.RemoveNulls(List.Transform(matched, (row) =>
+                        let values = try List.Buffer(Amounts(row, 33)),
+                            total = if values[HasError] then [HasError = false]
+                                else try Equal(Cell(row, 45), fxCierreSum(values[Value]), "FORECAST anual")
+                        in if total[HasError] then Address(row, 45) else null)),
+                    details = {[label = "etiquetas distintas (filas no comparadas)", cells = labels],
+                        [label = "importes ausentes/no num#(00E9)ricos", cells = invalid],
+                        [label = "pares con diferencias REAL + Proyecci#(00F3)n/FORECAST", cells = differences],
+                        [label = "totales anuales inv#(00E1)lidos", cells = annual]}
+                in if checked then List.Buffer(List.Transform(List.Select(details, each List.Count([cells]) > 0),
+                    each prefix & ": " & N(List.Count([cells])) & " " & [label] & "; primeras referencias: " &
+                        Text.Combine(List.FirstN([cells], 5), ", ") & ".")) else {}),
+            findings = if audit[HasError] then {prefix & ": control no evaluable: " & audit[Error][Message] & "."} else audit[Value]
+        in List.Buffer({prefix & ": bloque independiente no utilizado. El dashboard conserva REAL + Proyecci#(00F3)n de C:N."} & findings),
     Locate = (marker as text, unit as text) as record =>
         let
             // Independent bounded sections, not a chain of deferred header/match records.
@@ -156,27 +189,32 @@ let
                     })))
             }),
             unavailable = "No disponible: el bloque auxiliar no est#(00E1) identificado como " & N(Year - 1) & " REAL.",
+            // Known layouts only: AJ (2609) or AV (2610), never the FORECAST block.
+            historyColumns = List.Buffer(List.Select({36, 48}, each IsLabel(header, _, N(Year - 1) & " REAL"))),
+            historyColumn = if List.Count(historyColumns) = 1 then historyColumns{0} else 36,
             ReadHistory = () as record =>
                 let
-                    standard = IsLabel(header, 36, N(Year - 1) & " REAL"),
+                    standard = if Require(List.Count(historyColumns) <= 1,
+                        "Hist#(00F3)rico ambiguo: m#(00E1)s de un bloque REAL del a#(00F1)o anterior")
+                        then List.Count(historyColumns) = 1 else false,
                     exception = not standard and SourceName = ConfirmedSource and Business = "banco_peru" and
                         block = 59 and Year = 2026 and Cutoff = 9 and unit = "MSoles" and
                         IsLabel(57, 2, "Soles") and IsLabel(57, 36, "Soles") and
                         IsLabel(59, 2, "Banco Per#(00FA)") and IsLabel(59, 36, "Banco Per#(00FA)") and
                         IsLabel(58, 36, "Presupuesto") and IsLabel(58, 49, "P26"),
-                    headerValid = if standard then CheckDates(header, 37, Year - 1)
+                    headerValid = if standard then CheckDates(header, historyColumn + 1, Year - 1)
                         else if exception then CheckDates(block - 1, 37, Year) else Fail(unavailable),
                     parents = List.Transform(Kinds, (kind) =>
-                        let candidates = List.Select(List.Numbers(block + 1, last - block + 2), each IsLabel(_, 36, kind))
+                        let candidates = List.Select(List.Numbers(block + 1, last - block + 2), each IsLabel(_, historyColumn, kind))
                         in if Require(List.Count(candidates) = 1, "Hist#(00F3)rico ambiguo: " & kind)
                             then candidates{0} else 0),
-                    rawRows = List.Buffer(List.Transform(parents & {block}, each Amounts(_, 37))),
+                    rawRows = List.Buffer(List.Transform(parents & {block}, each Amounts(_, historyColumn + 1))),
                     names = Kinds & {"Total"},
                     prior = Record.FromList(List.Transform(rawRows, each List.Buffer(List.Transform(_, (v) => v / divisor))), names),
                     baseValid = All({
                         headerValid,
-                        Require(Cell(block, 36) = Cell(block, 2), "Hist#(00F3)rico de otra entidad o sin identificaci#(00F3)n"),
-                        All(List.Transform(List.Positions(names), (i) => Equal(Cell((parents & {block}){i}, 49),
+                        Require(Cell(block, historyColumn) = Cell(block, 2), "Hist#(00F3)rico de otra entidad o sin identificaci#(00F3)n"),
+                        All(List.Transform(List.Positions(names), (i) => Equal(Cell((parents & {block}){i}, historyColumn + 13),
                             fxCierreSum(rawRows{i}), "hist#(00F3)rico " & (if names{i} = "Total" then "total" else names{i})))),
                         All(List.Transform({0..11}, (month) => Equal(prior[Total]{month},
                             fxCierreSum(List.Transform(Kinds, (kind) => Record.Field(prior, kind){month})), "hist#(00F3)rico por tipo")))
@@ -219,7 +257,8 @@ let
                 else "Hist#(00F3)rico " & N(Year - 1) & " no disponible en " & unit & ".",
             ranges = [execution_forecast = "C" & N(block) & ":N" & N(last),
                 budget = "R" & N(block) & ":AC" & N(last),
-                prior = if history[prior] <> null then "AK" & N(block) & ":AV" & N(last + 1) else ""],
+                prior = if history[prior] <> null then ColumnName(historyColumn + 1) & N(block) & ":" &
+                    ColumnName(historyColumn + 12) & N(last + 1) else ""],
             groups = {[level = "total", kind = "", category = "", label = "Total", values = total]} &
                 List.Combine(List.Transform(types, (group) =>
                     {[level = "type", kind = group[kind], category = "", label = group[kind], values = group[values]]} &
@@ -238,7 +277,8 @@ let
                 range_execution_forecast = ranges[execution_forecast], range_budget = ranges[budget], range_prior = ranges[prior],
                 history_note = visibleNote
             ])))
-        in if currentValid then [unit = unit, rows = resultRows, history = history, ranges = ranges, valid = true]
+        in if currentValid then [unit = unit, rows = resultRows, history = history, ranges = ranges, valid = true,
+            findings = AuditForecast(header, block, last, unit)]
             else Fail("Datos corrientes no validados"),
     Currencies = List.Buffer(List.Transform(Config[units], ReadCurrency)),
     CurrentValid = All(List.Transform(Currencies, each [valid])),
@@ -298,8 +338,9 @@ let
             checks = All({CheckDates(header, 3, Year), CheckDates(header, 18, Year)})
         in if checks then List.Buffer(List.Combine(scenarios)) else Fail("Subtotal no validado"),
     RetailTry = if Config[brand] = "retail" then try AuditRetail() else [HasError = false, Value = {}],
-    Findings = if RetailTry[HasError] then {"Control del subtotal RETAIL CORP no evaluable: " & RetailTry[Error][Message] &
-        ". No se utiliza este subtotal para completar o corregir los bloques pa#(00ED)s."} else RetailTry[Value],
+    Findings = List.Combine(List.Transform(Currencies, each [findings])) &
+        (if RetailTry[HasError] then {"Control del subtotal RETAIL CORP no evaluable: " & RetailTry[Error][Message] &
+        ". No se utiliza este subtotal para completar o corregir los bloques pa#(00ED)s."} else RetailTry[Value]),
     Diagnostics = [source = SourceName, sheet = SheetName, business = Business,
         year = Year, cutoff = Cutoff, history_notes = HistoryNotes, source_findings = Findings,
         currencies = Record.FromList(List.Transform(Currencies, each [
