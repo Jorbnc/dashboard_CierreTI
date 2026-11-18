@@ -84,7 +84,7 @@ test('lector sin hashes mantiene excepcion delimitada y localizador sin fold', (
   assert.ok(locate.includes('headers = List.Buffer'));
   assert.ok(!locate.includes('List.Accumulate'));
 });
-test('historico AJ/AV estricto y FORECAST auxiliar solo diagnostico', () => {
+test('historico AJ/AV estricto y auditoria independiente del FORECAST', () => {
   const code = fs.readFileSync(path.join(root, 'powerquery/fxCierreXlsx.pq'), 'utf8');
   assert.ok(code.includes('List.Select({36, 48}'));
   assert.ok(code.includes('Require(List.Count(historyColumns) <= 1'));
@@ -94,8 +94,23 @@ test('historico AJ/AV estricto y FORECAST auxiliar solo diagnostico', () => {
   assert.ok(code.includes('ColumnName(historyColumn + 12)'));
   assert.ok(code.includes('block = 59 and Year = 2026 and Cutoff = 9'));
   assert.ok(code.includes('Series = (row as number) as record => [execution = Amounts(row, 3), budget = Amounts(row, 18)]'));
-  assert.ok(code.includes('findings = AuditForecast(header, block, last, unit)'));
+  assert.ok(code.includes('findings = selectedForecast[notes] & AuditForecast(header, block, last, unit, useForecast)'));
   assert.ok(code.includes('List.Count(List.Buffer(Findings))'));
+});
+test('FORECAST aprobado usa solo futuro, agrega componentes y limita las dos omisiones conocidas', () => {
+  const code = fs.readFileSync(path.join(root, 'powerquery/fxCierreXlsx.pq'), 'utf8');
+  for (const text of ['useForecast = SourceName = "2610_dashboard_data.xlsx" and Year = 2026 and Cutoff = 10',
+    'Business = "banco_chile" and block = 3 and unit = "MMCLP"',
+    'Business = "banco_peru" and ((block = 29 and unit = "MMCLP") or (block = 59 and unit = "MSoles"))',
+    'months = {Cutoff..11}', 'CheckDates(header, 33, Year)', 'List.FirstN(x, Cutoff) & subtotal',
+    'List.FirstN(x, Cutoff) & children{i}', 'List.FirstN(x, Cutoff) & futureTotal',
+    'Cell(6, 43) = 0 and Cell(6, 44) = 0', 'if missingTotal and months{i} = 10 then true',
+    'else Equal(Cell(block, 33 + months{i}), futureTotal{i}', 'All({currentValid, selectedForecast[valid]})',
+    'Amount(Cell(row, 33 + m)', 'selectedForecast = if useForecast then ReadForecast()',
+    'values = selectedForecast[total]', 'List.Transform(selectedForecast[types]']) assert.ok(code.includes(text), text);
+  const calculation = code.slice(code.indexOf('    ReadCurrency ='), code.indexOf('            unavailable ='));
+  assert.ok(!calculation.includes('Cell(block, 45)'));
+  assert.ok(!calculation.includes('try ReadForecast()'));
 });
 test('excepcion 2610 explicita mantiene comprobaciones y rango propio, sin heredar a otros cierres', () => {
   const code = fs.readFileSync(path.join(root, 'powerquery/fxCierreXlsx.pq'), 'utf8');
