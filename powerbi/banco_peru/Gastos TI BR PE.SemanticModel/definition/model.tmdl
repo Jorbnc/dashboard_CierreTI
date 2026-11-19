@@ -2,10 +2,15 @@ model Model
 	culture: es-ES
 	defaultPowerBIDataSourceVersion: powerBI_V3
 	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
 
 annotation __PBI_TimeIntelligenceEnabled = 0
 
 annotation PBI_ProTooling = ["DevMode"]
+
+annotation PBI_QueryOrder = ["Cierre","pWorkbookPath","fxCierreSum","fxCierreXlsx"]
 
 ref table Cierre
 
