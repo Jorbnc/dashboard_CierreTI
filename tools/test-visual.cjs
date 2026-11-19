@@ -45,19 +45,26 @@ async function main() {
           await frame.waitForFunction(count => window.harness.events.filter(e => e === 'finish' || e === 'fail').length > count, before);
         };
         for (const business of ['banco_peru', 'banco_chile', 'retail_chile', 'retail_peru']) {
+          const checkSourceBadge = async () => {
+            if (business.startsWith('banco_')) await expect(app.locator('.snapshot, #snapshot')).toHaveCount(0);
+            else {
+              await expect(app.locator('#snapshot')).toHaveText('Fuente XLSX: Mayo 2030');
+              await expect(app.locator('.snapshot')).toHaveCSS('background-color', 'rgb(35, 123, 181)');
+              await expect(app.locator('.snapshot')).toHaveCSS('color', 'rgb(255, 255, 255)');
+            }
+            await expect(app.locator('#unit-label')).toBeVisible();
+          };
           await update(dataView(fixture(business)));
           await expect(app).toHaveAttribute('data-currency', scopes[business].default); await ready();
-          const sourceLabel = 'Fuente XLSX';
-          await expect(app.locator('#snapshot')).toHaveText(`${sourceLabel}: Mayo 2030`);
-          await expect(app.locator('.snapshot')).toHaveCSS('background-color', 'rgb(35, 123, 181)');
-          await expect(app.locator('.snapshot')).toHaveCSS('color', 'rgb(255, 255, 255)');
+          await checkSourceBadge();
           await expect(app.locator('[role=tab]')).toHaveCount(3);
           await app.locator('#month').click(); await app.locator('[data-month-option="3"]').click(); await ready();
-          await expect(app.locator('#snapshot')).toHaveText(`${sourceLabel}: Mayo 2030`);
+          await checkSourceBadge();
           await expect(app.locator('[data-scope=Total][data-kpi="0"] [data-metric=actual-month]')).toHaveText(`${business === 'retail_chile' ? '9' : '6'}${scopes[business].default}`);
           await expect(app.locator('#unit-label')).toContainText(business === 'banco_peru' ? 'Miles de soles' : 'Millones de Pesos');
           for (const tab of ['opex', 'capex']) {
             await app.locator(`#tab-${tab}`).click(); await ready();
+            await checkSourceBadge();
             await expect(app.locator('#monthly-chart .barlayer .point')).not.toHaveCount(0);
             await expect(app.locator('#monthly-chart .annotation-text')).toContainText('REAL 2030: 3');
             await expect(app.locator('#monthly-chart .annotation-text')).toContainText('PPTO 2030: 3');
@@ -72,6 +79,7 @@ async function main() {
             await expect(app).toHaveAttribute('data-page', 'capex');
             await expect(app.locator('#month')).toHaveAttribute('value', '3');
             await expect(app).toHaveAttribute('data-currency', 'MMCLP');
+            await checkSourceBadge();
             await page.screenshot({path: path.join(root, `test-results/${engine.name()}-peru-desktop.png`)});
           }
         }

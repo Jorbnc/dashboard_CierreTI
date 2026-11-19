@@ -25,6 +25,8 @@
   const model = CierreModel;
   const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   const closure = months[data.cutoff - 1];
+  if (['banco_chile', 'banco_peru'].includes(data.business)) document.querySelector('.snapshot').remove();
+  else $('snapshot').textContent = `Fuente XLSX: ${closure} ${data.year}`;
   const state = {page: 'summary', currency: data.default_currency || 'MSoles', month: data.cutoff, category: null, ranking: 'ytd', matrix: 'actual', sortKey: 'category', sortDirection: 'asc'};
   Object.assign(state, initialState);
   state.month = Math.max(1, Math.min(data.cutoff, state.month));
@@ -369,7 +371,6 @@
     $('report-panel').setAttribute('aria-labelledby', `tab-${state.page}`);
     if ($('context')) $('context').textContent = `FUENTE · CIERRE ${closure.toUpperCase()} ${data.year}`;
     $('page-title').textContent = `${state.page === 'summary' ? classic ? 'Gastos Tecnológicos' : 'Gastos tecnológicos' : kind().toUpperCase()} | ${classic && state.month === data.cutoff ? 'Cierre ' : ''}${month()} ${data.year}`;
-    $('snapshot').textContent = `Fuente XLSX: ${closure} ${data.year}`;
     $('unit-label').textContent = state.currency === 'MSoles' ? 'MSoles · Miles de soles' : 'MMCLP · Millones de Pesos';
     $('footer-cutoff').textContent = `${closure} ${data.year} · ${state.currency}`;
     $('layout-label').hidden = !integrated || state.page !== 'summary';

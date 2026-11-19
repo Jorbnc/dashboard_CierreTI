@@ -6,11 +6,13 @@ El usuario confirmo **funcionamiento en Desktop el 16/11/2026**, tras retirar ha
 
 ## Preparar en Linux
 
-### Nombres activos y formato 0.1.0.6
+### Nombres activos y formato 0.1.0.7
 
 Banco Chile usa **Gastos TI BR CL.pbip** y Banco Peru **Gastos TI BR PE.pbip**, con sus carpetas homonimas `.Report` y `.SemanticModel` dentro de la carpeta tecnica del negocio. Se retiran los antiguos `banco_chile.*` y `banco_peru.*`, no objetos de Service. `tools/project-paths.cjs` conserva las claves financieras y dirige los generadores a los proyectos guardados por Desktop, sin reconstruirlos ni sustituir sus identidades.
 
-Los cuatro HTML y PBIP muestran **Fuente XLSX: [Mes] [Ano]**, fondo azul `#237bb5` y texto blanco. La fecha corresponde al cierre fuente, no al mes seleccionado. El visual **0.1.0.6** generaliza el formato probado en Banco Peru y conserva las mejoras anteriores, sin cambiar cifras, escalas o calculos. **Retail queda en espera:** conserva ambos nombres y modelos separados; recibe solo la actualizacion visual local. No se fusiona ni se publica automaticamente.
+El visual **0.1.0.7** retira el indicador **Fuente XLSX: [Mes] [Ano]** en las tres paginas de Banco Chile y Banco Peru, tanto en HTML como en Power BI. Conserva moneda/escala, selector y referencias al periodo; no cambia cifras, modelos ni parametros. Retail conserva el indicador azul `#237bb5` con texto blanco y fecha del cierre fuente, no del mes seleccionado. **Retail queda en espera:** mantiene ambos nombres y modelos separados, sin fusionarse ni publicarse automaticamente.
+
+Validacion local 0.1.0.7: 88 pruebas Python, 32 Node, 20 pruebas HTML (2610 y regresion aislada 2609), dos pruebas documentales y simulacion del paquete SDK en Chromium/Firefox. Se comprobaron paginas, meses, monedas y escritorio/movil. Los cuatro datasets y el XLSX permanecen identicos; dentro de los PBIP solo cambiaron los ocho recursos del visual, conservando los otros 56 archivos. Desktop/Service sigue requiriendo comprobacion tras sincronizar y republicar.
 
 ### Procedimiento de renombre
 
@@ -22,7 +24,7 @@ El usuario confirma que el recorrido **Service -> descarga PBIX -> Desktop -> gu
 4. Sincronizar los cambios de codigo entre Windows y Linux con revision y commits acotados, sin PBIX, XLSX, `.pbi/` ni cifras. No se hace push automatico.
 5. Abrir el PBIP activo, guardar y publicar al workspace original verificando destino/reemplazo. Comprobar el enlace previamente compartido, ausencia de duplicados, IDs/asociacion y acceso de un destinatario con sus permisos anteriores. Si el destino es dudoso, cancelar; no borrar el objeto original.
 
-La descarga se realiza para el renombre, **no para cada actualizacion**. Tras sincronizar 0.1.0.6, verificar el nuevo formato y comportamiento antes de republicar los bancos. Retail permanece en espera. `release:local` prepara los cuatro proyectos en Linux sin publicar; `package:projects` y `configure:xlsx` tambien admiten `--business <negocio>` para entregas acotadas.
+La descarga se realiza para el renombre, **no para cada actualizacion**. Tras sincronizar 0.1.0.7 con Desktop cerrado, verificar la ausencia del indicador en los bancos, los controles y cifras, Guardar y republicar los bancos. Un clon sin cache requiere Refresh. Retail permanece en espera. `release:local` prepara los cuatro proyectos en Linux sin publicar; `package:projects` y `configure:xlsx` tambien admiten `--business <negocio>` para entregas acotadas.
 
 Los proyectos guardados por Desktop referencian `report/3.4.0` y `visualContainer/2.14.0`. Si sus URLs oficiales siguen devolviendo 404, `check:schemas` no puede completarse: registrar la limitacion sin rebajar versiones ni declarar esos archivos validados. Las pruebas Linux no sustituyen Desktop/Service.
 
@@ -34,7 +36,7 @@ En los cuatro dashboards **MMCLP = millones de CLP**; **MSoles = miles de soles*
 
 Sincronizar modelo y visual juntos, revisar cambios Windows, confirmar `pWorkbookPath`, **Refresh, comprobar, Save y republicar los cuatro PBIP**. La cache CLP anterior esta en miles de millones y no debe reutilizarse con la nueva unidad. No se requiere otro XLSX ni Node/Python Windows. Los snapshots historicos conservan su escala/version congelada y no se sobrescriben.
 
-La actualizacion **0.1.0.4**, incluida en 0.1.0.6, cambia solo la interfaz: **Millones de Pesos** como descripcion de MMCLP y etiquetas REAL/PPTO del mes seleccionado en la evolucion mensual de OPEX/CAPEX. Responden a mes, moneda y categoria; no cambian datos, M ni parametros. Desde 0.1.0.3 ya migrada, sincronizar con Desktop cerrado, comprobar, Save y republicar los negocios autorizados. Un clon sin cache requiere Refresh; para versiones anteriores aplicar la migracion de escala descrita arriba.
+La actualizacion **0.1.0.4**, incluida en 0.1.0.7, cambia solo la interfaz: **Millones de Pesos** como descripcion de MMCLP y etiquetas REAL/PPTO del mes seleccionado en la evolucion mensual de OPEX/CAPEX. Responden a mes, moneda y categoria; no cambian datos, M ni parametros. Desde 0.1.0.3 ya migrada, sincronizar con Desktop cerrado, comprobar, Save y republicar los negocios autorizados. Un clon sin cache requiere Refresh; para versiones anteriores aplicar la migracion de escala descrita arriba.
 
 El mes usa un listbox dentro del visual, con clic y teclado, en lugar del select nativo. El usuario reporto un problema del desplegable en Service/Opera; no se ha demostrado su causa ni validado esta correccion en ese entorno. Probar tambien en Edge/Chrome, incluidos en la [lista oficial de navegadores soportados](https://learn.microsoft.com/en-us/power-bi/fundamentals/power-bi-browsers). No relajar el sandbox ni pedir habilitar popups.
 
@@ -60,7 +62,7 @@ npm run check:schemas
 
 `release:local` prueba, compila e instala `artifacts/cierre-gastos-ti.pbiviz` sin datos. Su `package:projects` **ejecuta automaticamente `configure:xlsx`**: no se requiere un segundo comando. Migra solo particiones de origen y parametros/funciones M de los cuatro modelos existentes, preservando layout, identidades, enlaces y `pWorkbookPath` existente. Particiones personalizadas desconocidas deben revisarse, no sobrescribirse.
 
-`npm run configure:xlsx` es opcional para refrescar solo el adaptador. `npm run test:powerquery` comprueba sintaxis con `@microsoft/powerquery-parser` y contratos locales, no el runtime M. La lectura usa solo `powerquery/fxCierreXlsx.pq` y `fxCierreSum.pq`. No se usan hashes en lectura, metadatos, visual ni entrega. La migracion retira funcion, columna y enlace obsoletos desde `0.1.0.1`; la entrega vigente `0.1.0.6` conserva esos 24 campos y usa las escalas indicadas arriba.
+`npm run configure:xlsx` es opcional para refrescar solo el adaptador. `npm run test:powerquery` comprueba sintaxis con `@microsoft/powerquery-parser` y contratos locales, no el runtime M. La lectura usa solo `powerquery/fxCierreXlsx.pq` y `fxCierreSum.pq`. No se usan hashes en lectura, metadatos, visual ni entrega. La migracion retira funcion, columna y enlace obsoletos desde `0.1.0.1`; la entrega vigente `0.1.0.7` conserva esos 24 campos y usa las escalas indicadas arriba.
 
 No ejecutar build/prepare/package simultaneos ni sincronizar datos/assets durante compilacion; `.tmp/build.lock` se comparte con snapshot y no se borra para forzar acceso. Un cambio mensual compatible de datos **no requiere recompilar el visual**.
 
@@ -109,7 +111,7 @@ Validacion de esta adopcion: 88 pruebas Python y 32 Node, 110 posiciones futuras
 
 En 2610 el titulo del historico de Banco Peru en MSoles indica 2025, pero sus fechas siguen siendo 2026. El usuario autorizo una excepcion propia para este archivo: AW59:BH77 es REAL 2025, y AW66:BH66 (No Direccionable) se incorpora una vez al Capex/Total historico tras validar el subtotal original. Se exige fuente exacta, cierre 2026-10, entidad/moneda, encabezados AV58=2025 REAL y BI58=R25, meses ordenados y cuadraturas. No modifica el XLSX, importes 2026, PPTO ni FCST; no habilita historia por categoria ni hereda la excepcion a otros cierres. Los detalles quedan en previews/informe_generacion.md, fuera del visual. Retail sigue sin historico ni moneda adicional.
 
-La actualizacion local instala el lector en los cuatro modelos con `npm run package:projects`, que invoca `configure:xlsx` y actualiza el manifiesto de entrega reutilizando el paquete compilado, **sin recompilar ni incrementar la version del visual 0.1.0.6**. Conserva identidades, layout y `pWorkbookPath`. Sincronizar con Desktop cerrado, cambiar el parametro al XLSX privado **2610**, Actualizar, comprobar y Guardar; publicar solo los bancos autorizados. Retail permanece en espera. Los cambios de ruta no se aplican automaticamente en Linux.
+La actualizacion de datos 2610 instala el lector en los cuatro modelos con `npm run package:projects`, que invoca `configure:xlsx` y actualiza el manifiesto reutilizando el paquete compilado; no requirio recompilar el visual 0.1.0.6 entonces vigente. La version 0.1.0.7 es una actualizacion posterior de interfaz. Se conservan identidades, layout y `pWorkbookPath`. Sincronizar con Desktop cerrado, cambiar el parametro al XLSX privado **2610**, Actualizar, comprobar y Guardar; publicar solo los bancos autorizados. Retail permanece en espera. Los cambios de ruta no se aplican automaticamente en Linux.
 
 Las referencias privadas de `data/`, `previews/` y las consultas opcionales de `data/qa/` corresponden a 2610. Python se contrasto directamente contra las celdas, incluyendo nulos; los tests de M en Linux validan sintaxis, no ejecutan el motor Desktop. Esta entrega no implica publicacion ni aceptacion Desktop/Service de octubre.
 
