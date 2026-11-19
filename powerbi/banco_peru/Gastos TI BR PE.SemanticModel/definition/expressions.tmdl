@@ -141,8 +141,8 @@ expression fxCierreXlsx =
 		            Date.Year(value) = year and Date.Month(value) = month,
 		            "Per#(00ED)odo inesperado: " & SheetName & "!" & Address(row, start + month - 1)))),
 		    Series = (row as number) as record => [execution = Amounts(row, 3), budget = Amounts(row, 18)],
-		    // Audit the full block independently of the approved future-only selection.
-		    AuditForecast = (header as number, block as number, last as number, unit as text, selected as logical) as list =>
+		    // The separate FORECAST block is diagnostic only; execution stays in C:N.
+		    AuditForecast = (header as number, block as number, last as number, unit as text) as list =>
 		        if not IsLabel(header, 32, "FORECAST") then {} else
 		        let
 		            prefix = unit & ", FORECAST AF:AS (encabezado fila " & N(header) & ")",
@@ -173,8 +173,7 @@ expression fxCierreXlsx =
 		                    each prefix & ": " & N(List.Count([cells])) & " " & [label] & "; primeras referencias: " &
 		                        Text.Combine(List.FirstN([cells], 5), ", ") & ".")) else {}),
 		            findings = if audit[HasError] then {prefix & ": control no evaluable: " & audit[Error][Message] & "."} else audit[Value]
-		        in List.Buffer({prefix & (if selected then ": solo AQ:AR alimenta el FCST pendiente. Meses cerrados y anual AS son controles, no sustituyen REAL."
-		            else ": bloque independiente no utilizado. El dashboard conserva REAL + Proyecci#(00F3)n de C:N.")} & findings),
+		        in List.Buffer({prefix & ": bloque independiente no utilizado. El dashboard conserva REAL + Proyecci#(00F3)n de C:N."} & findings),
 		    Locate = (marker as text, unit as text) as record =>
 		        let
 		            // Independent bounded sections, not a chain of deferred header/match records.
@@ -236,58 +235,6 @@ expression fxCierreXlsx =
 		                        Equal(Cell(block, scenario[annual]), fxCierreSum(Amounts(block, scenario[start])), unit & " anual")
 		                    })))
 		            }),
-		            useForecast = SourceName = "2610_dashboard_data.xlsx" and Year = 2026 and Cutoff = 10 and
-		                ((Business = "banco_chile" and block = 3 and unit = "MMCLP") or
-		                 (Business = "banco_peru" and ((block = 29 and unit = "MMCLP") or (block = 59 and unit = "MSoles")))),
-		            ReadForecast = () as record =>
-		                let
-		                    months = {Cutoff..11},
-		                    FutureAmounts = (row as number) as list => List.Buffer(List.Transform(months,
-		                        (m) => Amount(Cell(row, 33 + m), SheetName & "!" & Address(row, 33 + m)))),
-		                    missingPlatun = Business = "banco_chile" and unit = "MMCLP" and
-		                        (Cell(6, 32) = null or Cell(6, 32) = "") and IsLabel(6, 2, "Platun") and
-		                        IsLabel(6, 17, "Platun") and Cell(6, 43) = 0 and Cell(6, 44) = 0,
-		                    missingTotal = Business = "banco_peru" and block = 29 and unit = "MMCLP" and
-		                        (Cell(29, 43) = null or Cell(29, 43) = ""),
-		                    forecastTypes = List.Buffer(List.Transform(types, (group) =>
-		                        let
-		                            children = List.Buffer(List.Transform(group[children], FutureAmounts)),
-		                            subtotal = List.Buffer(List.Transform(List.Positions(months),
-		                                (i) => fxCierreSum(List.Transform(children, each _{i})))),
-		                            declared = FutureAmounts(group[parent]),
-		                            valid = All({
-		                                Require(IsLabel(group[parent], 32, group[kind]), "No coincide el tipo FORECAST"),
-		                                All(List.Transform(group[children], (row) => Require(
-		                                    IsLabel(row, 32, Cell(row, 2)) or (row = 6 and group[kind] = "Capex" and missingPlatun),
-		                                    "No coincide la categor#(00ED)a FORECAST: AF" & N(row)))),
-		                                All(List.Transform(List.Positions(months), (i) => Equal(declared{i}, subtotal{i},
-		                                    "FORECAST " & unit & " " & group[kind] & " mes " & N(months{i} + 1))))
-		                            }),
-		                            updated = Record.TransformFields(group, {
-		                                {"values", (v) => Record.TransformFields(v, {{"execution", (x) => List.FirstN(x, Cutoff) & subtotal}})},
-		                                {"child_values", (v) => List.Buffer(List.Transform(List.Positions(v), (i) =>
-		                                    Record.TransformFields(v{i}, {{"execution", (x) => List.FirstN(x, Cutoff) & children{i}}})))}
-		                            })
-		                        in if valid then updated else Fail("FORECAST no validado"))),
-		                    futureTotal = List.Buffer(List.Transform(months,
-		                        (m) => fxCierreSum(List.Transform(forecastTypes, each [values][execution]{m})))),
-		                    valid = All({
-		                        Require(IsLabel(header, 32, "FORECAST"), "No se identifica el bloque FORECAST aprobado"),
-		                        CheckDates(header, 33, Year),
-		                        Require(IsLabel(block, 32, Config[source_label]), "FORECAST de otra entidad o sin identificaci#(00F3)n"),
-		                        All(List.Transform(List.Positions(months), (i) =>
-		                            if missingTotal and months{i} = 10 then true
-		                            else Equal(Cell(block, 33 + months{i}), futureTotal{i}, "FORECAST " & unit & " total " & Address(block, 33 + months{i}))))
-		                    }),
-		                    notes = {unit & ": regla aprobada bancos 2610: REAL C:L hasta octubre + FORECAST AQ:AR noviembre-diciembre. " &
-		                        "Totales desde categor#(00ED)as validadas; AS no alimenta el anual."} &
-		                        (if missingPlatun then {"Etiqueta AF6 vac#(00ED)a: se usa Platun validado en B6/Q6 solo con AQ6=AR6=0; completar la etiqueta en el XLSX."} else {}) &
-		                        (if missingTotal then {"AQ29 vac#(00ED)o: total noviembre desde Capex + Opex = " & N(futureTotal{0}) &
-		                            " MMCLP. AS29 omite ese mes; no se usa ni se imputa cero ni se modifica el XLSX."} else {})
-		                in if valid then [types = forecastTypes,
-		                    total = Record.TransformFields(total, {{"execution", (x) => List.FirstN(x, Cutoff) & futureTotal}}),
-		                    valid = true, notes = notes] else Fail("FORECAST pendiente no validado"),
-		            selectedForecast = if useForecast then ReadForecast() else [types = types, total = total, valid = true, notes = {}],
 		            unavailable = "No disponible: el bloque auxiliar no est#(00E1) identificado como " & N(Year - 1) & " REAL.",
 		            // Known layouts only: AJ (2609) or AV (2610), never the FORECAST block.
 		            historyColumns = List.Buffer(List.Select({36, 48}, each IsLabel(header, _, N(Year - 1) & " REAL"))),
@@ -362,13 +309,12 @@ expression fxCierreXlsx =
 		            visibleNote = if history[prior] <> null then "REAL " & N(Year - 1) &
 		                " disponible para total, OPEX y CAPEX; no para categor#(00ED)as."
 		                else "Hist#(00F3)rico " & N(Year - 1) & " no disponible en " & unit & ".",
-		            ranges = [execution_forecast = if useForecast then "C" & N(block) & ":L" & N(last) & "; AQ" & N(block) & ":AR" & N(last)
-		                    else "C" & N(block) & ":N" & N(last),
+		            ranges = [execution_forecast = "C" & N(block) & ":N" & N(last),
 		                budget = "R" & N(block) & ":AC" & N(last),
 		                prior = if history[prior] <> null then ColumnName(historyColumn + 1) & N(block) & ":" &
 		                    ColumnName(historyColumn + 12) & N(last + 1) else ""],
-		            groups = {[level = "total", kind = "", category = "", label = "Total", values = selectedForecast[total]]} &
-		                List.Combine(List.Transform(selectedForecast[types], (group) =>
+		            groups = {[level = "total", kind = "", category = "", label = "Total", values = total]} &
+		                List.Combine(List.Transform(types, (group) =>
 		                    {[level = "type", kind = group[kind], category = "", label = group[kind], values = group[values]]} &
 		                    List.Transform(List.Positions(group[categories]), (i) =>
 		                        [level = "category", kind = group[kind], category = group[categories]{i},
@@ -385,8 +331,8 @@ expression fxCierreXlsx =
 		                range_execution_forecast = ranges[execution_forecast], range_budget = ranges[budget], range_prior = ranges[prior],
 		                history_note = visibleNote
 		            ])))
-		        in if All({currentValid, selectedForecast[valid]}) then [unit = unit, rows = resultRows, history = history, ranges = ranges, valid = true,
-		            findings = selectedForecast[notes] & AuditForecast(header, block, last, unit, useForecast)]
+		        in if currentValid then [unit = unit, rows = resultRows, history = history, ranges = ranges, valid = true,
+		            findings = AuditForecast(header, block, last, unit)]
 		            else Fail("Datos corrientes no validados"),
 		    Currencies = List.Buffer(List.Transform(Config[units], ReadCurrency)),
 		    CurrentValid = All(List.Transform(Currencies, each [valid])),
@@ -471,4 +417,3 @@ expression fxCierreXlsx =
 		in
 		    Value.ReplaceMetadata(Result, [CierreDiagnostics = Diagnostics])
 	lineageTag: c3a74491-5511-44bd-a935-c6a83ce9e6a5
-
