@@ -6,9 +6,15 @@ El usuario confirmo **funcionamiento en Desktop el 16/11/2026**, tras retirar ha
 
 ## Preparar en Linux
 
-### Nombres activos y formato bancario 0.1.0.8
+### Descarga de PDF en bancos (0.1.0.9)
 
-**0.1.0.8:** solo en Banco Chile y Banco Peru, OPEX/CAPEX muestran `Ejecución y desviación` y `Ppto FY vs Forecast FY vs Real acumulado`, sin el prefijo `Categoría Comité` ni su separador. No cambia ningun dato, filtro o categoria. Se instala el mismo paquete en ambos bancos mediante `npm run package:projects -- --business banco_chile` y luego `npm run package:projects -- --business banco_peru`; los PBIP Retail permanecen en 0.1.0.7. El manifiesto de empaquetado enumera el ultimo proyecto instalado; ambos bancos deben comprobarse contra el paquete 0.1.0.8. No se cambia la fuente ni el modelo por este ajuste visual.
+`Descargar PDF` guarda solo Gastos TI, OPEX o CAPEX con el mes, moneda, categoría y orden actuales. El PDF se genera en memoria, sin servicio externo. En Desktop/Service se entrega exclusivamente por la [File Download API](https://learn.microsoft.com/en-us/power-bi/developer/visuals/file-download-api): requiere permiso del tenant y consentimiento del usuario; denegarlo no bloquea el reporte. El menú nativo Exportar no cambia.
+
+En Linux, después de preparar los dos bancos, compilar y probar el visual, usar `npm run package:projects -- --business banco_chile banco_peru` y `npm run check`. El manifiesto registra ambos bancos; Retail sigue en 0.1.0.7. En Windows, sincronizar con Desktop cerrado, probar CAPEX del mes en cada PBIP y republicar para verificar la descarga con un lector en Service. No cambiar modelo ni parámetro por este ajuste.
+
+### Nombres activos y formato anterior (0.1.0.8)
+
+**0.1.0.8:** solo en Banco Chile y Banco Peru, OPEX/CAPEX muestran `Ejecución y desviación` y `Ppto FY vs Forecast FY vs Real acumulado`, sin el prefijo `Categoría Comité` ni su separador. No cambiaron datos, filtros ni categorias.
 
 En Windows, sincronizar con Desktop cerrado, abrir los PBIP existentes, comprobar los titulos en OPEX/CAPEX, Guardar y republicar los bancos. Mantener `pWorkbookPath`; Actualizar solo si falta cache o se cambia la fuente. No requiere nuevos PBIP ni descarga PBIX. La validacion local no sustituye la comprobacion en Desktop/Service.
 

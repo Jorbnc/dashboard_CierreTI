@@ -13,8 +13,9 @@ function projectPaths(root, business) {
 }
 function selectedBusinesses(args = []) {
   if (!args.length) return Object.keys(scopes);
-  assert.ok(args.length === 2 && args[0] === '--business' && Object.hasOwn(scopes, args[1]),
-    'Uso: --business <negocio>; omitir para los cuatro proyectos');
-  return [args[1]];
+  const names = args.slice(1);
+  assert.ok(args[0] === '--business' && names.length && names.every(name => Object.hasOwn(scopes, name))
+    && new Set(names).size === names.length, 'Uso: --business <negocio> [<negocio> ...]; omitir para los cuatro proyectos');
+  return names;
 }
 module.exports = {projectPaths, selectedBusinesses};

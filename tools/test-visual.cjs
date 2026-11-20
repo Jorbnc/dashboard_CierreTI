@@ -15,8 +15,11 @@ const documents = {
   '/': ['text/html', '<!doctype html><html><body style="margin:0"><iframe title="SDK" src="/frame" sandbox="allow-scripts" style="width:100vw;height:100vh;border:0"></iframe></body></html>'],
   '/frame': ['text/html', `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src data: blob:; connect-src 'none'"><link rel="stylesheet" href="/visual.css"></head><body style="margin:0"><div id="host1"></div><div id="host2"></div><script src="/host.js"></script><script src="/visual.js"></script><script src="/start.js"></script></body></html>`],
   '/visual.js': ['text/javascript', resource.content.js], '/visual.css': ['text/css', resource.content.css],
-  '/host.js': ['text/javascript', 'window.powerbi = {};'],
-  '/start.js': ['text/javascript', `const events=[], requests=[], instances=[]; const host={eventService:{renderingStarted:()=>events.push('start'),renderingFinished:()=>events.push('finish'),renderingFailed:()=>events.push('fail')},fetchMoreData:a=>{requests.push(a);return window.harness.allowMore;}}; const plugin=powerbi.visuals.plugins[${JSON.stringify(visual.guid)}]; instances.push(plugin.create({element:document.getElementById('host1'),host})); window.harness={events,requests,allowMore:true,update(view,type=2,width=innerWidth,height=innerHeight,index=0){instances[index].update({type,viewport:{width,height},dataViews:view?[view]:[]});},second(){instances.push(plugin.create({element:document.getElementById('host2'),host}));},destroy(){instances.forEach(v=>v.destroy());}};`],
+  '/host.js': ['text/javascript', `window.powerbi = {};
+    window.downloadProbe = {status:0, calls:[], complete:true};
+    window.testDownload = {exportStatus:async()=>downloadProbe.pause ? new Promise(resolve=>{downloadProbe.resume=()=>resolve(0);}) : downloadProbe.status, exportVisualsContentExtended:async(content,name,type)=>{
+      downloadProbe.calls.push({content,name,type}); return {downloadCompleted:downloadProbe.complete,fileName:name};}};`],
+  '/start.js': ['text/javascript', `const events=[], requests=[], instances=[]; const host={downloadService:window.testDownload,eventService:{renderingStarted:()=>events.push('start'),renderingFinished:()=>events.push('finish'),renderingFailed:()=>events.push('fail')},fetchMoreData:a=>{requests.push(a);return window.harness.allowMore;}}; const plugin=powerbi.visuals.plugins[${JSON.stringify(visual.guid)}]; instances.push(plugin.create({element:document.getElementById('host1'),host})); window.harness={events,requests,allowMore:true,update(view,type=2,width=innerWidth,height=innerHeight,index=0){instances[index].update({type,viewport:{width,height},dataViews:view?[view]:[]});},second(){instances.push(plugin.create({element:document.getElementById('host2'),host}));},destroy(){instances.forEach(v=>v.destroy());}};`],
 };
 async function main() {
   fs.mkdirSync(path.join(root, 'test-results'), {recursive: true});
@@ -63,6 +66,26 @@ async function main() {
           await expect(app).toHaveAttribute('data-currency', scopes[business].default); await ready();
           await checkSourceBadge();
           await expect(app.locator('[role=tab]')).toHaveCount(3);
+          const download = app.locator('#download-pdf');
+          if (business.startsWith('retail')) await expect(download).toBeHidden();
+          if (business === 'banco_peru') {
+            await frame.evaluate(()=>{downloadProbe.status=3;});
+            await download.click();
+            await expect(app.locator('#pdf-status')).toContainText('organización');
+            assert.equal(await frame.evaluate(()=>downloadProbe.calls.length),0);
+            await frame.evaluate(()=>{downloadProbe.pause=true;});
+            await download.click();
+            await app.locator('#tab-opex').click(); await ready();
+            await frame.evaluate(()=>{downloadProbe.pause=false; downloadProbe.resume();});
+            await expect(app.locator('#pdf-status')).toContainText('La vista cambió');
+            assert.equal(await frame.evaluate(()=>downloadProbe.calls.length),0);
+            await app.locator('#tab-summary').click(); await ready();
+            await frame.evaluate(()=>{downloadProbe.status=0; downloadProbe.complete=false;});
+            await download.evaluate(button=>{button.click(); button.click();});
+            await expect(app.locator('#pdf-status')).toContainText('No se completó');
+            assert.equal(await frame.evaluate(()=>downloadProbe.calls.length),1);
+            await frame.evaluate(()=>{downloadProbe.complete=true; downloadProbe.calls=[];});
+          }
           await app.locator('#month').click(); await app.locator('[data-month-option="3"]').click(); await ready();
           await checkSourceBadge();
           await expect(app.locator('[data-scope=Total][data-kpi="0"] [data-metric=actual-month]')).toHaveText(`${business === 'retail_chile' ? '9' : '6'}${scopes[business].default}`);
@@ -89,6 +112,19 @@ async function main() {
             await checkSourceBadge();
             await checkDetailTitles();
             await page.screenshot({path: path.join(root, `test-results/${engine.name()}-peru-desktop.png`)});
+          }
+          if (business.startsWith('banco')) {
+            await download.click();
+            await expect(download).toBeEnabled({timeout:15000});
+            await expect(app.locator('#pdf-status')).toHaveText('');
+            const calls = await frame.evaluate(()=>downloadProbe.calls.splice(0));
+            assert.equal(calls.length,1);
+            const {content,name,type} = calls[0];
+            assert.equal(name,business+'_CAPEX_2030-03_MMCLP.pdf');
+            assert.equal(type,'base64');
+            const doc = await require('pdf-lib').PDFDocument.load(Buffer.from(content,'base64'));
+            assert.equal(doc.getPageCount(),2);
+            assert.match(doc.getSubject(),/Ejemplo/);
           }
         }
         await page.setViewportSize({width: 390, height: 844});
@@ -120,7 +156,7 @@ async function main() {
         await frame.evaluate(() => window.harness.destroy());
         await expect(frame.locator('.cierre-app')).toHaveCount(0);
         assert.deepEqual(errors, []);
-        assert.deepEqual(requests.filter(url => !url.startsWith(base)), []);
+        assert.deepEqual(requests.filter(url => !url.startsWith(base) && !url.startsWith('data:image/')), []);
         console.log(`${engine.name()}: paquete real, 4 negocios, tabs, moneda, mes, resize, dos instancias y rechazos verificados.`);
       } finally {await browser.close();}
     }

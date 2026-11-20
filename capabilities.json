@@ -356,7 +356,12 @@
       }
     }
   ],
-  "privileges": [],
+  "privileges": [
+    {
+      "name": "ExportContent",
+      "essential": false
+    }
+  ],
   "supportsKeyboardFocus": true,
   "supportsLandingPage": true,
   "supportsEmptyDataView": true

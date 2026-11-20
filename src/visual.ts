@@ -6,6 +6,8 @@ import mount = require('./generated/app');
 import model = require('./generated/model');
 import classic = require('./generated/classic');
 import proposal = require('./generated/proposal');
+import pdf = require('./generated/pdf');
+import * as pdfLib from 'pdf-lib';
 import Plotly = require('plotly.js-dist-min');
 import * as lucide from 'lucide';
 import '../style/visual.less';
@@ -19,6 +21,27 @@ export class Visual implements powerbi.extensibility.visual.IVisual {
   private revision = 0;
   private destroyed = false;
   private business = '';
+
+  private pdfDelivery() {
+    const service = this.host.downloadService;
+    return {
+      async check() {
+        if (!service?.exportStatus || !service.exportVisualsContentExtended) return 'Este visor no admite la descarga de PDF.';
+        const status = await service.exportStatus();
+        if (status === powerbi.PrivilegeStatus.Allowed) return null;
+        return status === powerbi.PrivilegeStatus.DisabledByAdmin
+          ? 'La organización no permite descargas desde visuales personalizados.'
+          : 'La descarga desde este visual no está habilitada en Power BI.';
+      },
+      async save(bytes: Uint8Array, name: string) {
+        if (bytes.byteLength > 30000000) throw new Error('El PDF supera el límite de descarga.');
+        const blocks: string[] = [];
+        for (let i=0; i<bytes.length; i+=8192) blocks.push(String.fromCharCode(...bytes.subarray(i,i+8192)));
+        const result = await service.exportVisualsContentExtended(btoa(blocks.join('')), name, 'base64', 'Vista del cierre de gastos TI (PDF)');
+        return result.downloadCompleted;
+      },
+    };
+  }
 
   private async unmount(): Promise<void> {
     const app = this.app;
@@ -82,7 +105,8 @@ export class Visual implements powerbi.extensibility.visual.IVisual {
             // Identity and currencies are allow-listed by the adapter; financial text is escaped by the renderer.
             // eslint-disable-next-line powerbi-visuals/no-inner-outer-html -- Static markup and allow-listed identities only.
             this.content.innerHTML = markup.replace(/\/\*__(ENTITY|IDENTITY|BRAND|CURRENCY)__\*\//g, (_, key) => replacements[key]);
-            this.app = mount(this.content, data, {model, classic, proposal, plotly: Plotly, icons: lucide}, this.business === data.business ? saved : {});
+            this.app = mount(this.content, data, {model, classic, proposal, plotly: Plotly, icons: lucide, pdf, pdfLib,
+              delivery: bank && !snapshot ? this.pdfDelivery() : null}, this.business === data.business ? saved : {});
             this.business = data.business;
             await this.app.ready;
           }

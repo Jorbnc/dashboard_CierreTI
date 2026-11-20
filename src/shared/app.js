@@ -62,6 +62,46 @@
   let destroyed = false;
   let renderDone = Promise.resolve();
   let finishRender;
+  const pdfButton = $('download-pdf');
+  const offerPDF = isProposal && ['banco_chile', 'banco_peru'].includes(data.business) && dependencies.delivery && dependencies.pdf;
+  let viewRevision = 0, exporting = false;
+  function syncPdfButton() {
+    pdfButton.hidden = !offerPDF;
+    pdfButton.disabled = !offerPDF || exporting || rendering || document.body.dataset.ready !== 'true' || !!$('report-panel').querySelector('[role=alert]');
+    pdfButton.setAttribute('aria-busy', String(exporting));
+  }
+  listen(pdfButton, 'click', async () => {
+    if (pdfButton.disabled || !offerPDF) return;
+    const revision = viewRevision;
+    const current = () => !destroyed && revision === viewRevision;
+    const status = $('pdf-status');
+    let submitted = false;
+    exporting = true;
+    syncPdfButton();
+    status.textContent = '';
+    pdfButton.querySelector('span').textContent = 'Preparando PDF';
+    try {
+      const reason = await dependencies.delivery.check();
+      if (!current()) return;
+      if (reason) {status.textContent = reason; return;}
+      const {bytes, filename} = await dependencies.pdf.create(root, dependencies.pdfLib, plotly, {
+        business: data.business, entity: data.entity, page: state.page, year: data.year, month: state.month, currency: state.currency,
+      }, current);
+      if (!current()) return;
+      submitted = true;
+      const completed = await dependencies.delivery.save(bytes, filename);
+      if (!destroyed && !completed) status.textContent = 'No se completó la descarga del PDF.';
+    } catch {
+      if (current()) status.textContent = 'No se pudo descargar la vista en PDF. Inténtalo de nuevo.';
+    } finally {
+      exporting = false;
+      if (!destroyed) {
+        if (!submitted && !current()) status.textContent = 'La vista cambió. Vuelve a descargar el PDF de la selección actual.';
+        pdfButton.querySelector('span').textContent = 'Descargar PDF';
+        syncPdfButton();
+      }
+    }
+  });
   let helpTrigger = null;
   let helpAnchor = null;
   let helpPinned = false;
@@ -131,11 +171,14 @@
   // Coalesce controls while Plotly finishes; never remove an in-flight graph.
   async function requestRender(update = {}, rebuild = false) {
     if (destroyed) return;
+    viewRevision++;
+    $('pdf-status').textContent = '';
     closeHelp();
     Object.assign(desired, update);
     pending = true;
     rebuildPending ||= rebuild;
     document.body.dataset.ready = 'false';
+    syncPdfButton();
     if (rendering) return renderDone;
     rendering = true;
     renderDone = new Promise(resolve => {finishRender = resolve;});
@@ -153,6 +196,7 @@
     } finally {
       rendering = false;
       document.body.dataset.ready = 'true';
+      syncPdfButton();
       finishRender();
     }
   }

@@ -11,7 +11,7 @@ for (const file of provenance.files) {
 }
 const out = path.join(root, 'src/generated'); fs.mkdirSync(out, {recursive: true});
 fs.writeFileSync(path.join(out, 'source.ts'), 'export const snapshot: {business: string; rows: any[]} | null = null;\n');
-for (const name of ['app', 'model', 'classic', 'proposal']) {
+for (const name of ['app', 'model', 'classic', 'proposal', 'pdf']) {
   let source = read(`src/shared/${name}.js`);
   if (['classic', 'proposal'].includes(name)) {
     const object = `Cierre${name[0].toUpperCase()}${name.slice(1)}`;
@@ -33,7 +33,7 @@ const capabilities = {
   dataRoles: Object.keys(fields).map(name => ({name, displayName: name, kind: 'Grouping'})),
   dataViewMappings: [{conditions: [Object.fromEntries(Object.keys(fields).map(name => [name, {min: 1, max: 1}]))],
     table: {rows: {select: Object.keys(fields).map(name => ({for: {in: name}})), dataReductionAlgorithm: {window: {count: 1000}}}}}],
-  privileges: [], supportsKeyboardFocus: true, supportsLandingPage: true, supportsEmptyDataView: true,
+  privileges: [{name: 'ExportContent', essential: false}], supportsKeyboardFocus: true, supportsLandingPage: true, supportsEmptyDataView: true,
 };
 fs.writeFileSync(path.join(root, 'capabilities.json'), JSON.stringify(capabilities, null, 2) + '\n');
 // SDK requires a small PNG icon. This is a bundled brand asset, not a data snapshot.

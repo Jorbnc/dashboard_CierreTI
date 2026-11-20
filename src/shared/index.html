@@ -17,8 +17,10 @@
     <div class="filters">
       <div class="month-field"><label id="month-caption" for="month"><i data-lucide="calendar-days"></i>Mes de análisis</label><div id="month-picker" class="month-picker"><button id="month" type="button" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="month-options" aria-labelledby="month-caption month-label" aria-describedby="month-status"><span id="month-label"></span><i data-lucide="chevron-down"></i></button><div id="month-options" role="listbox" aria-labelledby="month-caption" hidden></div></div></div>
       /*__CURRENCY__*/
+      <button type="button" id="download-pdf" title="Descargar PDF de esta vista" aria-label="Descargar PDF de esta vista" hidden disabled><i data-lucide="download" aria-hidden="true"></i><span>Descargar PDF</span></button>
     </div>
   </div>
+  <p id="pdf-status" role="status" aria-live="polite"></p>
   <header class="masthead">
     <div class="identity">/*__IDENTITY__*/</div>
     <h2 id="page-title"></h2>
@@ -37,9 +39,20 @@
   <script>/*__LUCIDE__*/</script>
   <script>/*__MODEL__*/</script>
   <script>/*__CLASSIC__*/</script>
+  <script>/*__PDF__*/</script>
   <script>/*__APP__*/</script>
   <script>mountCierreDashboard(document.body, JSON.parse(document.getElementById('report-data').textContent), {
-    model: CierreModel, classic: globalThis.CierreClassic, proposal: globalThis.CierreProposal, plotly: Plotly, icons: lucide
+    model: CierreModel, classic: globalThis.CierreClassic, proposal: globalThis.CierreProposal, plotly: Plotly, icons: lucide,
+    pdf: globalThis.CierrePDF, pdfLib: globalThis.PDFLib, delivery: {
+      check: () => null,
+      save(bytes, filename) {
+        const url = URL.createObjectURL(new Blob([bytes], {type: 'application/pdf'}));
+        const link = document.createElement('a');
+        link.href = url; link.download = filename; document.body.append(link);
+        try {link.click(); return true;}
+        finally {link.remove(); setTimeout(() => URL.revokeObjectURL(url), 30000);}
+      }
+    }
   });</script>
 </body>
 </html>
