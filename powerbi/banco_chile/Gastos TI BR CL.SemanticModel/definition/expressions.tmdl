@@ -1,4 +1,4 @@
-expression pWorkbookPath = "C:\Users\jnunezca\OneDrive - Ripley Corp\dashboards\input\CierreTI\2610_dashboard_data.xlsx" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+expression pWorkbookPath = "C:\Users\jnunezca\OneDrive - Ripley Corp\dashboards\input\CierreTI\2610_dashboard_data_final.xlsx" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: 42f36095-bd16-46f2-bf3d-6cdcb73d97f7
 
 	annotation PBI_ResultType = Text
@@ -447,3 +447,4 @@ expression fxCierreXlsx =
 		in
 		    Value.ReplaceMetadata(Result, [CierreDiagnostics = Diagnostics])
 	lineageTag: 7cb85fbc-ffd5-4eb4-a092-08288ee5c6d8
+
