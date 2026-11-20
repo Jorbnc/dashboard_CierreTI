@@ -54,6 +54,11 @@ async function main() {
             }
             await expect(app.locator('#unit-label')).toBeVisible();
           };
+          const checkDetailTitles = async () => {
+            const bank = business.startsWith('banco_');
+            await expect(app.locator('#execution-panel h3')).toHaveText(`${bank ? '' : 'Categoría Comité · '}Ejecución y desviación`);
+            await expect(app.locator('#annual-panel h3')).toHaveText(`${bank ? '' : 'Categoría Comité: '}Ppto FY vs Forecast FY vs Real acumulado`);
+          };
           await update(dataView(fixture(business)));
           await expect(app).toHaveAttribute('data-currency', scopes[business].default); await ready();
           await checkSourceBadge();
@@ -65,6 +70,7 @@ async function main() {
           for (const tab of ['opex', 'capex']) {
             await app.locator(`#tab-${tab}`).click(); await ready();
             await checkSourceBadge();
+            await checkDetailTitles();
             await expect(app.locator('#monthly-chart .barlayer .point')).not.toHaveCount(0);
             await expect(app.locator('#monthly-chart .annotation-text')).toContainText('REAL 2030: 3');
             await expect(app.locator('#monthly-chart .annotation-text')).toContainText('PPTO 2030: 3');
@@ -72,6 +78,7 @@ async function main() {
             await app.locator('[data-sort-key=actualYtd]').click(); await ready();
             await app.locator('[data-category]').first().click(); await ready();
             await expect(app.locator('#detail-focus')).toContainText('Ejemplo');
+            await checkDetailTitles();
           }
           if (business === 'banco_peru') {
             await app.locator('[data-currency=MMCLP]').click(); await ready();
@@ -80,6 +87,7 @@ async function main() {
             await expect(app.locator('#month')).toHaveAttribute('value', '3');
             await expect(app).toHaveAttribute('data-currency', 'MMCLP');
             await checkSourceBadge();
+            await checkDetailTitles();
             await page.screenshot({path: path.join(root, `test-results/${engine.name()}-peru-desktop.png`)});
           }
         }

@@ -6,7 +6,13 @@ El usuario confirmo **funcionamiento en Desktop el 16/11/2026**, tras retirar ha
 
 ## Preparar en Linux
 
-### Nombres activos y formato 0.1.0.7
+### Nombres activos y formato bancario 0.1.0.8
+
+**0.1.0.8:** solo en Banco Chile y Banco Peru, OPEX/CAPEX muestran `Ejecución y desviación` y `Ppto FY vs Forecast FY vs Real acumulado`, sin el prefijo `Categoría Comité` ni su separador. No cambia ningun dato, filtro o categoria. Se instala el mismo paquete en ambos bancos mediante `npm run package:projects -- --business banco_chile` y luego `npm run package:projects -- --business banco_peru`; los PBIP Retail permanecen en 0.1.0.7. El manifiesto de empaquetado enumera el ultimo proyecto instalado; ambos bancos deben comprobarse contra el paquete 0.1.0.8. No se cambia la fuente ni el modelo por este ajuste visual.
+
+En Windows, sincronizar con Desktop cerrado, abrir los PBIP existentes, comprobar los titulos en OPEX/CAPEX, Guardar y republicar los bancos. Mantener `pWorkbookPath`; Actualizar solo si falta cache o se cambia la fuente. No requiere nuevos PBIP ni descarga PBIX. La validacion local no sustituye la comprobacion en Desktop/Service.
+
+Validacion 0.1.0.8: 93 pruebas Python, 33 Node, 10 pruebas HTML y simulacion del paquete SDK en Chromium/Firefox. Datos identicos; ambos bancos contienen exactamente el paquete compilado. Solo cuatro recursos bancarios del visual cambiaron dentro de los PBIP; los otros 60 archivos y Retail permanecen intactos. MkDocs verificado.
 
 Banco Chile usa **Gastos TI BR CL.pbip** y Banco Peru **Gastos TI BR PE.pbip**, con sus carpetas homonimas `.Report` y `.SemanticModel` dentro de la carpeta tecnica del negocio. Se retiran los antiguos `banco_chile.*` y `banco_peru.*`, no objetos de Service. `tools/project-paths.cjs` conserva las claves financieras y dirige los generadores a los proyectos guardados por Desktop, sin reconstruirlos ni sustituir sus identidades.
 

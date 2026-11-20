@@ -1,14 +1,11 @@
 {
   "guid": "CierreGastosTI87D1AC0452B14A2C9D131B5482A80B71",
-  "version": "0.1.0.7",
+  "version": "0.1.0.8",
   "apiVersion": "5.11.1",
-  "bytes": 1693355,
+  "bytes": 1693391,
   "dataEmbedded": false,
   "businesses": [
-    "banco_chile",
-    "banco_peru",
-    "retail_chile",
-    "retail_peru"
+    "banco_peru"
   ],
   "sourceFiles": {
     "src/adapter.js": 7019,
@@ -17,7 +14,7 @@
     "src/visual.ts": 6167,
     "src/shared/app.js": 44443,
     "src/shared/classic.css": 7040,
-    "src/shared/classic.js": 23427,
+    "src/shared/classic.js": 23535,
     "src/shared/index.html": 2995,
     "src/shared/integrated.css": 4883,
     "src/shared/model.js": 2471,
@@ -45,7 +42,7 @@
     "tools/snapshot-lib.cjs": 4677,
     "tools/snapshot-release.cjs": 11154,
     "tools/test-snapshot.cjs": 8896,
-    "tools/test-visual.cjs": 9260,
+    "tools/test-visual.cjs": 9787,
     "style/visual.less": 26,
     "powerquery/fxCierreSum.pq": 2304,
     "powerquery/fxCierreXlsx.pq": 33900,
