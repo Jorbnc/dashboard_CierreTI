@@ -79,12 +79,11 @@
     exporting = true;
     syncPdfButton();
     status.textContent = '';
-    pdfButton.querySelector('span').textContent = 'Preparando PDF';
     try {
       const reason = await dependencies.delivery.check();
       if (!current()) return;
       if (reason) {status.textContent = reason; return;}
-      const {bytes, filename} = await dependencies.pdf.create(root, dependencies.pdfLib, plotly, {
+      const {bytes, filename} = await dependencies.pdf.create(root, dependencies.pdfLib, {
         business: data.business, entity: data.entity, page: state.page, year: data.year, month: state.month, currency: state.currency,
       }, current);
       if (!current()) return;
@@ -97,7 +96,6 @@
       exporting = false;
       if (!destroyed) {
         if (!submitted && !current()) status.textContent = 'La vista cambió. Vuelve a descargar el PDF de la selección actual.';
-        pdfButton.querySelector('span').textContent = 'Descargar PDF';
         syncPdfButton();
       }
     }

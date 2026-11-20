@@ -123,7 +123,8 @@ async function main() {
             assert.equal(name,business+'_CAPEX_2030-03_MMCLP.pdf');
             assert.equal(type,'base64');
             const doc = await require('pdf-lib').PDFDocument.load(Buffer.from(content,'base64'));
-            assert.equal(doc.getPageCount(),2);
+            assert.equal(doc.getPageCount(),1);
+            assert.equal(doc.getPages()[0].getWidth(),(await app.evaluate(el=>el.clientWidth))*.75);
             assert.match(doc.getSubject(),/Ejemplo/);
           }
         }

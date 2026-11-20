@@ -6,9 +6,9 @@ El usuario confirmo **funcionamiento en Desktop el 16/11/2026**, tras retirar ha
 
 ## Preparar en Linux
 
-### Descarga de PDF en bancos (0.1.0.9)
+### Descarga de PDF en bancos (0.1.0.10)
 
-`Descargar PDF` guarda solo Gastos TI, OPEX o CAPEX con el mes, moneda, categoría y orden actuales. El PDF se genera en memoria, sin servicio externo. En Desktop/Service se entrega exclusivamente por la [File Download API](https://learn.microsoft.com/en-us/power-bi/developer/visuals/file-download-api): requiere permiso del tenant y consentimiento del usuario; denegarlo no bloquea el reporte. El menú nativo Exportar no cambia.
+El botón **PDF** con flecha guarda la vista activa con sus estilos de pantalla y toda su altura, normalmente a doble resolución. La página conserva sus proporciones en vez de recomponer las tarjetas en A4; el texto no es seleccionable. El PDF se genera en memoria, sin servicio externo. En Desktop/Service se entrega exclusivamente por la [File Download API](https://learn.microsoft.com/en-us/power-bi/developer/visuals/file-download-api): requiere permiso del tenant y consentimiento del usuario; denegarlo no bloquea el reporte. El menú nativo Exportar no cambia.
 
 En Linux, después de preparar los dos bancos, compilar y probar el visual, usar `npm run package:projects -- --business banco_chile banco_peru` y `npm run check`. El manifiesto registra ambos bancos; Retail sigue en 0.1.0.7. En Windows, sincronizar con Desktop cerrado, probar CAPEX del mes en cada PBIP y republicar para verificar la descarga con un lector en Service. No cambiar modelo ni parámetro por este ajuste.
 
