@@ -5,6 +5,9 @@
     "pWorkbookPath"
   ],
   "sheet": "Comité",
+  "sheetOverrides": {
+    "2610_dashboard_data_final.xlsx": "BASE"
+  },
   "functions": [
     "fxCierreSum",
     "fxCierreXlsx"

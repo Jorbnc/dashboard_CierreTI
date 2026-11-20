@@ -40,6 +40,15 @@ test('la preparacion vincula JSON, previews e informe de una generacion', () => 
     }
     writeJson(path.join(dir, 'data/preparation.json'), {schema: 2, files});
     verifyPreparation(dir);
+    const banks = ['banco_chile', 'banco_peru'];
+    const partial = files.filter(f => !f.includes('retail_'));
+    writeJson(path.join(dir, 'data/preparation.json'), {schema: 2, files: partial});
+    verifyPreparation(dir, banks);
+    assert.throws(() => verifyPreparation(dir), 'Snapshot sigue exigiendo cuatro negocios');
+    assert.throws(() => verifyPreparation(dir, []), /invalida/);
+    assert.throws(() => verifyPreparation(dir, ['unknown']), /invalida/);
+    assert.throws(() => verifyPreparation(dir, ['banco_chile', 'banco_chile']), /invalida/);
+    writeJson(path.join(dir, 'data/preparation.json'), {schema: 2, files});
     fs.writeFileSync(path.join(dir, 'previews/banco_peru.html'), 'changed');
     assert.throws(() => verifyPreparation(dir), /Preparacion modificada/);
   } finally {fs.rmSync(dir, {recursive: true, force: true});}

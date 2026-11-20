@@ -1,6 +1,7 @@
 /* Private, optional Desktop acceptance queries. Production never reads this data. */
 const fs = require('node:fs');
 const path = require('node:path');
+const assert = require('node:assert/strict');
 const {gzipSync} = require('node:zlib');
 const {scopes, fromRows} = require('../src/adapter');
 const {verifyPreparation, verifyPreview} = require('./snapshot-lib.cjs');
@@ -35,17 +36,21 @@ in
     Result
 `;
 }
-function main(root) {
-  verifyPreparation(root);
+function main(root, businesses = Object.keys(scopes)) {
+  verifyPreparation(root, businesses);
   const output = path.join(root, 'data/qa');
   fs.mkdirSync(output, {recursive: true});
   let positions = 0;
-  for (const business of Object.keys(scopes)) {
+  for (const business of businesses) {
     const input = JSON.parse(fs.readFileSync(path.join(root, 'data', `${business}.json`)));
     positions += verifyPreview(root, business, input);
     fs.writeFileSync(path.join(output, `${business}.pq`), acceptanceQuery(input));
   }
   console.log(`Referencias privadas para ${positions} posiciones exportadas en data/qa/. Pendiente ejecutar estas consultas en Desktop.`);
 }
-if (require.main === module) main(path.resolve(__dirname, '..'));
+if (require.main === module) {
+  const args = process.argv.slice(2);
+  assert.ok(!args.length || args[0] === '--business', 'Uso: --business <negocios>; omitir para los cuatro');
+  main(path.resolve(__dirname, '..'), args.length ? args.slice(1) : Object.keys(scopes));
+}
 module.exports = {acceptanceQuery};

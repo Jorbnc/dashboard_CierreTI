@@ -45,10 +45,12 @@ function compareVersions(a, b) {
   for (let i = 0; i < 4; i++) if (aa[i] !== bb[i]) return Math.sign(aa[i] - bb[i]);
   return 0;
 }
-function verifyPreparation(root) {
+function verifyPreparation(root, businesses = Object.keys(scopes)) {
+  assert.ok(businesses.length && new Set(businesses).size === businesses.length &&
+    businesses.every(b => Object.hasOwn(scopes, b)), 'Seleccion de negocios invalida');
   const manifest = readJson(path.join(root, 'data/preparation.json'));
   assert.equal(manifest.schema, 2, 'Repetir preparar_powerbi.py para actualizar la preparacion');
-  const expected = Object.keys(scopes).flatMap(b => [`data/${b}.json`, `previews/${b}.html`]);
+  const expected = businesses.flatMap(b => [`data/${b}.json`, `previews/${b}.html`]);
   expected.push('previews/informe_generacion.md');
   assert.deepEqual([...manifest.files].sort(), expected.sort());
   for (const file of expected) {

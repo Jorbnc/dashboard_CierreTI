@@ -82,6 +82,7 @@ function configure(root, businesses = Object.keys(scopes)) {
   // Validate all projects before writing any; unknown local edits stop the migration.
   for (const [file, value] of changes) if (fs.readFileSync(file, 'utf8') !== value) fs.writeFileSync(file, value);
   const manifest = {schema: 1, mode: 'xlsx', parameters: ['pWorkbookPath'], sheet: 'Comité',
+    sheetOverrides: {'2610_dashboard_data_final.xlsx': 'BASE'},
     functions: FUNCTIONS,
     desktopValidated: false, servicePublished: false};
   fs.writeFileSync(path.join(root, 'powerquery/manifest.json'), JSON.stringify(manifest, null, 2) + '\n');

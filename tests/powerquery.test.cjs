@@ -94,7 +94,7 @@ test('historico AJ/AV estricto y auditoria independiente del FORECAST', () => {
   assert.ok(code.includes('ColumnName(historyColumn + 12)'));
   assert.ok(code.includes('block = 59 and Year = 2026 and Cutoff = 9'));
   assert.ok(code.includes('Series = (row as number) as record => [execution = Amounts(row, 3), budget = Amounts(row, 18)]'));
-  assert.ok(code.includes('findings = AuditForecast(header, block, last, unit)'));
+  assert.ok(code.includes('findings = List.Combine({AuditForecast(header, block, last, unit)'));
   assert.ok(code.includes('List.Count(List.Buffer(Findings))'));
 });
 test('FCST usa REAL + Proyeccion con validacion estricta, sin sustitucion por el bloque auxiliar', () => {
@@ -120,7 +120,20 @@ test('excepcion 2610 explicita mantiene comprobaciones y rango propio, sin hered
     'if exception then CheckDates(header, historyColumn + 1, Year)',
     'Amounts(66, historyColumn + 1)', 'Cell(66, historyColumn + 13)',
     'ColumnName(historyColumn + 1) & "66:"', 'CAPEX sin No Direccionable',
-    'All({baseValid, adjustmentValid, finalValid, forcedValid})']) assert.ok(code.includes(text), text);
+    'All({baseValid, finalSourceValid, adjustmentValid, finalValid, forcedValid})']) assert.ok(code.includes(text), text);
+});
+test('2610 final usa BASE y fechas historicas autorizadas, sin repetir No Direccionable', () => {
+  const code = fs.readFileSync(path.join(root, 'powerquery/fxCierreXlsx.pq'), 'utf8');
+  for (const text of ['FinalSource = SourceName = "2610_dashboard_data_final.xlsx"',
+    'SheetName = if FinalSource then "BASE"', 'NameValid = FinalSource or (',
+    'finalHistory = standard and FinalSource and SheetName = "BASE" and Business = "banco_peru"',
+    'exceptionFinal = finalHistory', 'exception = needsAdjustment or exceptionFinal',
+    'needsAdjustment = exception2609 or exception2610',
+    'finalSourceValid = if not finalHistory then true else All',
+    'children = {61..66}, labels = BankCapex & {"No Direccionable"}',
+    'children = {68..77}, labels = BankOpex', 'adjusted = if not needsAdjustment then prior',
+    'adjustment = if needsAdjustment then', 'sin sumar AW66:BH66 de nuevo', 'BI28 no contiene R25'])
+    assert.ok(code.includes(text), text);
 });
 test('migracion retira solo la columna obsoleta y mantiene las otras identidades', () => {
   const before = 'table Cierre\n\tlineageTag: table-id\n\n';

@@ -6,7 +6,8 @@
 // Diagnostics are not columns and are not persisted by a semantic model automatically.
 (Workbook as binary, SourceName as text, Business as text) as table =>
 let
-    SheetName = "Comit#(00E9)",
+    FinalSource = SourceName = "2610_dashboard_data_final.xlsx",
+    SheetName = if FinalSource then "BASE" else "Comit#(00E9)",
     ConfirmedSource = "2609_dashboard_data.xlsx",
     BankCapex = {"Core", "J2C", "Partner", "Planilla TI", "RC TI"},
     BankOpex = {"Core", "Cyber", "Partner", "Procesamiento", "Soporte", "Licencias",
@@ -45,9 +46,9 @@ let
             tolerance = List.Max({0.000001, 0.0000000001 * List.Max({Number.Abs(a), Number.Abs(e)})})
         in Require(Number.Abs(a - e) <= tolerance, "No cuadra " & context),
     Suffix = "_dashboard_data.xlsx",
-    NameValid = Text.Length(SourceName) = 4 + Text.Length(Suffix) and
+    NameValid = FinalSource or (Text.Length(SourceName) = 4 + Text.Length(Suffix) and
         Text.Lower(Text.Range(SourceName, 4), "en-US") = Suffix and
-        Text.Select(Text.Start(SourceName, 4), {"0".."9"}) = Text.Start(SourceName, 4),
+        Text.Select(Text.Start(SourceName, 4), {"0".."9"}) = Text.Start(SourceName, 4)),
     NameChecked = if Require(NameValid, "La fuente debe identificarse como YYMM_dashboard_data.xlsx") then SourceName else "",
     Year = 2000 + Number.FromText(Text.Start(NameChecked, 2), "en-US"),
     MonthParsed = Number.FromText(Text.Range(NameChecked, 2, 2), "en-US"),
@@ -60,7 +61,7 @@ let
     // Select the worksheet, not a suggested table. Do not promote headers or infer dimensions.
     Navigation = Excel.Workbook(Buffered, [UseHeaders = false, DelayTypes = true, InferSheetDimensions = false]),
     Sheets = Table.SelectRows(Navigation, each [Item] = SheetName and [Kind] = "Sheet"),
-    Sheet = if Require(Table.RowCount(Sheets) = 1, "Hoja Comit#(00E9) ausente o ambigua") then Sheets{0}[Data] else #table({}, {}),
+    Sheet = if Require(Table.RowCount(Sheets) = 1, "Hoja " & SheetName & " ausente o ambigua") then Sheets{0}[Data] else #table({}, {}),
     // Preserve Excel error cells as values until the owning current/history validation reads them.
     RawRows = List.Buffer(List.Transform(Table.ToRows(Sheet), (row) =>
         List.Buffer(List.Transform(List.Positions(row), (column) => try row{column})))),
@@ -207,7 +208,13 @@ let
                         IsLabel(57, 2, "Soles") and IsLabel(57, 48, "Soles") and
                         IsLabel(59, 2, "Banco Per#(00FA)") and IsLabel(59, 48, "Banco Per#(00FA)") and
                         IsLabel(58, 61, "R25") and (try Date.Year(Cell(58, 49)) = 2026 otherwise false),
-                    exception = exception2609 or exception2610,
+                    finalHistory = standard and FinalSource and SheetName = "BASE" and Business = "banco_peru" and
+                        block = 59 and Year = 2026 and Cutoff = 10 and unit = "MSoles" and historyColumn = 48,
+                    exceptionFinal = finalHistory and IsLabel(57, 2, "Soles") and IsLabel(57, 48, "Soles") and
+                        IsLabel(59, 2, "Banco Per#(00FA)") and IsLabel(59, 48, "Banco Per#(00FA)") and
+                        IsLabel(58, 61, "R25") and (try Date.Year(Cell(58, 49)) = 2026 otherwise false),
+                    needsAdjustment = exception2609 or exception2610,
+                    exception = needsAdjustment or exceptionFinal,
                     headerValid = if exception then CheckDates(header, historyColumn + 1, Year)
                         else if standard then CheckDates(header, historyColumn + 1, Year - 1) else Fail(unavailable),
                     parents = List.Transform(Kinds, (kind) =>
@@ -225,10 +232,24 @@ let
                         All(List.Transform({0..11}, (month) => Equal(prior[Total]{month},
                             fxCierreSum(List.Transform(Kinds, (kind) => Record.Field(prior, kind){month})), "hist#(00F3)rico por tipo")))
                     }),
-                    added = if exception then Amounts(66, historyColumn + 1) else {},
+                    // The final workbook already includes No Direccionable in its subtotals.
+                    finalSourceValid = if not finalHistory then true else All(List.Transform({
+                        [kind = "Capex", parent = 60, children = {61..66}, labels = BankCapex & {"No Direccionable"}],
+                        [kind = "Opex", parent = 67, children = {68..77}, labels = BankOpex]
+                    }, (group) => All({
+                        Require(IsLabel(group[parent], historyColumn, group[kind]) and
+                            List.Transform(group[children], each Cell(_, historyColumn)) = group[labels],
+                            "Cambi#(00F3) el detalle hist#(00F3)rico final " & group[kind]),
+                        All(List.Transform(group[children], (row) => Equal(Cell(row, historyColumn + 13),
+                            fxCierreSum(Amounts(row, historyColumn + 1)), "hist#(00F3)rico final anual fila " & N(row)))),
+                        All(List.Transform({0..11}, (month) => Equal(Record.Field(prior, group[kind]){month} * divisor,
+                            fxCierreSum(List.Transform(group[children], each Amounts(_, historyColumn + 1){month})),
+                            "hist#(00F3)rico final con detalle completo mes " & N(month + 1))))
+                    }))),
+                    added = if needsAdjustment then Amounts(66, historyColumn + 1) else {},
                     scaledAdded = List.Buffer(List.Transform(added, each _ / divisor)),
-                    historicalChildren = if exception then List.Buffer(List.Transform({61..65}, each Amounts(_, historyColumn + 1))) else {},
-                    adjustmentValid = if not exception then true else All({
+                    historicalChildren = if needsAdjustment then List.Buffer(List.Transform({61..65}, each Amounts(_, historyColumn + 1))) else {},
+                    adjustmentValid = if not needsAdjustment then true else All({
                         Require(List.Transform({61..66}, each Cell(_, historyColumn)) = BankCapex & {"No Direccionable"},
                             "Cambi#(00F3) el detalle hist#(00F3)rico CAPEX en soles"),
                         Equal(Cell(66, historyColumn + 13), fxCierreSum(added), "hist#(00F3)rico No Direccionable anual"),
@@ -236,10 +257,10 @@ let
                             fxCierreSum(List.Transform(historicalChildren, each _{month})),
                             "hist#(00F3)rico CAPEX sin No Direccionable mes " & N(month + 1))))
                     }),
-                    adjusted = if not exception then prior else Record.TransformFields(prior,
+                    adjusted = if not needsAdjustment then prior else Record.TransformFields(prior,
                         List.Transform({"Capex", "Total"}, (kind) => {kind, (values) => List.Buffer(List.Transform({0..11},
                             (month) => fxCierreSum({values{month}, scaledAdded{month}})))})),
-                    finalValid = if not exception then true else All(List.Transform({0..11}, (month) =>
+                    finalValid = if not needsAdjustment then true else All(List.Transform({0..11}, (month) =>
                         Equal(adjusted[Total]{month}, fxCierreSum({adjusted[Capex]{month}, adjusted[Opex]{month}}),
                             "hist#(00F3)rico ajustado por tipo"))),
                     // A try over a record alone does not catch deferred errors in its lists.
@@ -247,12 +268,12 @@ let
                     forced = Table.Buffer(Table.FromRows(List.Transform({0..11}, (month) =>
                         List.Transform(names, (kind) => Record.Field(adjusted, kind){month})), names)),
                     forcedValid = All(List.Transform(Table.ToRows(forced), (row) => All(List.Transform(row, Finite)))),
-                    valid = All({baseValid, adjustmentValid, finalValid, forcedValid}),
+                    valid = All({baseValid, finalSourceValid, adjustmentValid, finalValid, forcedValid}),
                     adjustedRecord = Record.FromList(List.Transform(names, each List.Buffer(Table.Column(forced, _))), names)
                 in if valid then [prior = adjustedRecord, exception = exception,
                     note = "REAL " & N(Year - 1) & (if exception then " confirmado" else " validado") &
                         " para total, OPEX y CAPEX; no para categor#(00ED)as.",
-                    adjustment = if exception then [category = "No Direccionable",
+                    adjustment = if needsAdjustment then [category = "No Direccionable",
                         source_range = ColumnName(historyColumn + 1) & "66:" & ColumnName(historyColumn + 12) & "66",
                         added = scaledAdded, original_capex = prior[Capex], original_total = prior[Total]] else null]
                     else Fail("Hist#(00F3)rico no validado"),
@@ -285,7 +306,10 @@ let
                 history_note = visibleNote
             ])))
         in if currentValid then [unit = unit, rows = resultRows, history = history, ranges = ranges, valid = true,
-            findings = AuditForecast(header, block, last, unit)]
+            findings = List.Combine({AuditForecast(header, block, last, unit),
+                if FinalSource and block = 29 and unit = "MMCLP" and not IsLabel(28, 61, "R25") then
+                    {"MMCLP: BI28 no contiene R25; encabezado auxiliar no utilizado. " &
+                     "El hist#(00F3)rico se valida por AV28, AW28:BH28 y sus cuadraturas."} else {}})]
             else Fail("Datos corrientes no validados"),
     Currencies = List.Buffer(List.Transform(Config[units], ReadCurrency)),
     CurrentValid = All(List.Transform(Currencies, each [valid])),
@@ -304,7 +328,13 @@ let
         {{"year", Int64.Type}, {"cutoff", Int64.Type}, {"month", Int64.Type}, {"expected_rows", Int64.Type},
          {"actual", Double.Type}, {"forecast", Double.Type}, {"budget", Double.Type}, {"prior", Double.Type}}, "en-US"),
     ExceptionUsed = List.AnyTrue(List.Transform(Currencies, each [history][exception])),
-    HistoryNotes = if not ExceptionUsed then {} else {
+    HistoryNotes = if not ExceptionUsed then {} else if FinalSource then {
+        "Excepci#(00F3)n confirmada para 2610 final, hoja BASE: AW59:BH77 es REAL 2025 en soles bajo " &
+        "AV58=2025 REAL y BI58=R25, aunque AW58:BH58 mantiene fechas de 2026. Solo para esta fuente, " &
+        "cierre, entidad, moneda, rangos y cuadraturas; no se modifica el XLSX.",
+        "No Direccionable ya est#(00E1) incluido en los subtotales hist#(00F3)ricos CAPEX y Total. " &
+        "Se valida el detalle completo y los anuales sin sumar AW66:BH66 de nuevo ni ajustar montos."
+    } else {
         if SourceName = "2610_dashboard_data.xlsx" then
         "Excepci#(00F3)n confirmada para 2610: AW59:BH77, con totales anuales en BI, es REAL 2025 " &
         "en soles. AV58 dice 2025 REAL y BI58 R25, pero AW58:BH58 conserva fechas de 2026. " &

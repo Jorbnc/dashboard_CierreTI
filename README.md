@@ -40,16 +40,17 @@ La actualizacion **0.1.0.4**, incluida en 0.1.0.7, cambia solo la interfaz: **Mi
 
 El mes usa un listbox dentro del visual, con clic y teclado, en lugar del select nativo. El usuario reporto un problema del desplegable en Service/Opera; no se ha demostrado su causa ni validado esta correccion en ese entorno. Probar tambien en Edge/Chrome, incluidos en la [lista oficial de navegadores soportados](https://learn.microsoft.com/en-us/power-bi/fundamentals/power-bi-browsers). No relajar el sandbox ni pedir habilitar popups.
 
-Desde **CierreGastosTI**, seleccionar el agregado, hoja `Comité`, no un libro completo Base:
+Desde **CierreGastosTI**, seleccionar el agregado. La entrega bancaria vigente usa hoja `BASE` del archivo final (no la Base transaccional); los archivos anteriores usan `Comité`:
 
 ```bash
 source activate_venv.sh
 python tools/reportes_visuals/cierre_mensual/preparar_powerbi.py \
-  --source input/datos/dashboard_cierre/2609_dashboard_data.xlsx \
-  --deployment-dir deploy/dashboard_CierreTI
+  --source input/datos/dashboard_cierre/2610_dashboard_data_final.xlsx \
+  --deployment-dir deploy/dashboard_CierreTI \
+  --business banco_chile banco_peru
 ```
 
-Python sigue siendo referencia/generador Linux. Sincroniza `src/shared/` y genera `data/*.json`, `data/preparation.json`, cuatro HTML y `previews/informe_generacion.md`. La preparacion y compilacion comparan bytes con copias privadas en `.tmp/preparation-reference/` y `.tmp/build-reference/`, sin hashes. Revisar excepciones, faltantes y discrepancias; no aprobar fallos fatales ni nuevas correcciones. Estos archivos son privados, no la fuente del modelo Windows.
+Python sigue siendo referencia/generador Linux. Sincroniza `src/shared/` y genera JSON/HTML de los negocios seleccionados, `data/preparation.json` y `previews/informe_generacion.md`; sin `--business` prepara los cuatro. La preparacion y compilacion comparan bytes con copias privadas en `.tmp/preparation-reference/` y `.tmp/build-reference/`, sin hashes. Revisar excepciones, faltantes y discrepancias; no aprobar fallos fatales ni nuevas correcciones. Estos archivos son privados, no la fuente del modelo Windows.
 
 Para instalacion inicial o cambios de UI/SDK, desde **este repositorio, solo Linux**, con Node >=22.13:
 
@@ -80,7 +81,7 @@ git status --short
 
 En clones existentes, cerrar Desktop y revisar cambios locales, rama y remoto antes de sincronizar. No borrar ni resetear trabajo Windows; conservar copias privadas. No se hace push automatico ni se han verificado permisos remotos. No ejecutar npm/Python en Windows ni transferir caches como sustituto de Refresh.
 
-1. Recibir el XLSX explicito. `pWorkbookPath` inicia en `C:\Users\jnunezca\OneDrive - Ripley Corp\dashboards\input\CierreTI\2609_dashboard_data.xlsx`; usar una ruta absoluta Windows, no `/c/...` de Git Bash. Fuente: hoja `Comité` del agregado, no Base; no se busca automaticamente el archivo mas reciente.
+1. Recibir el XLSX explicito. El parametro conserva la ruta local anterior: para esta entrega bancaria cambiar el nombre a `2610_dashboard_data_final.xlsx` en cada PBIP (hoja `BASE`, todavia agregado). Usar ruta absoluta Windows, no `/c/...` de Git Bash. No se busca automaticamente el archivo mas reciente.
 2. Abrir `powerbi/banco_peru/Gastos TI BR PE.pbip` **del clon raiz**, con sus carpetas `.Report` y `.SemanticModel`, no un PBIP de `releases/`.
 3. En **Transformar datos > Administrar parametros**, confirmar o cambiar `pWorkbookPath`. Se configura una vez por PBIP mientras la ruta siga igual; si cambia el nombre mensual, cambia el parametro.
 4. Aplicar y **Actualizar / Refresh**. Un clon fresco no contiene datos importados porque `.pbi/cache.abf` se excluye de Git. Si solo aparece `pDataFile`, revisar la migracion Linux, no introducir JSON en este flujo.
@@ -102,6 +103,12 @@ Retail Peru no tiene bloque en soles en el agregado 2609: las filas 98-106 perte
 ## Siguiente cierre
 
 ### Agregado 2610: lector actualizado, visual sin cambios
+
+**Revision final aprobada el 20/11/2026:** solo `2610_dashboard_data_final.xlsx` usa hoja `BASE`. Se preservan sus nuevos importes de Core/Capex y distribucion mensual de PPTO. FCST mantiene C:N. El historico soles ya incluye No Direccionable: la excepcion interpreta sus fechas 2026 como 2025, valida detalle/subtotales/anuales y no suma de nuevo AW66:BH66. BI28 mal rotulado, K76 y defectos del FORECAST auxiliar se reportan fuera del HTML, sin correcciones implicitas. El XLSX permanece intacto; los parrafos siguientes describen la revision inicial.
+
+Para instalar el lector final, `npm run package:projects`; no requiere recompilar el visual 0.1.0.7. Se conservan identidades, diseno, parametros locales y salidas Retail. Despues de la preparacion bancaria, el QA privado se regenera con `npm run qa:powerquery -- --business banco_chile banco_peru`; snapshot sigue exigiendo los cuatro negocios coherentes. En Windows, sincronizar con Desktop cerrado, seleccionar la ruta al archivo final en ambos PBIP, **Actualizar, verificar, Guardar y republicar**. No basta con cambiar el nombre del archivo o guardar una cache anterior. No se hace push/publicacion automatica; la validacion local no acredita Desktop/Service.
+
+Validacion de la revision final: 93 pruebas Python y 33 Node; 1980 posiciones contra el XLSX y 360 tarjetas anuales en Chromium/Firefox, ademas de acumulados, porcentajes y curvas. Libros fuente intactos; regresiones 2609/2610 original sin cambios. Solo cuatro lectores M modificados dentro de los PBIP; los otros 60 archivos, parametros e identidades se conservan. QA privado bancario: 2640 posiciones monetarias, pendiente de ejecutar en Desktop. La evidencia siguiente corresponde a la politica anterior al archivo final.
 
 Inspeccion del 17/11/2026: C:N (REAL + Proyeccion) y R:AC (PPTO) conservan posiciones y categorias. El historico bancario se movio a AW:BH, anual BI. `fxCierreXlsx` acepta las dos posiciones conocidas AJ/AV con etiqueta, fechas y cuadraturas estrictas; duplicados o errores historicos quedan N/D. Los diagnosticos no se muestran en el visual.
 
