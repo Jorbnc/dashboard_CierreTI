@@ -49,7 +49,7 @@ async function main() {
         };
         const checkSourceBadge = async () => {
           await expect(app.getByText(/^Fuente XLSX:/)).toHaveCount(0);
-          await expect(app.locator('#unit-label')).toBeVisible();
+          await expect(app.locator('#unit-label, .page-heading')).toHaveCount(0);
         };
         const checkDetailTitles = async () => {
           await expect(app.locator('#execution-panel h3')).toHaveText('Ejecución y desviación');
@@ -83,7 +83,7 @@ async function main() {
           await app.locator('#month').click(); await app.locator('[data-month-option="3"]').click(); await ready();
           await checkSourceBadge();
           await expect(app.locator('[data-scope=Total][data-kpi="0"] [data-metric=actual-month]')).toHaveText(`${business === 'retail_chile' ? '9' : '6'}${scopes[business].default}`);
-          await expect(app.locator('#unit-label')).toContainText(business === 'banco_peru' ? 'Miles de soles' : 'Millones de Pesos');
+          await expect(app.locator('.fixed-currency:visible, .currency button[aria-pressed=true]:visible')).toHaveText(scopes[business].default);
           for (const tab of ['opex', 'capex']) {
             await app.locator(`#tab-${tab}`).click(); await ready();
             await checkSourceBadge();
@@ -126,10 +126,12 @@ async function main() {
           await update(dataView(portfolioFixture(key))); await ready();
           await checkSourceBadge();
           const logo = app.locator('.masthead .brand').getByRole('img');
+          await expect(app.locator('.scope-bar + .navigation')).toHaveCount(1);
           if (key === 'corp_ti') await expect(logo).toHaveCount(2);
           for (const button of await app.locator('.scope-bar button').all()) {
             await button.click(); await ready();
             const scope = await button.getAttribute('data-scope');
+            await expect(app.locator('.identity h1')).toHaveText(await button.innerText());
             if (scope === 'corp_ti') await expect(logo).toHaveCount(2);
             else {
               const bank = scope.startsWith('banco');
@@ -151,6 +153,7 @@ async function main() {
             await app.locator('[data-currency=MSoles]').click(); await ready();
             await update(dataView(portfolioFixture(key))); await ready();
             await expect(logo).toHaveAccessibleName('Banco Ripley');
+            await expect(app.locator('.identity h1')).toHaveText('Banco Perú');
             await expect(app).toHaveAttribute('data-currency','MSoles');
             await app.locator('button[data-scope=corp_ti]').click(); await ready();
             await expect(logo).toHaveCount(2);

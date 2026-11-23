@@ -29,6 +29,7 @@
   Object.assign(state, initialState);
   const scopeNames = {bancos: 'Bancos', retail: 'Retail', corp_ti: data.entity, banco_chile: 'Banco Chile',
     banco_peru: 'Banco Perú', retail_chile: 'Retail Chile', retail_peru: 'Retail Perú'};
+  const scopeLabel = key => key === data.business && key !== 'corp_ti' ? 'Total ' + scopeNames[key] : scopeNames[key];
   let scopeBar;
   let currencyGroup, fixedCurrency;
   const scopeLogos = root.querySelectorAll('.brand [data-scope-logo]');
@@ -58,11 +59,11 @@
     for (const key of new Set([data.business, ...groups.flatMap(k => [k, ...data.choices[k]]), ...data.choices[data.business]])) {
       const button = owner.createElement('button');
       button.type = 'button'; button.dataset.scope = key;
-      button.textContent = key === data.business ? 'Total ' + scopeNames[key] : scopeNames[key];
+      button.textContent = scopeLabel(key);
       scopeBar.append(button);
       listen(button, 'click', () => requestRender({scope: key, category: null}, true));
     }
-    document.querySelector('.navigation').after(scopeBar);
+    document.querySelector('.navigation').before(scopeBar);
   }
   state.month = Math.max(1, Math.min(data.cutoff, state.month));
   if (!data.currencies[state.currency]) state.currency = data.default_currency;
@@ -226,6 +227,7 @@
         if (!data.currencies[desired.currency]) desired.currency = data.default_currency;
         Object.assign(state, desired);
         if (scopeBar) {
+          root.querySelector('.identity h1').textContent = scopeLabel(state.scope);
           for (const button of scopeBar.children) button.setAttribute('aria-pressed', String(button.dataset.scope === state.scope));
           for (const button of currencyGroup.children) button.hidden = !data.currencies[button.dataset.currency];
           currencyGroup.hidden = Object.keys(data.currencies).length === 1;
@@ -465,7 +467,6 @@
     $('report-panel').setAttribute('aria-labelledby', `tab-${state.page}`);
     if ($('context')) $('context').textContent = `FUENTE · CIERRE ${closure.toUpperCase()} ${data.year}`;
     $('page-title').textContent = `${state.page === 'summary' ? classic ? 'Gastos Tecnológicos' : 'Gastos tecnológicos' : kind().toUpperCase()} | ${classic && state.month === data.cutoff ? 'Cierre ' : ''}${month()} ${data.year}`;
-    $('unit-label').textContent = state.currency === 'MSoles' ? 'MSoles · Miles de soles' : 'MMCLP · Millones de Pesos';
     $('footer-cutoff').textContent = `${closure} ${data.year} · ${state.currency}`;
     $('layout-label').hidden = !integrated || state.page !== 'summary';
     $('month-status').hidden = !classic && state.month === data.cutoff;

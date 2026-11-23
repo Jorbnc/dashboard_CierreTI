@@ -2,7 +2,7 @@
 body {font-family: "Segoe UI", Arial, Helvetica, sans-serif; background: #e7e3ef}
 .navigation, .masthead, main, footer {max-width: 1600px; margin-left: auto; margin-right: auto}
 .navigation {padding: 10px 22px}
-.scope-bar {max-width:1600px; margin:0 auto; display:flex; flex-wrap:wrap; gap:8px; padding:8px 22px; background:white; border-top:1px solid #e3dfea}
+.scope-bar {max-width:1600px; margin:0 auto; display:flex; flex-wrap:wrap; gap:8px; padding:8px 22px; background:white; border-bottom:1px solid #e3dfea}
 .scope-bar button:focus-visible {outline:2px solid #476f97; outline-offset:1px}
 #download-pdf {display: inline-flex; align-items: center; justify-content: center; gap: 5px; flex: 0 0 62px; min-height: 32px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: white; color: var(--purple); font: inherit; font-size: 12px; font-weight: 600; white-space: nowrap}
 #download-pdf:hover:not(:disabled) {background: #f5f1f9}
@@ -11,14 +11,14 @@ body {font-family: "Segoe UI", Arial, Helvetica, sans-serif; background: #e7e3ef
 #pdf-status {margin: 0; text-align: right; color: var(--navy); background: #fff; font-size: 13px}
 #pdf-status:not(:empty) {padding: 5px 22px 9px}
 @media print {#pdf-status {display: none}}
-.masthead {background: #582982; grid-template-columns: minmax(220px, 1fr) minmax(0, 2.5fr) minmax(100px, 1fr); min-height: 100px; padding: 6px 22px; gap: 20px}
+.masthead {background: #582982; grid-template-columns: minmax(220px, 1fr) minmax(0, 2.5fr) minmax(100px, 1fr); min-height: 84px; padding: 6px 22px; gap: 20px}
 .identity h1 {font-size: 22px; font-weight: 700}
 .country-flag {width: 40px; height: 34px; background: none; object-fit: contain}
 #page-title {font-size: 27px; font-weight: 700}
 .brand {justify-self: end}
-.bank-logo {display: block; width: 88px; height: 88px; object-fit: contain}
+.bank-logo {display: block; width: 72px; height: 72px; object-fit: contain}
 .retail-logo {display: block; width: 180px; height: auto; max-width: 100%; object-fit: contain}
-body[data-brand=corp] .brand {display:flex; flex-direction:row; align-items:center; justify-content:flex-end; gap:8px; width:252px; height:88px; max-width:100%}
+body[data-brand=corp] .brand {display:flex; flex-direction:row; align-items:center; justify-content:flex-end; gap:8px; width:252px; height:72px; max-width:100%}
 .brand [data-scope-logo] {display:none}
 .brand [data-scope-logo][data-active] {display:block}
 .brand [data-scope-logo=retail] {width:152px}
@@ -34,7 +34,6 @@ body[data-brand=retail] .masthead {background: #000}
 .row-title .help-button {margin-left: 4px}
 main {padding: 12px 44px 20px; background: #f7f5fb}
 footer {padding-left: 44px; padding-right: 44px; background: #f7f5fb; font-size: 12px}
-.page-heading {margin-bottom: 14px}
 .column-heads, .kpi-grid {display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px}
 .column-heads {margin-bottom: 10px}
 .column-heads > div {display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--purple); color: #fff; border-radius: 16px; text-align: center; font-size: 15.5px; font-weight: 700; line-height: 1.25; padding: 8px 6px; box-shadow: 0 3px 6px #52317840}
@@ -104,7 +103,7 @@ th[aria-sort=ascending] .sort-button svg, th[aria-sort=descending] .sort-button 
   .navigation {padding: 12px 16px}
   main {padding: 12px 16px 20px}
   .masthead {padding: 0 16px 10px}
-  .bank-logo {width: 76px; height: 76px}
+  .bank-logo {width: 64px; height: 64px}
   body[data-brand=corp] .brand {width:156px; height:56px}
   .brand [data-scope-logo=bank] {width:50px; height:50px}
   .brand [data-scope-logo=retail] {width:98px}

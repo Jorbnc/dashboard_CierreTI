@@ -62,8 +62,6 @@ select {max-width: 100%; height: 33px; border: 1px solid #d9cde9; background: #f
 .brand-dot {color: var(--gold)}
 
 main {max-width: 1680px; margin: 0 auto; padding: 12px 36px 20px}
-.page-heading {display: flex; justify-content: flex-end; margin-bottom: 16px}
-.heading-meta {display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 12px; font-size: 11px; color: var(--muted)}
 #month-status {font-size: 12px; color: #745617; background: #fff3d1; border-left: 3px solid var(--gold); padding: 10px 14px; margin: 0 0 18px; line-height: 1.5}
 #report-panel {outline-offset: 7px}
 .kpi-grid {display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px}
@@ -205,8 +203,6 @@ footer {max-width: 1680px; margin: auto; display: flex; justify-content: space-b
   .brand > span br {display: none}
   .brand > strong {font-size: 22px}
   main {padding: 12px 16px 20px}
-  .page-heading {justify-content: flex-start}
-  .heading-meta {justify-content: flex-start; gap: 8px}
   .kpi-grid {grid-template-columns: minmax(0, 1fr); gap: 12px}
   .kpi-card {padding: 18px; min-height: 0}
   .kpi-value {column-gap: 4px}
