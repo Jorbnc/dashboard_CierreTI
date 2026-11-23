@@ -130,13 +130,12 @@ globalThis.CierreClassic = {
     function detailShell() {
       stopAnnualObserver();
       rendered = null;
-      const bank = ['banco_chile', 'banco_peru'].includes(data.business);
       const panel = (id, title, body) => `<section class="chart-section" id="${id}"><div class="section-heading"><h3>${title}</h3>${id === 'execution-panel' ? '<span class="chart-unit"></span>' : ''}</div>${body}</section>`;
       $('report-panel').innerHTML = `<div class="detail-intro"><div class="detail-focus"><span id="detail-focus"></span><button class="icon-button" data-reset-category title="Mostrar todas las categorías" aria-label="Mostrar todas las categorías"><i data-lucide="x"></i></button></div></div><div class="detail-grid">` +
         panel('monthly-panel', `Evolución mensual ${data.year}: Real + Forecast vs Presupuesto`, '<p id="monthly-period" class="period-note"></p><div id="monthly-chart" class="plot" role="img" aria-label="Evolución mensual"></div><div id="monthly-legend"></div><p id="history-note" class="legend-note"></p>') +
         panel('variance-panel', 'Desviaciones acumuladas por categoría', '<p id="variance-period" class="period-note"></p><div id="variance-chart" class="plot" role="img" aria-label="Desviaciones acumuladas por categoría"></div>' + legend([['Mayor gasto vs Ppto', colors.bad], ['Menor gasto vs Ppto', colors.good]])) +
-        panel('execution-panel', `${bank ? '' : 'Categoría Comité · '}Ejecución y desviación`, '<div class="table-wrap" tabindex="0" role="region" aria-label="Ejecución y desviación por categoría"><table id="category-table"></table></div>') +
-        panel('annual-panel', `${bank ? '' : 'Categoría Comité: '}Ppto FY vs Forecast FY vs Real acumulado`, `<p class="period-note">FCST al cierre de ${closure.toLowerCase()} ${data.year} ${forecastHelp('help-forecast-plot')}</p><div id="annual-chart" class="plot" role="img" aria-label="Presupuesto anual, forecast anual y real acumulado por categoría"></div><div id="annual-legend"></div>`) + '</div>';
+        panel('execution-panel', 'Ejecución y desviación', '<div class="table-wrap" tabindex="0" role="region" aria-label="Ejecución y desviación por categoría"><table id="category-table"></table></div>') +
+        panel('annual-panel', 'Ppto FY vs Forecast FY vs Real acumulado', `<p class="period-note">FCST al cierre de ${closure.toLowerCase()} ${data.year} ${forecastHelp('help-forecast-plot')}</p><div id="annual-chart" class="plot" role="img" aria-label="Presupuesto anual, forecast anual y real acumulado por categoría"></div><div id="annual-legend"></div>`) + '</div>';
     }
 
     function table(rows, totals) {

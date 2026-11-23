@@ -47,21 +47,15 @@ async function main() {
           await frame.evaluate(data => window.harness.update(data), view);
           await frame.waitForFunction(count => window.harness.events.filter(e => e === 'finish' || e === 'fail').length > count, before);
         };
+        const checkSourceBadge = async () => {
+          await expect(app.getByText(/^Fuente XLSX:/)).toHaveCount(0);
+          await expect(app.locator('#unit-label')).toBeVisible();
+        };
+        const checkDetailTitles = async () => {
+          await expect(app.locator('#execution-panel h3')).toHaveText('Ejecución y desviación');
+          await expect(app.locator('#annual-panel h3')).toHaveText('Ppto FY vs Forecast FY vs Real acumulado');
+        };
         for (const business of ['banco_peru', 'banco_chile', 'retail_chile', 'retail_peru']) {
-          const checkSourceBadge = async () => {
-            if (business.startsWith('banco_')) await expect(app.locator('.snapshot, #snapshot')).toHaveCount(0);
-            else {
-              await expect(app.locator('#snapshot')).toHaveText('Fuente XLSX: Mayo 2030');
-              await expect(app.locator('.snapshot')).toHaveCSS('background-color', 'rgb(35, 123, 181)');
-              await expect(app.locator('.snapshot')).toHaveCSS('color', 'rgb(255, 255, 255)');
-            }
-            await expect(app.locator('#unit-label')).toBeVisible();
-          };
-          const checkDetailTitles = async () => {
-            const bank = business.startsWith('banco_');
-            await expect(app.locator('#execution-panel h3')).toHaveText(`${bank ? '' : 'Categoría Comité · '}Ejecución y desviación`);
-            await expect(app.locator('#annual-panel h3')).toHaveText(`${bank ? '' : 'Categoría Comité: '}Ppto FY vs Forecast FY vs Real acumulado`);
-          };
           await update(dataView(fixture(business)));
           await expect(app).toHaveAttribute('data-currency', scopes[business].default); await ready();
           await checkSourceBadge();
@@ -130,6 +124,7 @@ async function main() {
         }
         for (const key of ['bancos','retail','corp_ti']) {
           await update(dataView(portfolioFixture(key))); await ready();
+          await checkSourceBadge();
           for (const button of await app.locator('.scope-bar button').all()) {
             await button.click(); await ready();
             const scope = await button.getAttribute('data-scope');
@@ -137,7 +132,10 @@ async function main() {
             await expect(app.locator('[data-kpi="0"][data-scope=Total] [data-metric=actual-month]')).toHaveText(expected+'MMCLP');
             await expect(app.locator('#download-pdf')).toHaveCount(0);
           }
-          await app.locator('#tab-capex').click(); await ready();
+          for (const tab of ['opex','capex']) {
+            await app.locator('#tab-'+tab).click(); await ready();
+            await checkDetailTitles(); await checkSourceBadge();
+          }
           await expect(app.locator('#monthly-chart .barlayer .point')).not.toHaveCount(0);
         }
         await page.setViewportSize({width: 390, height: 844});

@@ -25,8 +25,6 @@
   const model = CierreModel;
   const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   const closure = months[data.cutoff - 1];
-  if (['banco_chile', 'banco_peru'].includes(data.business)) document.querySelector('.snapshot').remove();
-  else $('snapshot').textContent = `Fuente XLSX: ${closure} ${data.year}`;
   const state = {page: 'summary', currency: data.default_currency || 'MSoles', month: data.cutoff, category: null, ranking: 'ytd', matrix: 'actual', sortKey: 'category', sortDirection: 'asc'};
   Object.assign(state, initialState);
   const scopeNames = {bancos: 'Bancos', retail: 'Retail', corp_ti: 'Corp TI', banco_chile: 'Banco Chile',

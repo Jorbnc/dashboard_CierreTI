@@ -8,6 +8,8 @@ El usuario confirmo **funcionamiento en Desktop el 16/11/2026**, tras retirar ha
 
 ## Preparar en Linux
 
+**0.1.0.12:** los siete HTML y PBIP omiten la insignia «Fuente XLSX» en las tres pestañas y usan los mismos títulos breves en OPEX/CAPEX. Los cambios de formato por negocio descritos a continuación son históricos. No cambian cálculos, permisos de PDF ni parámetros.
+
 ### Descarga de PDF en bancos (0.1.0.10)
 
 El botón **PDF** con flecha guarda la vista activa con sus estilos de pantalla y toda su altura, normalmente a doble resolución. La página conserva sus proporciones en vez de recomponer las tarjetas en A4; el texto no es seleccionable. El PDF se genera en memoria, sin servicio externo. En Desktop/Service se entrega exclusivamente por la [File Download API](https://learn.microsoft.com/en-us/power-bi/developer/visuals/file-download-api): requiere permiso del tenant y consentimiento del usuario; denegarlo no bloquea el reporte. El menú nativo Exportar no cambia.
