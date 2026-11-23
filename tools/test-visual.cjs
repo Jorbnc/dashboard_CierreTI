@@ -51,6 +51,15 @@ async function main() {
           await expect(app.getByText(/^Fuente XLSX:/)).toHaveCount(0);
           await expect(app.locator('#unit-label, .page-heading')).toHaveCount(0);
         };
+        const checkLogoSizes = async () => {
+          const logos = app.locator('.masthead .brand').getByRole('img');
+          for (const img of await logos.all()) {
+            const bank = await img.getAttribute('alt') === 'Banco Ripley';
+            const box = await img.boundingBox();
+            assert.equal(box.width, bank ? 80 : 96);
+            assert.ok(Math.abs(box.height - (bank ? 80 : 96 * 1116 / 3000)) < 0.05);
+          }
+        };
         const checkDetailTitles = async () => {
           await expect(app.locator('#execution-panel h3')).toHaveText('Ejecución y desviación');
           await expect(app.locator('#annual-panel h3')).toHaveText('Ppto FY vs Forecast FY vs Real acumulado');
@@ -58,6 +67,7 @@ async function main() {
         for (const business of ['banco_peru', 'banco_chile', 'retail_chile', 'retail_peru']) {
           await update(dataView(fixture(business)));
           await expect(app).toHaveAttribute('data-currency', scopes[business].default); await ready();
+          await checkLogoSizes();
           await checkSourceBadge();
           await expect(app.locator('[role=tab]')).toHaveCount(3);
           const download = app.locator('#download-pdf');
@@ -131,6 +141,7 @@ async function main() {
           for (const button of await app.locator('.scope-bar button').all()) {
             await button.click(); await ready();
             const scope = await button.getAttribute('data-scope');
+            await checkLogoSizes();
             await expect(app.locator('.identity h1')).toHaveText(await button.innerText());
             if (scope === 'corp_ti') await expect(logo).toHaveCount(2);
             else {
@@ -168,6 +179,7 @@ async function main() {
         await page.setViewportSize({width: 390, height: 844});
         await frame.evaluate(() => window.harness.update(null, 4)); await ready();
         await expect(app).toHaveAttribute('data-page', 'capex');
+        await checkLogoSizes();
         await page.screenshot({path: path.join(root, `test-results/${engine.name()}-mobile.png`)});
         await frame.evaluate(() => window.harness.second());
         await frame.evaluate(view => window.harness.update(view, 2, 390, 844, 1), dataView(fixture('banco_chile')));

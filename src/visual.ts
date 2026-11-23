@@ -102,7 +102,7 @@ export class Visual implements powerbi.extensibility.visual.IVisual {
               BRAND: (data.brand === 'corp' ? ['bank', 'retail'] : [data.brand]).map(brand => {
                 const isBank = brand === 'bank';
                 const scopeAttr = data.brand === 'corp' ? ` data-scope-logo="${brand}"` : '';
-                return `<img class="${brand}-logo"${scopeAttr} src="${isBank ? brands.bank : brands.retail}" alt="${isBank ? 'Banco Ripley' : 'Ripley'}" width="${isBank ? 88 : 180}" height="${isBank ? 88 : 67}">`;
+                return `<img class="${brand}-logo"${scopeAttr} src="${isBank ? brands.bank : brands.retail}" alt="${isBank ? 'Banco Ripley' : 'Ripley'}">`;
               }).join(''),
               CURRENCY: units.length > 1 ? `<div class="currency" role="group" aria-label="Moneda">${units.map(u => `<button type="button" data-currency="${u}">${u}</button>`).join('')}</div>` : '<span class="fixed-currency">MMCLP</span>',
             };

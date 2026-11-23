@@ -11,17 +11,24 @@ body {font-family: "Segoe UI", Arial, Helvetica, sans-serif; background: #e7e3ef
 #pdf-status {margin: 0; text-align: right; color: var(--navy); background: #fff; font-size: 13px}
 #pdf-status:not(:empty) {padding: 5px 22px 9px}
 @media print {#pdf-status {display: none}}
-.masthead {background: #582982; grid-template-columns: minmax(220px, 1fr) minmax(0, 2.5fr) minmax(100px, 1fr); min-height: 84px; padding: 6px 22px; gap: 20px}
+.masthead {
+  --bank-logo-size: 80px; --retail-logo-width: 96px; --logo-gap: 8px;
+  background: #582982; grid-template-columns: minmax(220px, 1fr) minmax(0, 2.5fr) minmax(100px, 1fr);
+  min-height: 84px; padding: 2px 22px; gap: 20px;
+}
 .identity h1 {font-size: 22px; font-weight: 700}
 .country-flag {width: 40px; height: 34px; background: none; object-fit: contain}
 #page-title {font-size: 27px; font-weight: 700}
 .brand {justify-self: end}
-.bank-logo {display: block; width: 72px; height: 72px; object-fit: contain}
-.retail-logo {display: block; width: 180px; height: auto; max-width: 100%; object-fit: contain}
-body[data-brand=corp] .brand {display:flex; flex-direction:row; align-items:center; justify-content:flex-end; gap:8px; width:252px; height:72px; max-width:100%}
+.bank-logo, .retail-logo {display: block; flex: none; object-fit: contain}
+.bank-logo {width: var(--bank-logo-size); height: var(--bank-logo-size)}
+.retail-logo {width: var(--retail-logo-width); height: auto; aspect-ratio: auto 3000 / 1116}
+body[data-brand=corp] .brand {
+  flex-direction: row; align-items: center; justify-content: flex-end; gap: var(--logo-gap);
+  width: calc(var(--bank-logo-size) + var(--logo-gap) + var(--retail-logo-width)); height: var(--bank-logo-size);
+}
 .brand [data-scope-logo] {display:none}
 .brand [data-scope-logo][data-active] {display:block}
-.brand [data-scope-logo=retail] {width:152px}
 body[data-brand=retail] .masthead {background: #000}
 .fixed-currency {font-size: 13px; font-weight: 700; color: var(--purple)}
 .scope-currency {width:154px; min-height:34px; display:flex; align-items:center; justify-content:flex-end}
@@ -103,10 +110,6 @@ th[aria-sort=ascending] .sort-button svg, th[aria-sort=descending] .sort-button 
   .navigation {padding: 12px 16px}
   main {padding: 12px 16px 20px}
   .masthead {padding: 0 16px 10px}
-  .bank-logo {width: 64px; height: 64px}
-  body[data-brand=corp] .brand {width:156px; height:56px}
-  .brand [data-scope-logo=bank] {width:50px; height:50px}
-  .brand [data-scope-logo=retail] {width:98px}
   .country-flag {width: 32px; height: 27px}
   .kpi-grid {grid-template-columns: minmax(0, 1fr)}
   .kpi-card {min-height: 178px; padding: 18px 18px 12px}
