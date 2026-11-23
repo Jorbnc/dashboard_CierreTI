@@ -153,10 +153,6 @@ table Cierre
 				    Workbook = Binary.Buffer(File.Contents(pWorkbookPath)),
 				    Members = {"banco_chile", "banco_peru", "retail_chile", "retail_peru"},
 				    Result = Table.Combine(List.Transform(Members, (member) =>
-				        let Leaf = Table.Buffer(Table.SelectRows(fxCierreXlsx(Workbook, SourceName, member), each [unit] = "MMCLP")),
-				            Count = Table.RowCount(Leaf)
-				        in Table.TransformColumns(Leaf, {
-				            {"id", each "corp_ti|" & _, type text},
-				            {"default_currency", each "MMCLP", type text}, {"expected_rows", each Count, Int64.Type}})))
+				        Table.TransformColumns(fxCierreXlsx(Workbook, SourceName, member), {{"id", each "corp_ti|" & _, type text}})))
 				in
 				    Result

@@ -39,8 +39,12 @@
     return {actual, budget, delta: actual - budget, percent: relative(actual, budget)};
   }
   // Every selected member is a validated leaf. Add amounts before computing any ratio.
-  function portfolioCurrency(data, scope) {
-    const units = data.choices[scope].map(key => data.members[key].currencies.MMCLP);
+  function portfolioCurrencies(data, scope) {
+    const leaves = data.choices[scope].map(key => data.members[key].currencies);
+    return Object.fromEntries(Object.keys(leaves[0]).filter(unit => leaves.every(leaf => leaf[unit]))
+      .map(unit => [unit, mergeCurrency(unit, leaves.map(leaf => leaf[unit]))]));
+  }
+  function mergeCurrency(unit, units) {
     if (units.length === 1) return units[0];
     const merge = series => Object.fromEntries(['actual', 'forecast', 'budget', 'prior'].map(key => [
       key, key === 'prior' && series.some(s => !s.prior) ? null : Array.from({length: 12}, (_, i) => {
@@ -64,13 +68,13 @@
       })};
     }
     const total = merge(units.map(u => u.total));
-    return {unit: 'MMCLP', total, types,
+    return {unit, total, types,
       history_note: !total.prior ? 'Histórico completo no disponible para este alcance.'
         : 'Histórico disponible para total, OPEX y CAPEX' + (detailedPrior ? ' y categorías.' : '; no para categorías.'),
       ranges: Object.fromEntries(['execution_forecast','budget','prior'].map(k =>
         [k, units.map(u => u.ranges[k]).filter(Boolean).join(', ')]))};
   }
-  const api = {sum, ratio, relative, metrics, comparison, portfolioCurrency};
+  const api = {sum, ratio, relative, metrics, comparison, portfolioCurrencies};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else globalThis.CierreModel = api;
 })();

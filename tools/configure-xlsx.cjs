@@ -9,17 +9,18 @@ const DEFAULT_PATH = String.raw`C:\Users\jnunezca\OneDrive - Ripley Corp\dashboa
 const FUNCTIONS = ['fxCierreSum', 'fxCierreXlsx'];
 const expression = (name, code) => `expression ${name} =\n${code.trim().split('\n').map(line => '\t\t' + line).join('\n')}\n`;
 const parameter = () => `expression pWorkbookPath = "${DEFAULT_PATH}" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]\n`;
-function partition(business) {
+function partition(business, previousPortfolio = false) {
   assert.ok(Object.hasOwn(scopes, business), 'Negocio desconocido');
   const p = portfolios[business];
   const result = p ? [
     'Members = {' + p.members.map(m => '"' + m + '"').join(', ') + '},',
     'Result = Table.Combine(List.Transform(Members, (member) =>',
-    '    let Leaf = Table.Buffer(Table.SelectRows(fxCierreXlsx(Workbook, SourceName, member), each [unit] = "MMCLP")),',
+    ...(previousPortfolio ? ['    let Leaf = Table.Buffer(Table.SelectRows(fxCierreXlsx(Workbook, SourceName, member), each [unit] = "MMCLP")),',
     '        Count = Table.RowCount(Leaf)',
     '    in Table.TransformColumns(Leaf, {',
     `        {"id", each "${business}|" & _, type text},`,
-    '        {"default_currency", each "MMCLP", type text}, {"expected_rows", each Count, Int64.Type}})))'
+    '        {"default_currency", each "MMCLP", type text}, {"expected_rows", each Count, Int64.Type}})))'] : [
+    `    Table.TransformColumns(fxCierreXlsx(Workbook, SourceName, member), {{"id", each "${business}|" & _, type text}})))`])
   ] : [`Result = fxCierreXlsx(Workbook, SourceName, "${business}")`];
   return ['\tpartition Cierre = m', '\t\tmode: import', '\t\tsource =',
     '\t\t\t\tlet',
@@ -65,7 +66,7 @@ function replacePartition(previous, business) {
   const tail = previous.slice(start);
   assert.ok(!/^\t(?:annotation|column|measure|hierarchy) /m.test(tail), 'Hay metadatos despues de la particion: revisar manualmente');
   const normalized = text => text.replaceAll('\r\n', '\n').trimEnd();
-  assert.ok([partition(business), legacyPartition(business)].some(known => normalized(tail) === normalized(known)),
+  assert.ok([partition(business), partition(business, true), legacyPartition(business)].some(known => normalized(tail) === normalized(known)),
     'La particion fue personalizada: no se sobrescribe');
   const columns = previous.slice(0, start).replace(/^\tcolumn sha256\n(?:\t\t[^\n]*\n|\n)*/m, '');
   assert.ok(!/\bsha256\b/i.test(columns), 'Referencia local a la columna retirada: revisar antes de migrar');

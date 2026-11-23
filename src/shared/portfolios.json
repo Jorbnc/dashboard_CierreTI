@@ -1,5 +1,5 @@
 {
   "bancos": {"entity": "Bancos Chile + Perú", "brand": "bank", "members": ["banco_chile", "banco_peru"]},
   "retail": {"entity": "Retail Chile + Perú", "brand": "retail", "members": ["retail_chile", "retail_peru"]},
-  "corp_ti": {"entity": "Corp TI", "brand": "corp", "members": ["banco_chile", "banco_peru", "retail_chile", "retail_peru"], "groups": ["bancos", "retail"]}
+  "corp_ti": {"entity": "Ripley Corp", "html": "ripley_corp.html", "brand": "corp", "members": ["banco_chile", "banco_peru", "retail_chile", "retail_peru"], "groups": ["bancos", "retail"]}
 }

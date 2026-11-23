@@ -126,11 +126,11 @@ async function main() {
           await update(dataView(portfolioFixture(key))); await ready();
           await checkSourceBadge();
           const logo = app.locator('.masthead .brand').getByRole('img');
-          if (key === 'corp_ti') await expect(logo).toHaveCount(0);
+          if (key === 'corp_ti') await expect(logo).toHaveCount(2);
           for (const button of await app.locator('.scope-bar button').all()) {
             await button.click(); await ready();
             const scope = await button.getAttribute('data-scope');
-            if (scope === 'corp_ti') await expect(logo).toHaveCount(0);
+            if (scope === 'corp_ti') await expect(logo).toHaveCount(2);
             else {
               const bank = scope.startsWith('banco');
               await expect(logo).toHaveCount(1);
@@ -140,14 +140,21 @@ async function main() {
             }
             const expected = {corp_ti:45,bancos:20,retail:25,banco_chile:10,banco_peru:10,retail_chile:15,retail_peru:10}[scope];
             await expect(app.locator('[data-kpi="0"][data-scope=Total] [data-metric=actual-month]')).toHaveText(expected+'MMCLP');
+            if (scope === 'banco_peru') {
+              await app.getByRole('button',{name:'MSoles',exact:true}).click(); await ready();
+              await expect(app.locator('[data-kpi="0"][data-scope=Total] [data-metric=actual-month]')).toHaveText(expected+'MSoles');
+            } else await expect(app.getByRole('button',{name:'MSoles',exact:true})).toHaveCount(0);
             await expect(app.locator('#download-pdf')).toHaveCount(0);
           }
           if (key === 'corp_ti') {
             await app.locator('button[data-scope=banco_peru]').click(); await ready();
+            await app.locator('[data-currency=MSoles]').click(); await ready();
             await update(dataView(portfolioFixture(key))); await ready();
             await expect(logo).toHaveAccessibleName('Banco Ripley');
+            await expect(app).toHaveAttribute('data-currency','MSoles');
             await app.locator('button[data-scope=corp_ti]').click(); await ready();
-            await expect(logo).toHaveCount(0);
+            await expect(logo).toHaveCount(2);
+            await expect(app).toHaveAttribute('data-currency','MMCLP');
           }
           for (const tab of ['opex','capex']) {
             await app.locator('#tab-'+tab).click(); await ready();

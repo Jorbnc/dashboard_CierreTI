@@ -27,20 +27,38 @@
   const closure = months[data.cutoff - 1];
   const state = {page: 'summary', currency: data.default_currency || 'MSoles', month: data.cutoff, category: null, ranking: 'ytd', matrix: 'actual', sortKey: 'category', sortDirection: 'asc'};
   Object.assign(state, initialState);
-  const scopeNames = {bancos: 'Bancos', retail: 'Retail', corp_ti: 'Corp TI', banco_chile: 'Banco Chile',
+  const scopeNames = {bancos: 'Bancos', retail: 'Retail', corp_ti: data.entity, banco_chile: 'Banco Chile',
     banco_peru: 'Banco Perú', retail_chile: 'Retail Chile', retail_peru: 'Retail Perú'};
   let scopeBar;
+  let currencyGroup, fixedCurrency;
   const scopeLogos = root.querySelectorAll('.brand [data-scope-logo]');
   if (data.choices) {
     if (!Object.hasOwn(data.choices, state.scope)) state.scope = data.business;
-    data.currencies = {MMCLP: model.portfolioCurrency(data, state.scope)};
+    data.currencies = model.portfolioCurrencies(data, state.scope);
+    fixedCurrency = root.querySelector('.fixed-currency');
+    currencyGroup = owner.createElement('div');
+    currencyGroup.className = 'currency';
+    currencyGroup.setAttribute('role', 'group'); currencyGroup.setAttribute('aria-label', 'Moneda');
+    const units = new Set([data.default_currency, ...Object.values(data.members).flatMap(m => Object.keys(m.currencies))]);
+    for (const unit of units) {
+      const button = owner.createElement('button');
+      button.type = 'button'; button.dataset.currency = unit; button.textContent = unit;
+      currencyGroup.append(button);
+    }
+    if (units.size > 1) {
+      const slot = owner.createElement('div');
+      slot.className = 'scope-currency';
+      fixedCurrency.replaceWith(slot);
+      slot.append(fixedCurrency, currencyGroup);
+    } else fixedCurrency.after(currencyGroup);
     scopeBar = owner.createElement('div');
     scopeBar.className = 'scope-bar';
     scopeBar.setAttribute('role', 'group'); scopeBar.setAttribute('aria-label', 'Alcance del reporte');
-    for (const key of Object.keys(data.choices)) {
+    const groups = Object.keys(data.choices).filter(k => k !== data.business && !Object.hasOwn(data.members, k));
+    for (const key of new Set([data.business, ...groups.flatMap(k => [k, ...data.choices[k]]), ...data.choices[data.business]])) {
       const button = owner.createElement('button');
       button.type = 'button'; button.dataset.scope = key;
-      button.textContent = key === data.business ? 'Total · ' + scopeNames[key] : scopeNames[key];
+      button.textContent = key === data.business ? 'Total ' + scopeNames[key] : scopeNames[key];
       scopeBar.append(button);
       listen(button, 'click', () => requestRender({scope: key, category: null}, true));
     }
@@ -204,12 +222,19 @@
         pending = false;
         const replace = rebuildPending || state.page !== desired.page;
         rebuildPending = false;
-        if (scopeBar && state.scope !== desired.scope) data.currencies = {MMCLP: model.portfolioCurrency(data, desired.scope)};
+        if (scopeBar && state.scope !== desired.scope) data.currencies = model.portfolioCurrencies(data, desired.scope);
+        if (!data.currencies[desired.currency]) desired.currency = data.default_currency;
         Object.assign(state, desired);
-        if (scopeBar) for (const button of scopeBar.children) button.setAttribute('aria-pressed', String(button.dataset.scope === state.scope));
+        if (scopeBar) {
+          for (const button of scopeBar.children) button.setAttribute('aria-pressed', String(button.dataset.scope === state.scope));
+          for (const button of currencyGroup.children) button.hidden = !data.currencies[button.dataset.currency];
+          currencyGroup.hidden = Object.keys(data.currencies).length === 1;
+          fixedCurrency.hidden = !currencyGroup.hidden;
+          fixedCurrency.textContent = state.currency;
+        }
         if (scopeLogos.length) {
           const brands = new Set(data.choices[state.scope].map(key => data.members[key].brand));
-          for (const logo of scopeLogos) logo.toggleAttribute('data-active', brands.size === 1 && brands.has(logo.dataset.scopeLogo));
+          for (const logo of scopeLogos) logo.toggleAttribute('data-active', brands.has(logo.dataset.scopeLogo));
         }
         await render(replace);
       }

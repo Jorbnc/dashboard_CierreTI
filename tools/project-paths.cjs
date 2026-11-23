@@ -4,7 +4,7 @@ const {projects: scopes} = require('../src/adapter');
 
 // Desktop-saved project names are independent of the financial business key.
 const projectNames = {banco_chile: 'Gastos TI BR CL', banco_peru: 'Gastos TI BR PE',
-  bancos: 'Gastos TI Bancos', retail: 'Gastos TI Retail', corp_ti: 'Gastos TI Corp'};
+  bancos: 'Gastos TI Bancos', retail: 'Gastos TI Retail', corp_ti: 'Gastos TI Ripley Corp'};
 function projectPaths(root, business) {
   assert.ok(Object.hasOwn(scopes, business), 'Negocio desconocido');
   const name = projectNames[business] || business;

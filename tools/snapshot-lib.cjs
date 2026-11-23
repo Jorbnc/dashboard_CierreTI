@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const {fromRows, scopes, projects} = require('../src/adapter');
+const previewName = business => projects[business].html || `${business}.html`;
 
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const writeJson = (file, value) => {
@@ -50,7 +51,7 @@ function verifyPreparation(root, businesses = Object.keys(scopes)) {
     businesses.every(b => Object.hasOwn(projects, b)), 'Seleccion de negocios invalida');
   const manifest = readJson(path.join(root, 'data/preparation.json'));
   assert.equal(manifest.schema, 2, 'Repetir preparar_powerbi.py para actualizar la preparacion');
-  const expected = businesses.flatMap(b => [`data/${b}.json`, `previews/${b}.html`]);
+  const expected = businesses.flatMap(b => [`data/${b}.json`, `previews/${previewName(b)}`]);
   expected.push('previews/informe_generacion.md');
   assert.ok(expected.every(file => manifest.files.includes(file)), 'La preparación no contiene todos los proyectos solicitados');
   for (const file of expected) {
@@ -62,7 +63,7 @@ function verifyPreparation(root, businesses = Object.keys(scopes)) {
 }
 
 function verifyPreview(root, business, input) {
-  const html = fs.readFileSync(path.join(root, 'previews', `${business}.html`), 'utf8');
+  const html = fs.readFileSync(path.join(root, 'previews', previewName(business)), 'utf8');
   const preview = JSON.parse(html.match(/<script id="report-data" type="application\/json">([\s\S]*?)<\/script>/)[1]);
   const restored = fromRows(input.rows);
   return verifyPayload(restored, preview);

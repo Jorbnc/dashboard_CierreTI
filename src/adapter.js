@@ -27,7 +27,7 @@ function fromRows(rows, memberOnly = false) {
   }
   const first = rows[0], scope = scopes[first.business];
   requireThat(scope, 'Negocio no reconocido.');
-  requireThat(first.entity === scope.entity && first.brand === scope.brand && first.default_currency === (memberOnly ? 'MMCLP' : scope.default), 'Identidad o moneda del negocio incorrecta.');
+  requireThat(first.entity === scope.entity && first.brand === scope.brand && first.default_currency === scope.default, 'Identidad o moneda del negocio incorrecta.');
   requireThat(Number.isInteger(first.year) && first.year >= 2000 && Number.isInteger(first.cutoff) && first.cutoff >= 1 && first.cutoff <= 12, 'Cierre inválido.');
   requireThat(first.expected_rows === rows.length, 'Entrega incompleta o filtrada; no se muestran totales parciales.');
   const common = ['business', 'entity', 'brand', 'default_currency', 'year', 'cutoff', 'source', 'sheet', 'expected_rows'];
@@ -44,7 +44,7 @@ function fromRows(rows, memberOnly = false) {
       else requireThat(value === null || (typeof value === 'number' && Number.isFinite(value)), `Importe inválido: ${field}.`);
     }
     requireThat(!ids.has(row.id), 'Identificador duplicado.'); ids.add(row.id);
-    requireThat((memberOnly ? row.unit === 'MMCLP' : scope.units.includes(row.unit)) && row.month >= 1 && row.month <= 12, 'Moneda o mes fuera de alcance.');
+    requireThat(scope.units.includes(row.unit) && row.month >= 1 && row.month <= 12, 'Moneda o mes fuera de alcance.');
     requireThat(['total', 'type', 'category'].includes(row.level), 'Nivel desconocido.');
     requireThat(row.level === 'total' ? row.kind === '' && row.category === ''
       : ['Capex', 'Opex', ...(first.business === 'retail_chile' ? ['CO'] : [])].includes(row.kind) &&
@@ -88,7 +88,7 @@ function fromRows(rows, memberOnly = false) {
       requireThat(Math.abs(actual - expected) <= Math.max(1e-8, Math.abs(expected) * 1e-9), 'No cuadra la composición de las series.');
     }
   };
-  requireThat(Object.keys(result.currencies).length === (memberOnly ? 1 : scope.units.length), 'Faltan monedas del negocio.');
+  requireThat(Object.keys(result.currencies).length === scope.units.length, 'Faltan monedas del negocio.');
   for (const currency of Object.values(result.currencies)) {
     requireThat(currency.total && currency.types.Capex?.series && currency.types.Opex?.series, 'Falta Total, CAPEX u OPEX.');
     for (const group of Object.values(currency.types)) {

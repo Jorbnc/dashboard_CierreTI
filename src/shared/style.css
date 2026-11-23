@@ -34,9 +34,9 @@ a {color: var(--purple)}
 
 .navigation {display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 11px 36px; background: #fff; border-bottom: 1px solid var(--border)}
 .tabs {display: flex; gap: 8px; min-width: 0}
-.tabs button {display: flex; align-items: center; justify-content: center; gap: 8px; height: 34px; padding: 0 16px; color: var(--purple); background: #fff; font-weight: 600; font-size: 13px; border: 1px solid #d9cde9; border-radius: 18px}
-.tabs button[aria-selected=true] {color: #fff; background: var(--purple); border-color: var(--purple)}
-.tabs button:hover:not([aria-selected=true]) {background: var(--lavender)}
+.tabs button, .scope-bar button {display: flex; align-items: center; justify-content: center; gap: 8px; height: 34px; padding: 0 16px; color: var(--purple); background: #fff; font-weight: 600; font-size: 13px; border: 1px solid #d9cde9; border-radius: 18px}
+.tabs button[aria-selected=true], .scope-bar button[aria-pressed=true] {color: #fff; background: var(--purple); border-color: var(--purple)}
+.tabs button:hover:not([aria-selected=true]), .scope-bar button:hover:not([aria-pressed=true]) {background: var(--lavender)}
 .filters {display: flex; gap: 18px; align-items: center; flex-wrap: wrap}
 .filters label {display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--muted)}
 .month-field {display: flex; align-items: center; gap: 8px}
