@@ -125,12 +125,29 @@ async function main() {
         for (const key of ['bancos','retail','corp_ti']) {
           await update(dataView(portfolioFixture(key))); await ready();
           await checkSourceBadge();
+          const logo = app.locator('.masthead .brand').getByRole('img');
+          if (key === 'corp_ti') await expect(logo).toHaveCount(0);
           for (const button of await app.locator('.scope-bar button').all()) {
             await button.click(); await ready();
             const scope = await button.getAttribute('data-scope');
+            if (scope === 'corp_ti') await expect(logo).toHaveCount(0);
+            else {
+              const bank = scope.startsWith('banco');
+              await expect(logo).toHaveCount(1);
+              await expect(logo).toHaveAccessibleName(bank ? 'Banco Ripley' : 'Ripley');
+              const img = fs.readFileSync(path.join(root, 'src/shared/branding', bank ? 'banco_ripley.png' : 'retail_ripley.png'));
+              assert.equal(await logo.getAttribute('src'), 'data:image/png;base64,' + img.toString('base64'));
+            }
             const expected = {corp_ti:45,bancos:20,retail:25,banco_chile:10,banco_peru:10,retail_chile:15,retail_peru:10}[scope];
             await expect(app.locator('[data-kpi="0"][data-scope=Total] [data-metric=actual-month]')).toHaveText(expected+'MMCLP');
             await expect(app.locator('#download-pdf')).toHaveCount(0);
+          }
+          if (key === 'corp_ti') {
+            await app.locator('button[data-scope=banco_peru]').click(); await ready();
+            await update(dataView(portfolioFixture(key))); await ready();
+            await expect(logo).toHaveAccessibleName('Banco Ripley');
+            await app.locator('button[data-scope=corp_ti]').click(); await ready();
+            await expect(logo).toHaveCount(0);
           }
           for (const tab of ['opex','capex']) {
             await app.locator('#tab-'+tab).click(); await ready();

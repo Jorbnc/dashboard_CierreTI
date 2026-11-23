@@ -30,6 +30,7 @@
   const scopeNames = {bancos: 'Bancos', retail: 'Retail', corp_ti: 'Corp TI', banco_chile: 'Banco Chile',
     banco_peru: 'Banco Perú', retail_chile: 'Retail Chile', retail_peru: 'Retail Perú'};
   let scopeBar;
+  const scopeLogos = root.querySelectorAll('.brand [data-scope-logo]');
   if (data.choices) {
     if (!Object.hasOwn(data.choices, state.scope)) state.scope = data.business;
     data.currencies = {MMCLP: model.portfolioCurrency(data, state.scope)};
@@ -206,6 +207,10 @@
         if (scopeBar && state.scope !== desired.scope) data.currencies = {MMCLP: model.portfolioCurrency(data, desired.scope)};
         Object.assign(state, desired);
         if (scopeBar) for (const button of scopeBar.children) button.setAttribute('aria-pressed', String(button.dataset.scope === state.scope));
+        if (scopeLogos.length) {
+          const brands = new Set(data.choices[state.scope].map(key => data.members[key].brand));
+          for (const logo of scopeLogos) logo.toggleAttribute('data-active', brands.size === 1 && brands.has(logo.dataset.scopeLogo));
+        }
         await render(replace);
       }
     } catch (error) {
