@@ -2,7 +2,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
-const {scopes} = require('../src/adapter');
+const {projects: scopes, portfolios} = require('../src/adapter');
 const fields = require('../src/fields.json');
 const {projectPaths, selectedBusinesses} = require('./project-paths.cjs');
 const DEFAULT_PATH = String.raw`C:\Users\jnunezca\OneDrive - Ripley Corp\dashboards\input\CierreTI\2609_dashboard_data.xlsx`;
@@ -11,11 +11,21 @@ const expression = (name, code) => `expression ${name} =\n${code.trim().split('\
 const parameter = () => `expression pWorkbookPath = "${DEFAULT_PATH}" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]\n`;
 function partition(business) {
   assert.ok(Object.hasOwn(scopes, business), 'Negocio desconocido');
+  const p = portfolios[business];
+  const result = p ? [
+    'Members = {' + p.members.map(m => '"' + m + '"').join(', ') + '},',
+    'Result = Table.Combine(List.Transform(Members, (member) =>',
+    '    let Leaf = Table.Buffer(Table.SelectRows(fxCierreXlsx(Workbook, SourceName, member), each [unit] = "MMCLP")),',
+    '        Count = Table.RowCount(Leaf)',
+    '    in Table.TransformColumns(Leaf, {',
+    `        {"id", each "${business}|" & _, type text},`,
+    '        {"default_currency", each "MMCLP", type text}, {"expected_rows", each Count, Int64.Type}})))'
+  ] : [`Result = fxCierreXlsx(Workbook, SourceName, "${business}")`];
   return ['\tpartition Cierre = m', '\t\tmode: import', '\t\tsource =',
     '\t\t\t\tlet',
     '\t\t\t\t    SourceName = List.Last(Text.Split(Text.Replace(pWorkbookPath, "\\", "/"), "/")),',
     '\t\t\t\t    Workbook = Binary.Buffer(File.Contents(pWorkbookPath)),',
-    `\t\t\t\t    Result = fxCierreXlsx(Workbook, SourceName, "${business}")`,
+    ...result.map(line => '\t\t\t\t    ' + line),
     '\t\t\t\tin', '\t\t\t\t    Result', ''].join('\n');
 }
 function legacyPartition(business) {

@@ -16,6 +16,7 @@ for (const fn of FUNCTIONS) test(`sintaxis M oficial: ${fn} (no ejecuta motor M)
 });
 test('particion nativa y consulta opcional QA tienen sintaxis M valida', async () => {
   await parses(partition('banco_peru').split('\t\tsource =\n')[1], 'Particion');
+  for (const scope of ['bancos','retail','corp_ti']) await parses(partition(scope).split('\t\tsource =\n')[1], scope);
   await parses(acceptanceQuery({business: 'banco_chile', rows: fixture()}), 'QA');
 });
 test('ruta Windows con espacios se conserva literalmente y Cierre usa el parametro', async () => {
@@ -120,7 +121,7 @@ test('excepcion 2610 explicita mantiene comprobaciones y rango propio, sin hered
     'if exception then CheckDates(header, historyColumn + 1, Year)',
     'Amounts(66, historyColumn + 1)', 'Cell(66, historyColumn + 13)',
     'ColumnName(historyColumn + 1) & "66:"', 'CAPEX sin No Direccionable',
-    'All({baseValid, finalSourceValid, adjustmentValid, finalValid, forcedValid})']) assert.ok(code.includes(text), text);
+    'All({baseValid, finalSourceValid, adjustmentValid, finalValid, forcedValid, detailValid})']) assert.ok(code.includes(text), text);
 });
 test('2610 final usa BASE y fechas historicas autorizadas, sin repetir No Direccionable', () => {
   const code = fs.readFileSync(path.join(root, 'powerquery/fxCierreXlsx.pq'), 'utf8');

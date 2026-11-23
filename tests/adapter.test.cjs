@@ -22,11 +22,30 @@ function fixture(business = 'banco_chile') {
   rows.forEach(row => {row.expected_rows = rows.length;});
   return rows;
 }
+function portfolioFixture(key) {
+  return require('../src/adapter').portfolios[key].members.flatMap(m => {
+    const leaf = fixture(m).filter(r => r.unit === 'MMCLP');
+    return leaf.map(r => ({...r,id:key+'|'+r.id,expected_rows:leaf.length,default_currency:'MMCLP'}));
+  });
+}
 function dataView(rows) {
   const names = Object.keys(fields).reverse();
   return {metadata: {}, table: {columns: names.map(name => ({roles: {[name]: true}})), rows: rows.map(row => names.map(key => row[key]))}};
 }
 if (require.main === module) {
+test('consolida solo sociedades autorizadas en MMCLP, sin ceros historicos implicitos', () => {
+  const {portfolioCurrency,metrics} = require('../src/shared/model');
+  const rows = portfolioFixture('corp_ti'), data = fromDataView(dataView(rows.reverse()));
+  for (const [scope,total] of Object.entries({corp_ti:45,bancos:20,retail:25,retail_chile:15,banco_peru:10})) {
+    const series = portfolioCurrency(data,scope).total;
+    assert.equal(metrics(series,5,5).actualMonth,total);
+    assert.equal(series.prior === null, !['bancos','banco_peru'].includes(scope));
+  }
+  assert.throws(() => fromRows(rows.filter(r=>r.business !== 'retail_chile')));
+  assert.throws(() => fromRows(rows.slice(1)));
+  const mixed = portfolioFixture('bancos'); mixed[5].cutoff = 6;
+  assert.throws(() => fromRows(mixed));
+});
 for (const business of Object.keys(scopes)) test(`reconstruye ${business} con meses, monedas e historia`, () => {
   const payload = fromDataView(dataView(fixture(business).reverse()));
   assert.equal(payload.business, business);
@@ -63,4 +82,4 @@ test('exige entrega final y roles únicos del DataView', () => {
   assert.throws(() => fromDataView(view), /Enlace faltante/);
 });
 }
-module.exports = {fixture, dataView};
+module.exports = {fixture, dataView, portfolioFixture};

@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
-const {fromRows, scopes} = require('../src/adapter');
+const {fromRows, scopes, projects} = require('../src/adapter');
 
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const writeJson = (file, value) => {
@@ -47,12 +47,12 @@ function compareVersions(a, b) {
 }
 function verifyPreparation(root, businesses = Object.keys(scopes)) {
   assert.ok(businesses.length && new Set(businesses).size === businesses.length &&
-    businesses.every(b => Object.hasOwn(scopes, b)), 'Seleccion de negocios invalida');
+    businesses.every(b => Object.hasOwn(projects, b)), 'Seleccion de negocios invalida');
   const manifest = readJson(path.join(root, 'data/preparation.json'));
   assert.equal(manifest.schema, 2, 'Repetir preparar_powerbi.py para actualizar la preparacion');
   const expected = businesses.flatMap(b => [`data/${b}.json`, `previews/${b}.html`]);
   expected.push('previews/informe_generacion.md');
-  assert.deepEqual([...manifest.files].sort(), expected.sort());
+  assert.ok(expected.every(file => manifest.files.includes(file)), 'La preparación no contiene todos los proyectos solicitados');
   for (const file of expected) {
     const baseline = path.join(root, '.tmp/preparation-reference', file);
     assert.ok(fs.existsSync(baseline) && fs.readFileSync(path.join(root, file)).equals(fs.readFileSync(baseline)),
@@ -65,9 +65,17 @@ function verifyPreview(root, business, input) {
   const html = fs.readFileSync(path.join(root, 'previews', `${business}.html`), 'utf8');
   const preview = JSON.parse(html.match(/<script id="report-data" type="application\/json">([\s\S]*?)<\/script>/)[1]);
   const restored = fromRows(input.rows);
+  return verifyPayload(restored, preview);
+}
+function verifyPayload(restored, preview) {
   for (const field of ['business', 'year', 'cutoff', 'source', 'sheet']) assert.equal(restored[field], preview[field]);
   assert.deepEqual(Object.keys(restored.currencies).sort(), Object.keys(preview.currencies).sort());
   let positions = 0;
+  if (preview.members || restored.members) {
+    assert.deepEqual(restored.choices, preview.choices);
+    assert.deepEqual(Object.keys(restored.members).sort(), Object.keys(preview.members).sort());
+    for (const key of Object.keys(preview.members)) positions += verifyPayload(restored.members[key], preview.members[key]);
+  }
   for (const [unit, currency] of Object.entries(preview.currencies)) {
     const other = restored.currencies[unit];
     assert.deepEqual(other.total, currency.total, 'Series totales distintas del HTML'); positions += 48;

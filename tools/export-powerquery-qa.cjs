@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const {gzipSync} = require('node:zlib');
-const {scopes, fromRows} = require('../src/adapter');
+const {projects: scopes, fromRows} = require('../src/adapter');
 const {verifyPreparation, verifyPreview} = require('./snapshot-lib.cjs');
 const fields = require('../src/fields.json');
 function acceptanceQuery(input) {

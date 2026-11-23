@@ -1,6 +1,8 @@
 # Dashboard Cierre TI
 
-Un repositorio independiente, un visual SDK compartido **sin cifras incrustadas** y cuatro PBIP: Banco Chile, Banco Peru, Retail Chile y Retail Peru. El flujo predeterminado es **XLSX directo con Power Query M** en `powerbi/`. Windows usa solo **Git Bash + Power BI Desktop**, sin Python, Node ni manejo regular de JSON.
+Un repositorio independiente, un visual SDK compartido **sin cifras incrustadas** y siete PBIP: Banco Chile, Banco Perú, Retail Chile, Retail Perú, Bancos, Retail y Corp TI. El flujo predeterminado es **XLSX directo con Power Query M** en `powerbi/`. Windows usa solo **Git Bash + Power BI Desktop**, sin Python, Node ni manejo regular de JSON.
+
+Desde 0.1.0.11 los tres consolidados ofrecen selección de alcance dentro del visual; importan solo sus sociedades en MMCLP. Los porcentajes se recalculan sobre las sumas. Solo los dos bancos individuales ofrecen descarga PDF. El selector no es un control de acceso: otorgar permisos al reporte y modelo según el perímetro completo. Para preparar los siete, ejecutar la preparación Python con la fuente explícita, compilar el SDK y usar `npm run package:projects` sin filtro; el snapshot histórico sigue siendo de cuatro sociedades.
 
 El usuario confirmo **funcionamiento en Desktop el 16/11/2026**, tras retirar hashes y corregir `pWorkbookPath`; despues informo acceso de un destinatario a Service con un problema del selector en Opera. No equivale a aceptacion financiera y funcional exhaustiva de los cuatro modelos. El parser oficial Power Query en Linux valida sintaxis, no ejecucion. La evidencia snapshot `2609-v0.2.0.1` es de otra via, no prueba de XLSX nativo.
 
@@ -10,7 +12,7 @@ El usuario confirmo **funcionamiento en Desktop el 16/11/2026**, tras retirar ha
 
 El botón **PDF** con flecha guarda la vista activa con sus estilos de pantalla y toda su altura, normalmente a doble resolución. La página conserva sus proporciones en vez de recomponer las tarjetas en A4; el texto no es seleccionable. El PDF se genera en memoria, sin servicio externo. En Desktop/Service se entrega exclusivamente por la [File Download API](https://learn.microsoft.com/en-us/power-bi/developer/visuals/file-download-api): requiere permiso del tenant y consentimiento del usuario; denegarlo no bloquea el reporte. El menú nativo Exportar no cambia.
 
-En Linux, después de preparar los dos bancos, compilar y probar el visual, usar `npm run package:projects -- --business banco_chile banco_peru` y `npm run check`. El manifiesto registra ambos bancos; Retail sigue en 0.1.0.7. En Windows, sincronizar con Desktop cerrado, probar CAPEX del mes en cada PBIP y republicar para verificar la descarga con un lector en Service. No cambiar modelo ni parámetro por este ajuste.
+En Linux, después de preparar los dos bancos, compilar y probar el visual, usar `npm run package:projects -- --business banco_chile banco_peru` y `npm run check`. Este procedimiento selectivo corresponde al hito 0.1.0.10; la entrega conjunta posterior incluye los siete proyectos. En Windows, sincronizar con Desktop cerrado, probar CAPEX del mes en cada PBIP y republicar para verificar la descarga con un lector en Service. No cambiar modelo ni parámetro por este ajuste.
 
 ### Nombres activos y formato anterior (0.1.0.8)
 

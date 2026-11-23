@@ -38,7 +38,39 @@
       : mode === 'annual' ? [m.forecastYear, m.budgetYear] : [m.actualYtd, m.budgetYtd];
     return {actual, budget, delta: actual - budget, percent: relative(actual, budget)};
   }
-  const api = {sum, ratio, relative, metrics, comparison};
+  // Every selected member is a validated leaf. Add amounts before computing any ratio.
+  function portfolioCurrency(data, scope) {
+    const units = data.choices[scope].map(key => data.members[key].currencies.MMCLP);
+    if (units.length === 1) return units[0];
+    const merge = series => Object.fromEntries(['actual', 'forecast', 'budget', 'prior'].map(key => [
+      key, key === 'prior' && series.some(s => !s.prior) ? null : Array.from({length: 12}, (_, i) => {
+        const values = series.map(s => s[key][i]);
+        return values.every(v => v === null) ? null : sum(values);
+      })
+    ]));
+    const detailedPrior = units.every(u => Object.values(u.types).every(g => g.rows.every(r => r.series.prior)));
+    const types = {};
+    for (const kind of new Set(units.flatMap(u => Object.keys(u.types)))) {
+      const groups = units.map(u => u.types[kind]).filter(Boolean);
+      const categories = new Map();
+      for (const r of groups.flatMap(g => g.rows)) {
+        if (!categories.has(r.category)) categories.set(r.category, {category: r.category, label: r.label, parts: []});
+        categories.get(r.category).parts.push(r.series);
+      }
+      types[kind] = {series: merge(groups.map(g => g.series)), rows: Array.from(categories.values(), r => {
+        const series = merge(r.parts);
+        if (!detailedPrior) series.prior = null;
+        return {category: r.category, label: r.label, series};
+      })};
+    }
+    const total = merge(units.map(u => u.total));
+    return {unit: 'MMCLP', total, types,
+      history_note: !total.prior ? 'Histórico completo no disponible para este alcance.'
+        : 'Histórico disponible para total, OPEX y CAPEX' + (detailedPrior ? ' y categorías.' : '; no para categorías.'),
+      ranges: Object.fromEntries(['execution_forecast','budget','prior'].map(k =>
+        [k, units.map(u => u.ranges[k]).filter(Boolean).join(', ')]))};
+  }
+  const api = {sum, ratio, relative, metrics, comparison, portfolioCurrency};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else globalThis.CierreModel = api;
 })();

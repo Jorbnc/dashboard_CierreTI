@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const {unzipSync} = require('fflate');
-const {scopes} = require('../src/adapter');
+const {projects: scopes} = require('../src/adapter');
 const fields = require('../src/fields.json');
 const {projectPaths, selectedBusinesses} = require('./project-paths.cjs');
 const businesses = selectedBusinesses(process.argv.slice(2));
@@ -31,6 +31,12 @@ const columns = Object.keys(fields);
 for (const business of businesses) {
   const scope = scopes[business];
   const {name, pbip, report, model} = projectPaths(root, business);
+  if (scope.members) for (const [folder,type] of [[report,'Report'],[model,'SemanticModel']]) {
+    write(path.join(folder,'.platform'), {
+      $schema:'https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json',
+      metadata:{type, displayName:name}, config:{version:'2.0',logicalId:uuid()},
+    });
+  }
   write(pbip, {
     $schema: 'https://developer.microsoft.com/json-schemas/fabric/pbip/pbipProperties/1.0.0/schema.json', version: '1.0',
     artifacts: [{report: {path: `${name}.Report`}}], settings: {enableAutoRecovery: true},
@@ -44,7 +50,8 @@ for (const business of businesses) {
   });
   write(path.join(model, 'definition/database.tmdl'), 'database\n\tcompatibilityLevel: 1606\n');
   write(path.join(model, 'definition/model.tmdl'), 'model Model\n\tculture: es-ES\n\tdefaultPowerBIDataSourceVersion: powerBI_V3\n\tsourceQueryCulture: en-US\n\nannotation __PBI_TimeIntelligenceEnabled = 0\n\nref table Cierre\n');
-  write(path.join(model, 'definition/expressions.tmdl'), `expression pDataFile = "C:\\CierreTI\\data\\${business}.json" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]\n\tlineageTag: ${uuid(business + ':parameter')}\n`);
+  const initialPath = require('./configure-xlsx.cjs').DEFAULT_PATH.replace('2609_dashboard_data.xlsx','2610_dashboard_data_final.xlsx');
+  write(path.join(model, 'definition/expressions.tmdl'), `expression pWorkbookPath = "${initialPath}" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]\n\tlineageTag: ${uuid()}\n`);
   const table = ['table Cierre', `\tlineageTag: ${uuid(business + ':table')}`, ''];
   for (const [column, type] of Object.entries(fields)) {
     table.push(`\tcolumn ${column}`, `\t\tdataType: ${type}`, `\t\tlineageTag: ${uuid(business + ':' + column)}`,

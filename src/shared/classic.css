@@ -2,6 +2,10 @@
 body {font-family: "Segoe UI", Arial, Helvetica, sans-serif; background: #e7e3ef}
 .navigation, .masthead, main, footer {max-width: 1600px; margin-left: auto; margin-right: auto}
 .navigation {padding: 10px 22px}
+.scope-bar {max-width:1600px; margin:0 auto; display:flex; flex-wrap:wrap; gap:4px 12px; padding:4px 22px; background:white; border-top:1px solid #e3dfea}
+.scope-bar button {font:inherit; font-size:13px; font-weight:600; color:#554c63; background:none; border:0; border-bottom:3px solid transparent; padding:7px 2px; cursor:pointer}
+.scope-bar button[aria-pressed=true] {color:#482369; border-bottom-color:currentColor}
+.scope-bar button:focus-visible {outline:2px solid #476f97; outline-offset:1px}
 #download-pdf {display: inline-flex; align-items: center; justify-content: center; gap: 5px; flex: 0 0 62px; min-height: 32px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: white; color: var(--purple); font: inherit; font-size: 12px; font-weight: 600; white-space: nowrap}
 #download-pdf:hover:not(:disabled) {background: #f5f1f9}
 #download-pdf:disabled {opacity: .55}

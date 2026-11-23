@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {unzipSync} = require('fflate');
 const assert = require('node:assert/strict');
-const {scopes} = require('../src/adapter');
+const {projects: scopes} = require('../src/adapter');
 const fields = require('../src/fields.json');
 const {projectPaths} = require('./project-paths.cjs');
 const root = path.resolve(__dirname, '..');
@@ -22,7 +22,7 @@ for (const business of Object.keys(scopes)) {
   assert.equal(json(pbip).artifacts[0].report.path, `${name}.Report`);
   assert.equal(json(`${report}/definition.pbir`).datasetReference.byPath.path, `../${name}.SemanticModel`);
   const table = read(`${model}/definition/tables/Cierre.tmdl`);
-  assert.ok(table.includes(`fxCierreXlsx(Workbook, SourceName, "${business}")`));
+  assert.ok(table.includes(require('./configure-xlsx.cjs').partition(business).trimEnd()));
   assert.ok(table.includes('File.Contents(pWorkbookPath)'));
   assert.ok(!table.includes('pDataFile'));
   const expressions = read(`${model}/definition/expressions.tmdl`);
@@ -54,4 +54,4 @@ for (const business of Object.keys(scopes)) {
     ['0.1.0.7','0.1.0.8'].includes(resource.visual.version) ? [] : [{name:'ExportContent', essential:false}]);
   assert.ok(!resource.content.js.includes('2609_dashboard_data.xlsx'), 'El paquete no debe contener datos de la fuente');
 }
-console.log('4 PBIP: enlaces, aislamiento, versiones y recursos coherentes. Validación local, no sustituye Desktop.');
+console.log('7 PBIP: enlaces, aislamiento, versiones y recursos coherentes. Validación local, no sustituye Desktop.');

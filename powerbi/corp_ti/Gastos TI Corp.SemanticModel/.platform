@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "Gastos TI Corp"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "f308ea02-ac85-4bc0-b400-70c4cebf9885"
+  }
+}

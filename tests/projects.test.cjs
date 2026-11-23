@@ -38,7 +38,7 @@ test('Retail conserva dos proyectos independientes con sus nombres originales', 
 });
 
 test('seleccion de un proyecto es explicita y rechaza opciones desconocidas', () => {
-  assert.equal(selectedBusinesses().length, 4);
+  assert.equal(selectedBusinesses().length, 7);
   assert.deepEqual(selectedBusinesses(['--business', 'banco_peru']), ['banco_peru']);
   for (const args of [['banco_peru'], ['--business'], ['--business', 'bad'], ['--all']])
     assert.throws(() => selectedBusinesses(args), /Uso:/);

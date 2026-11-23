@@ -1,5 +1,6 @@
 'use strict';
 const fields = require('./fields.json');
+const portfolios = require('./shared/portfolios.json');
 const scopes = {
   banco_chile: {entity: 'Banco Ripley Chile', brand: 'bank', units: ['MMCLP'], default: 'MMCLP'},
   banco_peru: {entity: 'Banco Ripley Perú', brand: 'bank', units: ['MSoles', 'MMCLP'], default: 'MSoles'},
@@ -9,11 +10,24 @@ const scopes = {
 function requireThat(condition, message) { if (!condition) throw new Error(message); }
 const monetary = ['actual', 'forecast', 'budget', 'prior'];
 
-function fromRows(rows) {
+function fromRows(rows, memberOnly = false) {
   requireThat(Array.isArray(rows) && rows.length > 0, 'No se recibieron series mensuales.');
+  const tag = String(rows[0].id).split('|');
+  if (tag.length > 1) {
+    const key = tag[0], p = portfolios[key];
+    requireThat(!memberOnly && p && rows.every(r => r.id.startsWith(key + '|') && p.members.includes(r.business)
+      && ['source','year','cutoff','sheet'].every(k => r[k] === rows[0][k])), 'Entrega consolidada inconsistente.');
+    const members = Object.fromEntries(p.members.map(m => [m, fromRows(rows.filter(r => r.business === m)
+      .map(r => ({...r, id:r.id.slice(key.length + 1)})), true)]));
+    const choices = {[key]:p.members, ...Object.fromEntries((p.groups || []).map(g => [g,portfolios[g].members])),
+      ...Object.fromEntries(p.members.map(m => [m,[m]]))};
+    return {schema:3, business:key, entity:p.entity, brand:p.brand, default_currency:'MMCLP',
+      year:rows[0].year, cutoff:rows[0].cutoff, source:rows[0].source, sheet:rows[0].sheet,
+      currencies:{}, choices, members, aliases:{}};
+  }
   const first = rows[0], scope = scopes[first.business];
   requireThat(scope, 'Negocio no reconocido.');
-  requireThat(first.entity === scope.entity && first.brand === scope.brand && first.default_currency === scope.default, 'Identidad o moneda del negocio incorrecta.');
+  requireThat(first.entity === scope.entity && first.brand === scope.brand && first.default_currency === (memberOnly ? 'MMCLP' : scope.default), 'Identidad o moneda del negocio incorrecta.');
   requireThat(Number.isInteger(first.year) && first.year >= 2000 && Number.isInteger(first.cutoff) && first.cutoff >= 1 && first.cutoff <= 12, 'Cierre inválido.');
   requireThat(first.expected_rows === rows.length, 'Entrega incompleta o filtrada; no se muestran totales parciales.');
   const common = ['business', 'entity', 'brand', 'default_currency', 'year', 'cutoff', 'source', 'sheet', 'expected_rows'];
@@ -30,7 +44,7 @@ function fromRows(rows) {
       else requireThat(value === null || (typeof value === 'number' && Number.isFinite(value)), `Importe inválido: ${field}.`);
     }
     requireThat(!ids.has(row.id), 'Identificador duplicado.'); ids.add(row.id);
-    requireThat(scope.units.includes(row.unit) && row.month >= 1 && row.month <= 12, 'Moneda o mes fuera de alcance.');
+    requireThat((memberOnly ? row.unit === 'MMCLP' : scope.units.includes(row.unit)) && row.month >= 1 && row.month <= 12, 'Moneda o mes fuera de alcance.');
     requireThat(['total', 'type', 'category'].includes(row.level), 'Nivel desconocido.');
     requireThat(row.level === 'total' ? row.kind === '' && row.category === ''
       : ['Capex', 'Opex', ...(first.business === 'retail_chile' ? ['CO'] : [])].includes(row.kind) &&
@@ -49,7 +63,8 @@ function fromRows(rows) {
     const series = Object.fromEntries(monetary.map(key => [key, Array.from({length: 12}, (_, i) => months.get(i + 1)[key])]));
     requireThat(series.prior.every(v => v === null) || series.prior.every(Number.isFinite), 'Histórico parcial.');
     if (series.prior.every(v => v === null)) series.prior = null;
-    requireThat(row.level !== 'category' || series.prior === null, 'No hay histórico validado por categoría.');
+    requireThat(row.level !== 'category' || series.prior === null ||
+      (first.business.startsWith('retail_') && first.source === '2610_dashboard_data_final.xlsx'), 'No hay histórico validado por categoría.');
     const currency = result.currencies[row.unit] ||= {unit: row.unit, types: {}, history_note: row.history_note,
       ranges: {execution_forecast: row.range_execution_forecast, budget: row.range_budget, prior: row.range_prior || null}};
     requireThat(currency.history_note === row.history_note && currency.ranges.execution_forecast === row.range_execution_forecast &&
@@ -73,12 +88,12 @@ function fromRows(rows) {
       requireThat(Math.abs(actual - expected) <= Math.max(1e-8, Math.abs(expected) * 1e-9), 'No cuadra la composición de las series.');
     }
   };
-  requireThat(Object.keys(result.currencies).length === scope.units.length, 'Faltan monedas del negocio.');
+  requireThat(Object.keys(result.currencies).length === (memberOnly ? 1 : scope.units.length), 'Faltan monedas del negocio.');
   for (const currency of Object.values(result.currencies)) {
     requireThat(currency.total && currency.types.Capex?.series && currency.types.Opex?.series, 'Falta Total, CAPEX u OPEX.');
     for (const group of Object.values(currency.types)) {
       requireThat(group.series && group.rows.length, 'Faltan categorías o subtotal.');
-      reconciles(group.series, group.rows.map(r => r.series), monetary.filter(k => k !== 'prior'));
+      reconciles(group.series, group.rows.map(r => r.series), group.rows.some(r => r.series.prior) ? monetary : monetary.filter(k => k !== 'prior'));
     }
     reconciles(currency.total, Object.values(currency.types).map(g => g.series), monetary);
   }
@@ -97,4 +112,4 @@ function fromDataView(view) {
   return fromRows(view.table.rows.map(row => Object.fromEntries(columns.map(([field, i]) =>
     [field, row[i] == null && fields[field] === 'string' ? '' : row[i] ?? null]))));
 }
-module.exports = {fromRows, fromDataView, scopes};
+module.exports = {fromRows, fromDataView, scopes, portfolios, projects: {...scopes, ...portfolios}};

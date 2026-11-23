@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "Gastos TI Bancos"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "b1e6b70d-d748-44d5-8da7-2eeba9896a24"
+  }
+}

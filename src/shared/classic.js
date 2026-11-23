@@ -184,7 +184,7 @@ globalThis.CierreClassic = {
       const legends = [[`Real ${data.year}`, colors.actual], [`Forecast ${data.year}`, colors.forecast], ['Presupuesto', colors.budget, true]];
       if (series.prior) legends.push([`Real ${data.year - 1}`, colors.prior, true, historyDash]);
       $('monthly-legend').innerHTML = legend(legends);
-      $('history-note').textContent = focused ? `Histórico ${data.year - 1} no incorporado por categoría.` : selected().history_note;
+      $('history-note').textContent = focused && !series.prior ? `Histórico ${data.year - 1} no incorporado por categoría.` : selected().history_note;
       const x = Array.from({length: 12}, (_, i) => i + 1);
       const hover = name => `%{customdata}<br>${name}: %{y:,.0f} ${state.currency}<extra></extra>`;
       const monthly = [

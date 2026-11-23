@@ -1,0 +1,162 @@
+table Cierre
+	lineageTag: ef9f8eb0-bbae-4147-b501-cb315f08fbd7
+
+	column id
+		dataType: string
+		lineageTag: 3be07bfe-03f0-463a-a412-5baaa2e85a28
+		summarizeBy: none
+		sourceColumn: id
+
+	column business
+		dataType: string
+		lineageTag: 65b7eca8-2480-4958-8438-c65dec51da90
+		summarizeBy: none
+		sourceColumn: business
+
+	column entity
+		dataType: string
+		lineageTag: 8ff06c09-3f25-4d9f-bb74-99a26b8fabbe
+		summarizeBy: none
+		sourceColumn: entity
+
+	column brand
+		dataType: string
+		lineageTag: 75ca610d-d7fd-4752-9628-affd8850b2d7
+		summarizeBy: none
+		sourceColumn: brand
+
+	column default_currency
+		dataType: string
+		lineageTag: 8288deb7-1cf7-47ce-b44b-1532f304b5ca
+		summarizeBy: none
+		sourceColumn: default_currency
+
+	column year
+		dataType: int64
+		lineageTag: 2b369b01-de8b-4586-80f5-81b14c28fb05
+		summarizeBy: none
+		sourceColumn: year
+
+	column cutoff
+		dataType: int64
+		lineageTag: e50eb1f6-b076-494c-8865-a6ec9d81454c
+		summarizeBy: none
+		sourceColumn: cutoff
+
+	column source
+		dataType: string
+		lineageTag: 4a78cd63-76bf-43f6-84a6-b6f915a23f11
+		summarizeBy: none
+		sourceColumn: source
+
+	column sheet
+		dataType: string
+		lineageTag: 3ee65f03-d5c0-402c-bd51-645a20e0caf2
+		summarizeBy: none
+		sourceColumn: sheet
+
+	column unit
+		dataType: string
+		lineageTag: f369f084-ad77-4ded-bd9a-0b47be711d1c
+		summarizeBy: none
+		sourceColumn: unit
+
+	column level
+		dataType: string
+		lineageTag: 9e089290-200f-4150-b586-9efbd73c9592
+		summarizeBy: none
+		sourceColumn: level
+
+	column kind
+		dataType: string
+		lineageTag: 5b4043dd-7e11-4714-9f98-bbb8a2d7fbf9
+		summarizeBy: none
+		sourceColumn: kind
+
+	column category
+		dataType: string
+		lineageTag: aacd5a0b-3a56-4fd9-9331-5a892844e6a4
+		summarizeBy: none
+		sourceColumn: category
+
+	column label
+		dataType: string
+		lineageTag: ef5702b4-2bbd-4c57-bff7-92da31482ccc
+		summarizeBy: none
+		sourceColumn: label
+
+	column month
+		dataType: int64
+		lineageTag: 858cead0-9f61-40b0-8462-786badb0feff
+		summarizeBy: none
+		sourceColumn: month
+
+	column actual
+		dataType: double
+		lineageTag: 25216878-780c-4dd7-9879-0497ea9d781e
+		summarizeBy: none
+		sourceColumn: actual
+
+	column forecast
+		dataType: double
+		lineageTag: 4c40a196-8b4a-4ebf-9d84-47170502a641
+		summarizeBy: none
+		sourceColumn: forecast
+
+	column budget
+		dataType: double
+		lineageTag: 1fe02275-340a-4b72-a6aa-758fda7eb2d7
+		summarizeBy: none
+		sourceColumn: budget
+
+	column prior
+		dataType: double
+		lineageTag: 6e13f40e-978d-4e59-83b3-6c7378624d55
+		summarizeBy: none
+		sourceColumn: prior
+
+	column range_execution_forecast
+		dataType: string
+		lineageTag: 4907cecf-f687-4bf5-b3d5-7e5404f2d9c0
+		summarizeBy: none
+		sourceColumn: range_execution_forecast
+
+	column range_budget
+		dataType: string
+		lineageTag: 76cfe344-19dc-4754-9b3d-6cab45bab518
+		summarizeBy: none
+		sourceColumn: range_budget
+
+	column range_prior
+		dataType: string
+		lineageTag: 3c78f888-2d5c-4532-8f3c-12ced72b2bdb
+		summarizeBy: none
+		sourceColumn: range_prior
+
+	column history_note
+		dataType: string
+		lineageTag: 27cb9c55-0d33-44fd-8f34-40df20f5c9cb
+		summarizeBy: none
+		sourceColumn: history_note
+
+	column expected_rows
+		dataType: int64
+		lineageTag: 23e23000-fb67-484d-84c4-da08b19762dd
+		summarizeBy: none
+		sourceColumn: expected_rows
+
+	partition Cierre = m
+		mode: import
+		source =
+				let
+				    SourceName = List.Last(Text.Split(Text.Replace(pWorkbookPath, "\", "/"), "/")),
+				    Workbook = Binary.Buffer(File.Contents(pWorkbookPath)),
+				    Members = {"banco_chile", "banco_peru"},
+				    Result = Table.Combine(List.Transform(Members, (member) =>
+				        let Leaf = Table.Buffer(Table.SelectRows(fxCierreXlsx(Workbook, SourceName, member), each [unit] = "MMCLP")),
+				            Count = Table.RowCount(Leaf)
+				        in Table.TransformColumns(Leaf, {
+				            {"id", each "bancos|" & _, type text},
+				            {"default_currency", each "MMCLP", type text}, {"expected_rows", each Count, Int64.Type}})))
+				in
+				    Result

@@ -1,0 +1,540 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "name": "cierrevisual000000001",
+  "position": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "width": 1600,
+    "height": 960,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "CierreGastosTI87D1AC0452B14A2C9D131B5482A80B71",
+    "query": {
+      "queryState": {
+        "id": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "id"
+                }
+              },
+              "queryRef": "Cierre.id",
+              "nativeQueryRef": "id"
+            }
+          ]
+        },
+        "business": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "business"
+                }
+              },
+              "queryRef": "Cierre.business",
+              "nativeQueryRef": "business"
+            }
+          ]
+        },
+        "entity": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "entity"
+                }
+              },
+              "queryRef": "Cierre.entity",
+              "nativeQueryRef": "entity"
+            }
+          ]
+        },
+        "brand": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "brand"
+                }
+              },
+              "queryRef": "Cierre.brand",
+              "nativeQueryRef": "brand"
+            }
+          ]
+        },
+        "default_currency": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "default_currency"
+                }
+              },
+              "queryRef": "Cierre.default_currency",
+              "nativeQueryRef": "default_currency"
+            }
+          ]
+        },
+        "year": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "year"
+                }
+              },
+              "queryRef": "Cierre.year",
+              "nativeQueryRef": "year"
+            }
+          ]
+        },
+        "cutoff": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "cutoff"
+                }
+              },
+              "queryRef": "Cierre.cutoff",
+              "nativeQueryRef": "cutoff"
+            }
+          ]
+        },
+        "source": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "source"
+                }
+              },
+              "queryRef": "Cierre.source",
+              "nativeQueryRef": "source"
+            }
+          ]
+        },
+        "sheet": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "sheet"
+                }
+              },
+              "queryRef": "Cierre.sheet",
+              "nativeQueryRef": "sheet"
+            }
+          ]
+        },
+        "unit": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "unit"
+                }
+              },
+              "queryRef": "Cierre.unit",
+              "nativeQueryRef": "unit"
+            }
+          ]
+        },
+        "level": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "level"
+                }
+              },
+              "queryRef": "Cierre.level",
+              "nativeQueryRef": "level"
+            }
+          ]
+        },
+        "kind": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "kind"
+                }
+              },
+              "queryRef": "Cierre.kind",
+              "nativeQueryRef": "kind"
+            }
+          ]
+        },
+        "category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "category"
+                }
+              },
+              "queryRef": "Cierre.category",
+              "nativeQueryRef": "category"
+            }
+          ]
+        },
+        "label": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "label"
+                }
+              },
+              "queryRef": "Cierre.label",
+              "nativeQueryRef": "label"
+            }
+          ]
+        },
+        "month": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "month"
+                }
+              },
+              "queryRef": "Cierre.month",
+              "nativeQueryRef": "month"
+            }
+          ]
+        },
+        "actual": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "actual"
+                }
+              },
+              "queryRef": "Cierre.actual",
+              "nativeQueryRef": "actual"
+            }
+          ]
+        },
+        "forecast": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "forecast"
+                }
+              },
+              "queryRef": "Cierre.forecast",
+              "nativeQueryRef": "forecast"
+            }
+          ]
+        },
+        "budget": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "budget"
+                }
+              },
+              "queryRef": "Cierre.budget",
+              "nativeQueryRef": "budget"
+            }
+          ]
+        },
+        "prior": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "prior"
+                }
+              },
+              "queryRef": "Cierre.prior",
+              "nativeQueryRef": "prior"
+            }
+          ]
+        },
+        "range_execution_forecast": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "range_execution_forecast"
+                }
+              },
+              "queryRef": "Cierre.range_execution_forecast",
+              "nativeQueryRef": "range_execution_forecast"
+            }
+          ]
+        },
+        "range_budget": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "range_budget"
+                }
+              },
+              "queryRef": "Cierre.range_budget",
+              "nativeQueryRef": "range_budget"
+            }
+          ]
+        },
+        "range_prior": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "range_prior"
+                }
+              },
+              "queryRef": "Cierre.range_prior",
+              "nativeQueryRef": "range_prior"
+            }
+          ]
+        },
+        "history_note": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "history_note"
+                }
+              },
+              "queryRef": "Cierre.history_note",
+              "nativeQueryRef": "history_note"
+            }
+          ]
+        },
+        "expected_rows": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cierre"
+                    }
+                  },
+                  "Property": "expected_rows"
+                }
+              },
+              "queryRef": "Cierre.expected_rows",
+              "nativeQueryRef": "expected_rows"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": false
+  }
+}

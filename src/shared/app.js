@@ -29,6 +29,24 @@
   else $('snapshot').textContent = `Fuente XLSX: ${closure} ${data.year}`;
   const state = {page: 'summary', currency: data.default_currency || 'MSoles', month: data.cutoff, category: null, ranking: 'ytd', matrix: 'actual', sortKey: 'category', sortDirection: 'asc'};
   Object.assign(state, initialState);
+  const scopeNames = {bancos: 'Bancos', retail: 'Retail', corp_ti: 'Corp TI', banco_chile: 'Banco Chile',
+    banco_peru: 'Banco Perú', retail_chile: 'Retail Chile', retail_peru: 'Retail Perú'};
+  let scopeBar;
+  if (data.choices) {
+    if (!Object.hasOwn(data.choices, state.scope)) state.scope = data.business;
+    data.currencies = {MMCLP: model.portfolioCurrency(data, state.scope)};
+    scopeBar = owner.createElement('div');
+    scopeBar.className = 'scope-bar';
+    scopeBar.setAttribute('role', 'group'); scopeBar.setAttribute('aria-label', 'Alcance del reporte');
+    for (const key of Object.keys(data.choices)) {
+      const button = owner.createElement('button');
+      button.type = 'button'; button.dataset.scope = key;
+      button.textContent = key === data.business ? 'Total · ' + scopeNames[key] : scopeNames[key];
+      scopeBar.append(button);
+      listen(button, 'click', () => requestRender({scope: key, category: null}, true));
+    }
+    document.querySelector('.navigation').after(scopeBar);
+  }
   state.month = Math.max(1, Math.min(data.cutoff, state.month));
   if (!data.currencies[state.currency]) state.currency = data.default_currency;
   if (state.category && !data.currencies[state.currency].types[state.page === 'opex' ? 'Opex' : 'Capex']?.rows.some(row => row.category === state.category)) state.category = null;
@@ -66,11 +84,13 @@
   const offerPDF = isProposal && ['banco_chile', 'banco_peru'].includes(data.business) && dependencies.delivery && dependencies.pdf;
   let viewRevision = 0, exporting = false;
   function syncPdfButton() {
+    if (!offerPDF) return;
     pdfButton.hidden = !offerPDF;
     pdfButton.disabled = !offerPDF || exporting || rendering || document.body.dataset.ready !== 'true' || !!$('report-panel').querySelector('[role=alert]');
     pdfButton.setAttribute('aria-busy', String(exporting));
   }
-  listen(pdfButton, 'click', async () => {
+  if (!offerPDF) pdfButton.remove();
+  else listen(pdfButton, 'click', async () => {
     if (pdfButton.disabled || !offerPDF) return;
     const revision = viewRevision;
     const current = () => !destroyed && revision === viewRevision;
@@ -185,7 +205,9 @@
         pending = false;
         const replace = rebuildPending || state.page !== desired.page;
         rebuildPending = false;
+        if (scopeBar && state.scope !== desired.scope) data.currencies = {MMCLP: model.portfolioCurrency(data, desired.scope)};
         Object.assign(state, desired);
+        if (scopeBar) for (const button of scopeBar.children) button.setAttribute('aria-pressed', String(button.dataset.scope === state.scope));
         await render(replace);
       }
     } catch (error) {
@@ -384,14 +406,16 @@
 
   function sourceInfo() {
     const ranges = selected().ranges;
-    $('source-content').innerHTML = `<p><b>Fuente única:</b> ${escape(data.source)} · Hoja ${escape(data.sheet)} · ${escape(data.entity)}. Valores almacenados, sin recalcular vínculos externos. Se excluyen Negocio, Retail Corp y las otras entidades.</p>
+    const perimeter = data.choices ? data.choices[state.scope].map(k => scopeNames[k]).join(' + ') : data.entity;
+    const aliases = data.choices ? Object.assign({}, ...data.choices[state.scope].map(k => data.members[k].aliases)) : data.aliases;
+    $('source-content').innerHTML = `<p><b>Fuente única:</b> ${escape(data.source)} · Hoja ${escape(data.sheet)} · ${escape(perimeter)}. Valores almacenados, sin recalcular vínculos externos. Los subtotales Corp y los bloques Negocio no se añaden.</p>
       <p><b>Períodos:</b> ${scenarioText(`Mes consultado ${month().toLowerCase()} ${data.year}; acumulado enero a ${month().toLowerCase()}. Cierre fuente ${closure.toLowerCase()} ${data.year}. FCST anual vigente = REAL enero a ${closure.toLowerCase()} + FCST posterior hasta diciembre. No representa una proyección histórica del mes consultado.`)}</p>
       <p><b>Escala:</b> ${state.currency === 'MSoles' ? 'MSoles = miles de soles. El bloque de origen ya está en miles de soles; no se divide nuevamente.' : 'MMCLP = Millones de Pesos (CLP). El bloque de origen ya está en esa escala; no se divide nuevamente.'} Cada moneda proviene de su bloque, sin aplicar un tipo de cambio nuevo.</p>
       <p><b>Rangos:</b> ${scenarioText(`REAL + FCST ${ranges.execution_forecast}; PPTO ${ranges.budget}${ranges.prior ? `; REAL ${data.year - 1} ${ranges.prior}` : ''}.`)}</p>
       <p><b>Histórico:</b> ${scenarioText(selected().history_note)}</p>
       ${selected().types.CO ? '<p><b>Composición del Total:</b> OPEX + CAPEX + CO. CO se conserva por separado, sin reclasificarlo. Las páginas OPEX y CAPEX no incluyen CO.</p>' : ''}
       <p><b>Indicadores:</b> ${scenarioText(`Uso = 100 × REAL acumulado / PPTO anual; esperado = 100 × PPTO acumulado / PPTO anual. ${classic ? 'PPTO disponible al mes consultado = PPTO anual menos REAL acumulado al mes. FCST pendiente comprende solo meses posteriores al cierre fuente.' : 'Saldo al cierre = PPTO anual menos REAL al cierre fuente.'} Variación = REAL o FCST menos PPTO. Porcentaje N/D si el denominador no es positivo. Los negativos se conservan; bajo PPTO no implica ahorro definitivo.`)}</p>
-      <p><b>Presentación:</b> ${Object.keys(data.aliases).length ? Object.entries(data.aliases).map(([key, label]) => `${escape(key)}: ${escape(label)}`).join('; ') + '. ' : 'Categorías originales de la fuente. '}Son rótulos de categoría, no un desglose por proveedor. Montos sin decimales y porcentajes con dos. Punto para miles y coma decimal, sin redondeos intermedios.</p>`;
+      <p><b>Presentación:</b> ${Object.keys(aliases).length ? Object.entries(aliases).map(([key, label]) => `${escape(key)}: ${escape(label)}`).join('; ') + '. ' : 'Categorías originales de la fuente. '}Son rótulos de categoría, no un desglose por proveedor. Montos sin decimales y porcentajes con dos. Punto para miles y coma decimal, sin redondeos intermedios.</p>`;
   }
 
   async function render(rebuild) {

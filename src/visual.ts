@@ -98,7 +98,7 @@ export class Visual implements powerbi.extensibility.visual.IVisual {
             const units = [data.default_currency, ...Object.keys(data.currencies).filter(u => u !== data.default_currency)];
             const replacements: Record<string, string> = {
               ENTITY: data.entity,
-              IDENTITY: `<img class="country-flag" src="${brands[country]}" alt="${countryName}" width="40" height="34"><h1>${bank ? 'Banco Ripley' : 'Retail'}</h1>`,
+              IDENTITY: 'members' in data ? `<h1>${data.entity}</h1>` : `<img class="country-flag" src="${brands[country]}" alt="${countryName}" width="40" height="34"><h1>${bank ? 'Banco Ripley' : 'Retail'}</h1>`,
               BRAND: `<img class="${bank ? 'bank-logo' : 'retail-logo'}" src="${bank ? brands.bank : brands.retail}" alt="Ripley" width="${bank ? 88 : 180}" height="${bank ? 88 : 67}">`,
               CURRENCY: units.length > 1 ? `<div class="currency" role="group" aria-label="Moneda">${units.map(u => `<button type="button" data-currency="${u}">${u}</button>`).join('')}</div>` : '<span class="fixed-currency">MMCLP</span>',
             };
@@ -106,7 +106,7 @@ export class Visual implements powerbi.extensibility.visual.IVisual {
             // eslint-disable-next-line powerbi-visuals/no-inner-outer-html -- Static markup and allow-listed identities only.
             this.content.innerHTML = markup.replace(/\/\*__(ENTITY|IDENTITY|BRAND|CURRENCY)__\*\//g, (_, key) => replacements[key]);
             this.app = mount(this.content, data, {model, classic, proposal, plotly: Plotly, icons: lucide, pdf, pdfLib,
-              delivery: bank && !snapshot ? this.pdfDelivery() : null}, this.business === data.business ? saved : {});
+              delivery: ['banco_chile', 'banco_peru'].includes(data.business) && !snapshot ? this.pdfDelivery() : null}, this.business === data.business ? saved : {});
             this.business = data.business;
             await this.app.ready;
           }

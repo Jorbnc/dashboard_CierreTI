@@ -1,0 +1,162 @@
+table Cierre
+	lineageTag: 21ba3523-25de-4f79-91b5-d53ac5cae72f
+
+	column id
+		dataType: string
+		lineageTag: d0d13a74-abae-49fd-82f0-4c2156dbf64f
+		summarizeBy: none
+		sourceColumn: id
+
+	column business
+		dataType: string
+		lineageTag: 72c6de53-355d-460e-8da0-79e770f9b32f
+		summarizeBy: none
+		sourceColumn: business
+
+	column entity
+		dataType: string
+		lineageTag: 0eac9251-7724-4a23-9458-e6f328eee9a0
+		summarizeBy: none
+		sourceColumn: entity
+
+	column brand
+		dataType: string
+		lineageTag: ccb9dda2-0a6b-48b2-8a6d-2d0f66c82e53
+		summarizeBy: none
+		sourceColumn: brand
+
+	column default_currency
+		dataType: string
+		lineageTag: a9bf7ccf-6a5f-4bf3-b785-43fe12dfa7db
+		summarizeBy: none
+		sourceColumn: default_currency
+
+	column year
+		dataType: int64
+		lineageTag: fe9f67ec-cbe4-44e3-9937-c5e240ca5efc
+		summarizeBy: none
+		sourceColumn: year
+
+	column cutoff
+		dataType: int64
+		lineageTag: 4e9af0fb-01a4-4d93-a24d-01114957a518
+		summarizeBy: none
+		sourceColumn: cutoff
+
+	column source
+		dataType: string
+		lineageTag: 274dcea1-2dfe-4528-aae5-8922883b1c99
+		summarizeBy: none
+		sourceColumn: source
+
+	column sheet
+		dataType: string
+		lineageTag: 77503cbf-64c3-492f-9805-8b2f6ea920d2
+		summarizeBy: none
+		sourceColumn: sheet
+
+	column unit
+		dataType: string
+		lineageTag: 31f7973f-e502-44e6-804d-422202ee2b49
+		summarizeBy: none
+		sourceColumn: unit
+
+	column level
+		dataType: string
+		lineageTag: 2afce4f8-f9b6-4ad1-8723-f5bbffb1dea0
+		summarizeBy: none
+		sourceColumn: level
+
+	column kind
+		dataType: string
+		lineageTag: dc7c5e76-0bc2-4b00-b86d-3df1dfa94b3a
+		summarizeBy: none
+		sourceColumn: kind
+
+	column category
+		dataType: string
+		lineageTag: 6424473d-5e3c-4c91-98fa-8c2a9332635b
+		summarizeBy: none
+		sourceColumn: category
+
+	column label
+		dataType: string
+		lineageTag: ea21fd2f-3be9-4153-95db-a79b8d44989e
+		summarizeBy: none
+		sourceColumn: label
+
+	column month
+		dataType: int64
+		lineageTag: a046d718-f43e-4ffe-8c7e-3f84b0e9f731
+		summarizeBy: none
+		sourceColumn: month
+
+	column actual
+		dataType: double
+		lineageTag: a1c7b9a5-35f9-4ea6-a0bf-81d0c0f47ac4
+		summarizeBy: none
+		sourceColumn: actual
+
+	column forecast
+		dataType: double
+		lineageTag: de1ff699-1d95-45c6-956c-1f574b0c0de8
+		summarizeBy: none
+		sourceColumn: forecast
+
+	column budget
+		dataType: double
+		lineageTag: e31e835e-e58c-4c89-baf2-4840b53a17b0
+		summarizeBy: none
+		sourceColumn: budget
+
+	column prior
+		dataType: double
+		lineageTag: 635ba28f-aef1-45df-b5ac-f5bf3e015c27
+		summarizeBy: none
+		sourceColumn: prior
+
+	column range_execution_forecast
+		dataType: string
+		lineageTag: 0260f811-5962-4406-a9ff-1e10f32dddf5
+		summarizeBy: none
+		sourceColumn: range_execution_forecast
+
+	column range_budget
+		dataType: string
+		lineageTag: b9241ddd-875f-4a2f-83fc-008f768b3d02
+		summarizeBy: none
+		sourceColumn: range_budget
+
+	column range_prior
+		dataType: string
+		lineageTag: 80cd5a3e-afbd-4ca9-bd20-7c7697100704
+		summarizeBy: none
+		sourceColumn: range_prior
+
+	column history_note
+		dataType: string
+		lineageTag: 44354372-2c0c-48e4-b437-4e29184f4fdc
+		summarizeBy: none
+		sourceColumn: history_note
+
+	column expected_rows
+		dataType: int64
+		lineageTag: d463723f-c3fe-4ec2-87ae-41b831825077
+		summarizeBy: none
+		sourceColumn: expected_rows
+
+	partition Cierre = m
+		mode: import
+		source =
+				let
+				    SourceName = List.Last(Text.Split(Text.Replace(pWorkbookPath, "\", "/"), "/")),
+				    Workbook = Binary.Buffer(File.Contents(pWorkbookPath)),
+				    Members = {"banco_chile", "banco_peru", "retail_chile", "retail_peru"},
+				    Result = Table.Combine(List.Transform(Members, (member) =>
+				        let Leaf = Table.Buffer(Table.SelectRows(fxCierreXlsx(Workbook, SourceName, member), each [unit] = "MMCLP")),
+				            Count = Table.RowCount(Leaf)
+				        in Table.TransformColumns(Leaf, {
+				            {"id", each "corp_ti|" & _, type text},
+				            {"default_currency", each "MMCLP", type text}, {"expected_rows", each Count, Int64.Type}})))
+				in
+				    Result

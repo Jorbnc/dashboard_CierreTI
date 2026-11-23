@@ -5,7 +5,7 @@ const http = require('node:http');
 const assert = require('node:assert/strict');
 const {unzipSync} = require('fflate');
 const {chromium, firefox, expect} = require('@playwright/test');
-const {fixture, dataView} = require('../tests/adapter.test.cjs');
+const {fixture, dataView, portfolioFixture} = require('../tests/adapter.test.cjs');
 const {scopes} = require('../src/adapter');
 const {visual} = require('../pbiviz.json');
 const root = path.resolve(__dirname, '..');
@@ -127,6 +127,18 @@ async function main() {
             assert.equal(doc.getPages()[0].getWidth(),(await app.evaluate(el=>el.clientWidth))*.75);
             assert.match(doc.getSubject(),/Ejemplo/);
           }
+        }
+        for (const key of ['bancos','retail','corp_ti']) {
+          await update(dataView(portfolioFixture(key))); await ready();
+          for (const button of await app.locator('.scope-bar button').all()) {
+            await button.click(); await ready();
+            const scope = await button.getAttribute('data-scope');
+            const expected = {corp_ti:45,bancos:20,retail:25,banco_chile:10,banco_peru:10,retail_chile:15,retail_peru:10}[scope];
+            await expect(app.locator('[data-kpi="0"][data-scope=Total] [data-metric=actual-month]')).toHaveText(expected+'MMCLP');
+            await expect(app.locator('#download-pdf')).toHaveCount(0);
+          }
+          await app.locator('#tab-capex').click(); await ready();
+          await expect(app.locator('#monthly-chart .barlayer .point')).not.toHaveCount(0);
         }
         await page.setViewportSize({width: 390, height: 844});
         await frame.evaluate(() => window.harness.update(null, 4)); await ready();

@@ -1,9 +1,10 @@
 const path = require('node:path');
 const assert = require('node:assert/strict');
-const {scopes} = require('../src/adapter');
+const {projects: scopes} = require('../src/adapter');
 
 // Desktop-saved project names are independent of the financial business key.
-const projectNames = {banco_chile: 'Gastos TI BR CL', banco_peru: 'Gastos TI BR PE'};
+const projectNames = {banco_chile: 'Gastos TI BR CL', banco_peru: 'Gastos TI BR PE',
+  bancos: 'Gastos TI Bancos', retail: 'Gastos TI Retail', corp_ti: 'Gastos TI Corp'};
 function projectPaths(root, business) {
   assert.ok(Object.hasOwn(scopes, business), 'Negocio desconocido');
   const name = projectNames[business] || business;
@@ -15,7 +16,7 @@ function selectedBusinesses(args = []) {
   if (!args.length) return Object.keys(scopes);
   const names = args.slice(1);
   assert.ok(args[0] === '--business' && names.length && names.every(name => Object.hasOwn(scopes, name))
-    && new Set(names).size === names.length, 'Uso: --business <negocio> [<negocio> ...]; omitir para los cuatro proyectos');
+    && new Set(names).size === names.length, 'Uso: --business <negocio> [<negocio> ...]; omitir para todos los proyectos');
   return names;
 }
 module.exports = {projectPaths, selectedBusinesses};

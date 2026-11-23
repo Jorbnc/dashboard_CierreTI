@@ -193,6 +193,8 @@ let
             // Known layouts only: AJ (2609) or AV (2610), never the FORECAST block.
             historyColumns = List.Buffer(List.Select({36, 48}, each IsLabel(header, _, N(Year - 1) & " REAL"))),
             historyColumn = if List.Count(historyColumns) = 1 then historyColumns{0} else 36,
+            retail = Text.StartsWith(Business, "retail_"),
+            detailedRetail = retail and FinalSource,
             ReadHistory = () as record =>
                 let
                     standard = if Require(List.Count(historyColumns) <= 1,
@@ -218,7 +220,7 @@ let
                     headerValid = if exception then CheckDates(header, historyColumn + 1, Year)
                         else if standard then CheckDates(header, historyColumn + 1, Year - 1) else Fail(unavailable),
                     parents = List.Transform(Kinds, (kind) =>
-                        let candidates = List.Select(List.Numbers(block + 1, last - block + 2), each IsLabel(_, historyColumn, kind))
+                        let candidates = List.Select(List.Numbers(block + 1, last - block + (if retail then 0 else 2)), each IsLabel(_, historyColumn, kind))
                         in if Require(List.Count(candidates) = 1, "Hist#(00F3)rico ambiguo: " & kind)
                             then candidates{0} else 0),
                     rawRows = List.Buffer(List.Transform(parents & {block}, each Amounts(_, historyColumn + 1))),
@@ -268,11 +270,18 @@ let
                     forced = Table.Buffer(Table.FromRows(List.Transform({0..11}, (month) =>
                         List.Transform(names, (kind) => Record.Field(adjusted, kind){month})), names)),
                     forcedValid = All(List.Transform(Table.ToRows(forced), (row) => All(List.Transform(row, Finite)))),
-                    valid = All({baseValid, finalSourceValid, adjustmentValid, finalValid, forcedValid}),
+                    detailValid = if not detailedRetail then true else All(List.Transform(types, (g) => All({
+                        All(List.Transform({g[parent]} & g[children], (r) => All({
+                            Require(Cell(r, historyColumn) = Cell(r, 2), "Detalle historico Retail distinto"),
+                            Equal(Cell(r, historyColumn + 13), fxCierreSum(Amounts(r, historyColumn + 1)), "Historico anual Retail")}))),
+                        All(List.Transform({0..11}, (i) => Equal(Record.Field(prior, g[kind]){i},
+                            fxCierreSum(List.Transform(g[children], (r) => Cell(r, historyColumn + 1 + i))), "Historico Retail por mes")))
+                    }))),
+                    valid = All({baseValid, finalSourceValid, adjustmentValid, finalValid, forcedValid, detailValid}),
                     adjustedRecord = Record.FromList(List.Transform(names, each List.Buffer(Table.Column(forced, _))), names)
                 in if valid then [prior = adjustedRecord, exception = exception,
                     note = "REAL " & N(Year - 1) & (if exception then " confirmado" else " validado") &
-                        " para total, OPEX y CAPEX; no para categor#(00ED)as.",
+                        (if detailedRetail then " para total, OPEX y CAPEX y categor#(00ED)as." else " para total, OPEX y CAPEX; no para categor#(00ED)as."),
                     adjustment = if needsAdjustment then [category = "No Direccionable",
                         source_range = ColumnName(historyColumn + 1) & "66:" & ColumnName(historyColumn + 12) & "66",
                         added = scaledAdded, original_capex = prior[Capex], original_total = prior[Total]] else null]
@@ -281,18 +290,18 @@ let
             history = if historyTry[HasError] then [prior = null, exception = false, adjustment = null,
                 note = historyTry[Error][Message]] else historyTry[Value],
             visibleNote = if history[prior] <> null then "REAL " & N(Year - 1) &
-                " disponible para total, OPEX y CAPEX; no para categor#(00ED)as."
+                (if detailedRetail then " disponible para total, OPEX, CAPEX y categor#(00ED)as." else " disponible para total, OPEX y CAPEX; no para categor#(00ED)as.")
                 else "Hist#(00F3)rico " & N(Year - 1) & " no disponible en " & unit & ".",
             ranges = [execution_forecast = "C" & N(block) & ":N" & N(last),
                 budget = "R" & N(block) & ":AC" & N(last),
                 prior = if history[prior] <> null then ColumnName(historyColumn + 1) & N(block) & ":" &
-                    ColumnName(historyColumn + 12) & N(last + 1) else ""],
+                    ColumnName(historyColumn + 12) & N(if retail then last else last + 1) else ""],
             groups = {[level = "total", kind = "", category = "", label = "Total", values = total]} &
                 List.Combine(List.Transform(types, (group) =>
                     {[level = "type", kind = group[kind], category = "", label = group[kind], values = group[values]]} &
                     List.Transform(List.Positions(group[categories]), (i) =>
                         [level = "category", kind = group[kind], category = group[categories]{i},
-                         label = Record.FieldOrDefault(Labels, group[categories]{i}, group[categories]{i}), values = group[child_values]{i}]))),
+                         label = Record.FieldOrDefault(Labels, group[categories]{i}, group[categories]{i}), detailRow = group[children]{i}, values = group[child_values]{i}]))),
             resultRows = List.Combine(List.Transform(groups, (group) => List.Transform({1..12}, (month) => [
                 business = Business, entity = Config[entity], brand = Config[brand], default_currency = Config[default_currency],
                 year = Year, cutoff = Cutoff, source = SourceName, sheet = SheetName,
@@ -300,7 +309,8 @@ let
                 actual = if month <= Cutoff then group[values][execution]{month - 1} / divisor else null,
                 forecast = if month > Cutoff then group[values][execution]{month - 1} / divisor else null,
                 budget = group[values][budget]{month - 1} / divisor,
-                prior = if group[level] = "category" or history[prior] = null then null else
+                prior = if history[prior] = null then null else if group[level] = "category" then
+                    (if detailedRetail then Cell(group[detailRow], historyColumn + month) else null) else
                     Record.Field(history[prior], if group[level] = "total" then "Total" else group[kind]){month - 1},
                 range_execution_forecast = ranges[execution_forecast], range_budget = ranges[budget], range_prior = ranges[prior],
                 history_note = visibleNote
