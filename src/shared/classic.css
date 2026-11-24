@@ -32,6 +32,9 @@ body[data-brand=corp] .brand {
 body[data-brand=retail] .masthead {background: #000}
 body[data-brand=corp] {--corp-ink: #221e20}
 body[data-brand=corp] .masthead {background-color: var(--corp-ink)}
+body[data-brand=corp] .bank-logo {--bank-logo-size: 72px}
+body[data-brand=corp] .scope-bar button[aria-pressed=false],
+body[data-brand=corp] .tabs button[aria-selected=false] {color: var(--corp-ink)}
 body[data-brand=corp] .scope-bar button[aria-pressed=true],
 body[data-brand=corp] .tabs button[aria-selected=true] {background-color: var(--corp-ink); border-color: var(--corp-ink)}
 body[data-brand=corp] .kpi-number,
@@ -49,7 +52,7 @@ main {padding: 12px 44px 20px; background: #f7f5fb}
 footer {padding-left: 44px; padding-right: 44px; background: #f7f5fb; font-size: 12px}
 .column-heads, .kpi-grid {display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px}
 .column-heads {margin-bottom: 10px}
-.column-heads > div {display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--purple); color: #fff; border-radius: 16px; text-align: center; font-size: 15.5px; font-weight: 700; line-height: 1.25; padding: 8px 6px; box-shadow: 0 3px 6px #52317840}
+.column-heads > div {display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--corp-ink, var(--purple)); color: #fff; border-radius: var(--kpi-radius); text-align: center; font-size: 15.5px; font-weight: 700; line-height: 1.25; padding: 8px 6px; box-shadow: 0 3px 6px #52317840}
 .row-title {font-size: 21px; font-weight: 800; margin-bottom: 6px}
 .row-title:before {width: 18px; height: 18px}
 .summary-section + .summary-section {margin-top: 12px}
@@ -107,7 +110,7 @@ th[aria-sort=ascending] .sort-button svg, th[aria-sort=descending] .sort-button 
   main {padding-left: 24px; padding-right: 24px}
   .column-heads {display: none}
   .kpi-grid {grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px}
-  .kpi-label {display: block; font-size: 15.5px; color: var(--purple); font-weight: 700}
+  .kpi-label {display: block; font-size: 15.5px; color: var(--corp-ink, var(--purple)); font-weight: 700}
   .kpi-card:last-child {grid-column: 1 / -1}
   .detail-grid {grid-template-columns: minmax(0, 1fr)}
 }

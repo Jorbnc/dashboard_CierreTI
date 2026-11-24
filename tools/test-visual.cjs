@@ -53,11 +53,12 @@ async function main() {
         };
         const checkLogoSizes = async () => {
           const logos = app.locator('.masthead .brand').getByRole('img');
+          const bankSize = (await app.getAttribute('data-brand')) === 'corp' ? 72 : 80;
           for (const img of await logos.all()) {
             const bank = await img.getAttribute('alt') === 'Banco Ripley';
             const box = await img.boundingBox();
-            assert.equal(box.width, bank ? 80 : 96);
-            assert.ok(Math.abs(box.height - (bank ? 80 : 96 * 1116 / 3000)) < 0.05);
+            assert.equal(box.width, bank ? bankSize : 96);
+            assert.ok(Math.abs(box.height - (bank ? bankSize : 96 * 1116 / 3000)) < 0.05);
           }
         };
         const checkDetailTitles = async () => {
@@ -136,6 +137,11 @@ async function main() {
           await update(dataView(portfolioFixture(key))); await ready();
           await checkSourceBadge();
           const accent = key === 'corp_ti' ? 'rgb(34, 30, 32)' : 'rgb(82, 49, 120)';
+          const header = app.locator('.column-heads > div').first();
+          await expect(header).toHaveCSS('background-color', accent);
+          await expect(header).toHaveCSS('border-radius', '8px');
+          await expect(app.locator('.scope-bar [aria-pressed=false]').first()).toHaveCSS('color', accent);
+          await expect(app.locator('.tabs [aria-selected=false] svg').first()).toHaveCSS('stroke', accent);
           const logo = app.locator('.masthead .brand').getByRole('img');
           await expect(app.locator('.scope-bar + .navigation')).toHaveCount(1);
           if (key === 'corp_ti') await expect(logo).toHaveCount(2);
