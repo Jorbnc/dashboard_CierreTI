@@ -4,6 +4,7 @@ body {
   --month-band: rgba(47, 119, 206, 0.12); --selection-ink: #252b32;
 }
 body {--monthly-real: var(--actual); --monthly-forecast: var(--forecast); --annual-real: #414146; --annual-forecast: #939198}
+body[data-brand=bank] {--annual-real: var(--monthly-real); --annual-forecast: var(--monthly-forecast)}
 body {font-family: "Segoe UI", Arial, Helvetica, sans-serif; background: #e7e3ef}
 .navigation, .masthead, main, footer {max-width: 1600px; margin-left: auto; margin-right: auto}
 .navigation {padding: 10px 22px}

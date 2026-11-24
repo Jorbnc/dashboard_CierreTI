@@ -67,10 +67,11 @@ async function main() {
           await expect(app.locator('#annual-panel h3')).toHaveText('PPTO FY vs Forecast FY vs Real acumulado');
           const bank = (await app.getAttribute('data-brand')) === 'bank';
           const chartColors = node => node.data.filter(t => t.type === 'bar').map(t => t.marker.color);
-          assert.deepEqual(await app.locator('#annual-chart').evaluate(chartColors), ['#ffb81c','#939198','#414146']);
+          const monthly = bank ? ['#523178','#a58bc9'] : ['#414146','#939198'];
+          assert.deepEqual(await app.locator('#annual-chart').evaluate(chartColors), ['#ffb81c',monthly[1],monthly[0]]);
           assert.deepEqual(await app.locator('#annual-legend .swatch').evaluateAll(keys=>keys.map(k=>getComputedStyle(k).backgroundColor)),
-            ['rgb(255, 184, 28)','rgb(147, 145, 152)','rgb(65, 65, 70)']);
-          assert.deepEqual(await app.locator('#monthly-chart').evaluate(chartColors), bank ? ['#523178','#a58bc9'] : ['#414146','#939198']);
+            ['rgb(255, 184, 28)',...(bank ? ['rgb(165, 139, 201)','rgb(82, 49, 120)'] : ['rgb(147, 145, 152)','rgb(65, 65, 70)'])]);
+          assert.deepEqual(await app.locator('#monthly-chart').evaluate(chartColors), monthly);
           const forecastKey = app.locator('#monthly-legend .legend > span').filter({hasText: /^Forecast /i}).locator('.swatch');
           await expect(forecastKey).toHaveCSS('background-color', bank ? 'rgb(165, 139, 201)' : 'rgb(147, 145, 152)');
           await expect(app.locator('#category-table thead th').first()).toHaveCSS('background-color',bank ? 'rgb(82, 49, 120)' : 'rgb(65, 65, 70)');
