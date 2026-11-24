@@ -16,10 +16,11 @@ const documents = {
   '/frame': ['text/html', `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src data: blob:; connect-src 'none'"><link rel="stylesheet" href="/visual.css"></head><body style="margin:0"><div id="host1"></div><div id="host2"></div><script src="/host.js"></script><script src="/visual.js"></script><script src="/start.js"></script></body></html>`],
   '/visual.js': ['text/javascript', resource.content.js], '/visual.css': ['text/css', resource.content.css],
   '/host.js': ['text/javascript', `window.powerbi = {};
+    window.testPalette = {isHighContrast:false, foreground:{value:'#fff'}, background:{value:'#151515'}, foregroundSelected:{value:'#ffff00'}};
     window.downloadProbe = {status:0, calls:[], complete:true};
     window.testDownload = {exportStatus:async()=>downloadProbe.pause ? new Promise(resolve=>{downloadProbe.resume=()=>resolve(0);}) : downloadProbe.status, exportVisualsContentExtended:async(content,name,type)=>{
       downloadProbe.calls.push({content,name,type}); return {downloadCompleted:downloadProbe.complete,fileName:name};}};`],
-  '/start.js': ['text/javascript', `const events=[], requests=[], instances=[]; const host={downloadService:window.testDownload,eventService:{renderingStarted:()=>events.push('start'),renderingFinished:()=>events.push('finish'),renderingFailed:()=>events.push('fail')},fetchMoreData:a=>{requests.push(a);return window.harness.allowMore;}}; const plugin=powerbi.visuals.plugins[${JSON.stringify(visual.guid)}]; instances.push(plugin.create({element:document.getElementById('host1'),host})); window.harness={events,requests,allowMore:true,update(view,type=2,width=innerWidth,height=innerHeight,index=0){instances[index].update({type,viewport:{width,height},dataViews:view?[view]:[]});},second(){instances.push(plugin.create({element:document.getElementById('host2'),host}));},destroy(){instances.forEach(v=>v.destroy());}};`],
+  '/start.js': ['text/javascript', `const events=[], requests=[], instances=[]; const host={colorPalette:window.testPalette,downloadService:window.testDownload,eventService:{renderingStarted:()=>events.push('start'),renderingFinished:()=>events.push('finish'),renderingFailed:()=>events.push('fail')},fetchMoreData:a=>{requests.push(a);return window.harness.allowMore;}}; const plugin=powerbi.visuals.plugins[${JSON.stringify(visual.guid)}]; instances.push(plugin.create({element:document.getElementById('host1'),host})); window.harness={events,requests,allowMore:true,update(view,type=2,width=innerWidth,height=innerHeight,index=0){instances[index].update({type,viewport:{width,height},dataViews:view?[view]:[]});},second(){instances.push(plugin.create({element:document.getElementById('host2'),host}));},destroy(){instances.forEach(v=>v.destroy());}};`],
 };
 async function main() {
   fs.mkdirSync(path.join(root, 'test-results'), {recursive: true});
@@ -203,6 +204,16 @@ async function main() {
             for (const title of await app.locator('.detail-grid h3').all()) await expect(title).toHaveCSS('color', accent);
           }
           await expect(app.locator('#monthly-chart .barlayer .point')).not.toHaveCount(0);
+        }
+        for (const active of [true,false]) {
+          await frame.evaluate(active => {testPalette.isHighContrast=active; harness.update(null,16);}, active);
+          await expect(app).toHaveAttribute('data-contrast',active ? 'high' : 'normal'); await ready();
+          await expect(app).toHaveAttribute('data-page','capex');
+          if (active) {
+            const chart = app.locator('#monthly-chart');
+            assert.deepEqual(await chart.evaluate(el=>[el.layout.paper_bgcolor,el.data[1].marker.pattern.shape,el.data[2].line.color]), ['#151515','/','#fff']);
+            await expect(app.locator('#tab-capex')).toHaveCSS('text-decoration-line','underline');
+          } else await checkDetailTitles();
         }
         await page.setViewportSize({width: 390, height: 844});
         await frame.evaluate(() => window.harness.update(null, 4)); await ready();

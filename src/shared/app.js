@@ -70,7 +70,32 @@
   if (state.category && !data.currencies[state.currency].types[state.page === 'opex' ? 'Opex' : 'Capex']?.rows.some(row => row.category === state.category)) state.category = null;
   const theme = getComputedStyle(document.documentElement);
   const color = name => theme.getPropertyValue(`--${name}`).trim();
-  const colors = {actual: color('actual'), forecast: color('forecast'), budget: color('budget'), prior: color('actual'), good: color('green'), bad: color('red')};
+  const forced = window.matchMedia('(forced-colors: active)');
+  const colors = {};
+  let paletteKey;
+  function syncPalette() {
+    let palette = dependencies.highContrast?.();
+    if (!palette && forced.matches) {
+      const probe = owner.createElement('span');
+      probe.style.forcedColorAdjust = 'none';
+      root.append(probe);
+      const system = key => {probe.style.color = key; return getComputedStyle(probe).color;};
+      palette = {fg: system('CanvasText'), bg: system('Canvas'), selected: system('Highlight')};
+      probe.remove();
+    }
+    const key = JSON.stringify(palette || null);
+    if (key === paletteKey) return false;
+    paletteKey = key;
+    root.dataset.contrast = palette ? 'high' : 'normal';
+    for (const role of ['fg', 'bg', 'selected']) {
+      if (palette) root.style.setProperty('--hc-' + role, palette[role]);
+      else root.style.removeProperty('--hc-' + role);
+    }
+    Object.assign(colors, {actual: color('actual'), forecast: color('forecast'), budget: color('budget'),
+      prior: color(['proposal','classic'].includes(root.dataset.summaryLayout) ? 'prior' : 'actual'), good: color('green'), bad: color('red')});
+    return true;
+  }
+  syncPalette();
   const thousands = new Intl.NumberFormat('es-CL', {maximumFractionDigits: 0, useGrouping: true});
   const amountDecimals = () => 0;
   const amountThreshold = () => 0.5 * 10 ** -amountDecimals();
@@ -258,7 +283,7 @@
     return `<div class="delta-row"><span class="delta ${signClass(actual - budget)}">${signed(actual - budget)} (${signed(model.relative(actual, budget), pct)})</span><span class="delta-reference">vs. ${scenarioValue('budget', 'PPTO')}</span></div>`;
   }
   function legend(items) {
-    return `<div class="legend">${items.map(([label, colour, line, dash]) => `<span><i class="swatch ${line ? 'line' : ''}${dash === 'dot' ? ' dotted' : ''}" style="--color:${colour}"></i>${scenarioText(label)}</span>`).join('')}</div>`;
+    return `<div class="legend">${items.map(([label, colour, line, dash, role = '']) => `<span><i aria-hidden="true" class="swatch ${role} ${line ? 'line' : ''}${dash === 'dot' ? ' dotted' : ''}" style="--color:${colour}"></i>${scenarioText(label)}</span>`).join('')}</div>`;
   }
 
   function summaryShell() {
@@ -378,12 +403,14 @@
     fmt, pct, signed, signClass, escape, delta, legend, calculationHelp, helpButton, plotLayout, plotConfig, proposal,
     toggleCategory: category => requestRender({category: desired.category === category ? null : category}),
   }) : null;
-  if (classic) colors.prior = color('prior');
   function plotLayout(extra = {}) {
-    return {autosize: true, paper_bgcolor: '#fff', plot_bgcolor: '#fff', font: {family: 'Segoe UI, Arial, sans-serif', size: classic ? 12 : 11, color: color('muted')},
+    const bg = color('plot-paper') || '#fff';
+    const layout = {autosize: true, paper_bgcolor: bg, plot_bgcolor: bg, font: {family: 'Segoe UI, Arial, sans-serif', size: classic ? 12 : 11, color: color('muted')},
       margin: {l: 50, r: 18, t: 16, b: 40}, separators: ',.', hoverlabel: {font: {family: 'Arial', size: 12}},
       showlegend: false, xaxis: {fixedrange: true, zeroline: false, gridcolor: '#edf0f2'},
       yaxis: {fixedrange: true, zerolinecolor: '#d3dce2', gridcolor: '#edf0f2'}, ...extra};
+    if (root.dataset.contrast === 'high') layout.hoverlabel = {bgcolor: bg, bordercolor: color('muted'), font: {...layout.font}};
+    return layout;
   }
   async function detail() {
     const group = selected().types[kind()];
@@ -615,11 +642,13 @@
     const index = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
     tabs[index].focus(); tabs[index].click();
   });
+  const resize = () => requestRender({}, syncPalette());
+  listen(forced, 'change', resize);
   const ready = requestRender({}, true);
   return {
     ready,
     state: () => ({...desired}),
-    resize: () => requestRender(),
+    resize,
     async destroy() {
       destroyed = true;
       pending = false;

@@ -1,4 +1,8 @@
-:root {--forecast: #a58bc9; --budget: #ffb81c; --prior: #8c8c99}
+:root {--forecast: #a58bc9; --budget: #ffb81c; --prior: #41414c}
+body {
+  --budget-stroke: #ab7600; --budget-text: #905f00; --plot-paper: #fff; --plot-grid: #ece7f3;
+  --month-band: #e7ebef; --selection-ink: #252b32;
+}
 body {--monthly-real: var(--actual); --monthly-forecast: var(--forecast); --annual-real: #254e5d; --annual-forecast: #608f9d}
 body {font-family: "Segoe UI", Arial, Helvetica, sans-serif; background: #e7e3ef}
 .navigation, .masthead, main, footer {max-width: 1600px; margin-left: auto; margin-right: auto}
@@ -68,8 +72,9 @@ footer {padding-left: 44px; padding-right: 44px; background: #f7f5fb; font-size:
 .delta-reference {font-size: 12px}
 .quiet-note {font-size: 12.5px; line-height: 1.4}
 .usage-bar {height: 9px; margin-top: 4px}
-.usage-bar .expected {height: 17px; background: var(--gold)}
-.scenario-budget {--scenario-color: #805600}
+.usage-bar .expected {height: 17px; background: var(--gold); border: 1px solid var(--budget-stroke)}
+.scenario-budget {--scenario-color: var(--budget-text)}
+.delta.good, #category-table tbody .pct-cell.good {color: #1f7839}
 .scenario-forecast {--scenario-color: #006577}
 .detail-intro {margin-bottom: 8px}
 .detail-focus {font-size: 11.5px}
@@ -82,6 +87,13 @@ footer {padding-left: 44px; padding-right: 44px; background: #f7f5fb; font-size:
 .legend .swatch {width: 14px; height: 9px}
 .legend .swatch.line {height: 3px}
 .legend .swatch.line.dotted {width: 20px; height: 0; border-top: 2px dotted var(--color); background: transparent}
+.legend .budget-fill {border: 1px solid var(--budget-stroke)}
+.legend .swatch.line {position: relative; width: 20px}
+.legend :is(.budget-line,.dotted)::after {
+  content: ""; position: absolute; left: 7px; top: -2px; width: 5px; height: 5px;
+  border: 1px solid var(--color); border-radius: 50%; background: var(--budget);
+}
+.legend .dotted::after {top: -4px; border-radius: 0; transform: rotate(45deg); background: var(--plot-paper)}
 .legend-note {font-size: 11.5px; margin-top: 4px}
 .table-wrap {border: 0; border-radius: 0}
 #category-table {width: 100%; min-width: 850px; font-size: 13px}
@@ -102,6 +114,39 @@ th:first-child .sort-button {justify-content: flex-start; text-align: left}
 th[aria-sort=ascending] .sort-button svg, th[aria-sort=descending] .sort-button svg {opacity: 1; color: var(--gold)}
 .sort-button:focus-visible {outline-color: var(--gold); outline-offset: 0}
 .plot {flex-shrink: 0}
+#monthly-chart .scatterlayer .js-line {
+  filter: drop-shadow(0 0.8px 0 var(--plot-paper)) drop-shadow(0 -0.8px 0 var(--plot-paper));
+}
+/* The host and standalone reader supply the same three system colors. */
+body[data-contrast=high][data-brand] {
+  --actual: var(--hc-fg); --forecast: var(--hc-fg); --prior: var(--hc-fg); --budget: var(--hc-fg);
+  --monthly-real: var(--hc-fg); --monthly-forecast: var(--hc-fg); --annual-real: var(--hc-fg); --annual-forecast: var(--hc-fg);
+  --green: var(--hc-fg); --red: var(--hc-fg); --budget-text: var(--hc-fg); --budget-stroke: var(--hc-fg);
+  --muted: var(--hc-fg); --plot-paper: var(--hc-bg); --month-band: var(--hc-bg); --plot-grid: var(--hc-bg);
+  --selection-ink: var(--hc-selected); --border: var(--hc-fg); --brand-ink: var(--hc-fg); --purple: var(--hc-fg);
+  --lavender: var(--hc-bg); --navy: var(--hc-fg); --gold: var(--hc-selected);
+  background: var(--hc-bg); color: var(--hc-fg);
+}
+body[data-contrast=high] :is(main, footer, .masthead, .navigation, .scope-bar, .kpi-card, .chart-section,
+    .table-wrap, #month, #month-options, #calculation-tooltip, #pdf-status, #download-pdf, .tabs button,
+    .scope-bar button, .currency button, #category-table td, #category-table th, .delta, .column-heads > div) {
+  background: var(--hc-bg) !important; color: var(--hc-fg) !important; border-color: var(--hc-fg); box-shadow: none;
+}
+body[data-contrast=high] :is(.scenario-text, .legend, .kpi-value, .kpi-number, .kpi-label, .section-heading h3,
+    .category-button, #category-table .help-button, .help-button, .fixed-currency) {color: var(--hc-fg) !important}
+body[data-contrast=high] :is(.tabs, .scope-bar, .currency, #month-options, .plot, .legend, .usage-bar) {forced-color-adjust: none}
+body[data-contrast=high] :is(button[aria-selected=true], button[aria-pressed=true], [role=option][aria-selected=true]) {
+  text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px;
+}
+body[data-contrast=high] :is(.tabs,.scope-bar,.currency) button:is([aria-selected=true],[aria-pressed=true]),
+body[data-contrast=high] #month-options .active {outline: 2px solid var(--hc-selected); outline-offset: -3px}
+body[data-contrast=high] :focus-visible {outline-color: var(--hc-selected) !important}
+body[data-contrast=high] .usage-bar {outline: 1px solid var(--hc-fg); background: var(--hc-bg)}
+body[data-contrast=high] .usage-bar .expected {background: var(--hc-bg); border: 2px solid var(--hc-selected)}
+body[data-contrast=high] .hatched {background: repeating-linear-gradient(135deg,var(--hc-fg) 0 2px,var(--hc-bg) 2px 5px); border: 1px solid var(--hc-fg)}
+body[data-contrast=high] .budget-fill {background: radial-gradient(var(--hc-fg) 1px,var(--hc-bg) 1.5px) 0 0 / 4px 4px}
+body[data-contrast=high] #category-table tr.selected th {outline: 2px solid var(--hc-selected); outline-offset: -2px}
+body[data-contrast=high] #category-table tfoot td, body[data-contrast=high] #category-table tfoot th {border-top: 2px solid var(--hc-fg)}
 @container (max-width: 195px) {
   .kpi-value {font-size: 34px}
   .delta {padding: 4px 8px}
