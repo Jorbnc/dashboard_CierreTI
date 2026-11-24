@@ -67,7 +67,9 @@ async function main() {
           const bank = (await app.getAttribute('data-brand')) === 'bank';
           const chartColors = node => node.data.filter(t => t.type === 'bar').map(t => t.marker.color);
           assert.deepEqual(await app.locator('#annual-chart').evaluate(chartColors), ['#ffb81c','#608f9d','#254e5d']);
-          assert.deepEqual(await app.locator('#monthly-chart').evaluate(chartColors), bank ? ['#523178','#a58bc9'] : ['#414146','#85838a']);
+          assert.deepEqual(await app.locator('#monthly-chart').evaluate(chartColors), bank ? ['#523178','#a58bc9'] : ['#414146','#939198']);
+          const forecastKey = app.locator('#monthly-legend .legend > span').filter({hasText: /^Forecast /i}).locator('.swatch');
+          await expect(forecastKey).toHaveCSS('background-color', bank ? 'rgb(165, 139, 201)' : 'rgb(147, 145, 152)');
           await expect(app.locator('#category-table thead th').first()).toHaveCSS('background-color',bank ? 'rgb(82, 49, 120)' : 'rgb(65, 65, 70)');
           await expect(app.locator('#category-table tfoot td').first()).toHaveCSS('background-color',bank ? 'rgb(241, 236, 247)' : 'rgb(234, 232, 235)');
         };

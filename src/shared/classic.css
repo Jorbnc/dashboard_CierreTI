@@ -32,7 +32,7 @@ body[data-brand=corp] .brand {
 .brand [data-scope-logo][data-active] {display:block}
 body[data-brand=corp] .bank-logo {--bank-logo-size: 72px; filter: url(#corp-bank-wordmark)}
 body:is([data-brand=corp], [data-brand=retail]) {
-  --brand-ink: #221e20; --graphite: #414146; --monthly-real: var(--graphite); --monthly-forecast: #85838a;
+  --brand-ink: #221e20; --graphite: #414146; --monthly-real: var(--graphite); --monthly-forecast: #939198;
   --total-background: #eae8eb;
 }
 body:is([data-brand=corp], [data-brand=retail]) .masthead {background-color: var(--brand-ink)}

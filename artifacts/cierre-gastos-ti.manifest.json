@@ -1,17 +1,14 @@
 {
   "guid": "CierreGastosTI87D1AC0452B14A2C9D131B5482A80B71",
-  "version": "0.1.0.20",
+  "version": "0.1.0.21",
   "apiVersion": "5.11.1",
   "bytes": 1886064,
   "dataEmbedded": false,
   "businesses": [
-    "banco_chile",
-    "banco_peru",
-    "bancos",
-    "retail_chile",
-    "retail_peru",
+    "corp_ti",
     "retail",
-    "corp_ti"
+    "retail_chile",
+    "retail_peru"
   ],
   "sourceFiles": {
     "src/adapter.js": 8230,
@@ -50,7 +47,7 @@
     "tools/snapshot-lib.cjs": 5262,
     "tools/snapshot-release.cjs": 11154,
     "tools/test-snapshot.cjs": 8896,
-    "tools/test-visual.cjs": 17879,
+    "tools/test-visual.cjs": 18127,
     "style/visual.less": 26,
     "powerquery/fxCierreSum.pq": 2304,
     "powerquery/fxCierreXlsx.pq": 35088,
