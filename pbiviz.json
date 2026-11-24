@@ -4,7 +4,7 @@
     "displayName": "Cierre Gastos TI",
     "guid": "CierreGastosTI87D1AC0452B14A2C9D131B5482A80B71",
     "visualClassName": "Visual",
-    "version": "0.1.0.18",
+    "version": "0.1.0.19",
     "description": "Gastos TI, OPEX y CAPEX de un negocio desde series mensuales validadas.",
     "supportUrl": "https://learn.microsoft.com/power-bi/developer/visuals/",
     "gitHubUrl": ""

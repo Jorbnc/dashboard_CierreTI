@@ -136,7 +136,7 @@ async function main() {
         for (const key of ['bancos','retail','corp_ti']) {
           await update(dataView(portfolioFixture(key))); await ready();
           await checkSourceBadge();
-          const accent = key === 'corp_ti' ? 'rgb(34, 30, 32)' : 'rgb(82, 49, 120)';
+          const accent = key === 'bancos' ? 'rgb(82, 49, 120)' : 'rgb(34, 30, 32)';
           const header = app.locator('.column-heads > div').first();
           await expect(header).toHaveCSS('background-color', accent);
           await expect(header).toHaveCSS('border-radius', '8px');
