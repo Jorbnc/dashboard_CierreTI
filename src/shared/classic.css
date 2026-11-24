@@ -1,7 +1,7 @@
 :root {--forecast: #a58bc9; --budget: #ffb81c; --prior: #41414c}
 body {
   --budget-stroke: #ab7600; --budget-text: #905f00; --plot-paper: #fff; --plot-grid: #ece7f3;
-  --month-band: #e7ebef; --selection-ink: #252b32;
+  --month-band: rgba(47, 119, 206, 0.12); --selection-ink: #252b32;
 }
 body {--monthly-real: var(--actual); --monthly-forecast: var(--forecast); --annual-real: #254e5d; --annual-forecast: #608f9d}
 body {font-family: "Segoe UI", Arial, Helvetica, sans-serif; background: #e7e3ef}

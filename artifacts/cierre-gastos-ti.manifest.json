@@ -1,8 +1,8 @@
 {
   "guid": "CierreGastosTI87D1AC0452B14A2C9D131B5482A80B71",
-  "version": "0.1.0.22",
+  "version": "0.1.0.23",
   "apiVersion": "5.11.1",
-  "bytes": 1887350,
+  "bytes": 1887365,
   "dataEmbedded": false,
   "businesses": [
     "banco_chile",
@@ -19,7 +19,7 @@
     "src/vendor.d.ts": 37,
     "src/visual.ts": 7999,
     "src/shared/app.js": 50891,
-    "src/shared/classic.css": 13317,
+    "src/shared/classic.css": 13334,
     "src/shared/classic.js": 24847,
     "src/shared/index.html": 4448,
     "src/shared/integrated.css": 4750,
