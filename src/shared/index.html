@@ -8,6 +8,18 @@
   <style>/*__STYLE__*/</style>
 </head>
 <body data-ready="false" data-summary-layout="/*__LAYOUT__*/" data-brand="/*__BRAND_KIND__*/">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <filter id="corp-bank-wordmark" primitiveUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+        <!-- In the lettering band, coverage of white over #582982 is (green - 41) / 214.
+             Pass the original three-color underline through unchanged. Coordinates are relative to the 512px artwork. -->
+        <feColorMatrix in="SourceGraphic" type="matrix" x=".18" y=".26" width=".64" height=".45"
+          values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 1.191589 0 0 -.191589" result="letters"/>
+        <feOffset in="SourceGraphic" dx="0" dy="0" x=".192" y=".7246" width=".616" height=".043" result="underline"/>
+        <feMerge><feMergeNode in="letters"/><feMergeNode in="underline"/></feMerge>
+      </filter>
+    </defs>
+  </svg>
   <div class="navigation">
     <div class="tabs" role="tablist" aria-label="Páginas del reporte">
       <button id="tab-summary" role="tab" aria-controls="report-panel" aria-selected="true" data-page="summary"><i data-lucide="layout-dashboard"></i>Gastos TI</button>

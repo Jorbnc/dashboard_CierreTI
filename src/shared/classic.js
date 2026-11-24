@@ -37,6 +37,8 @@ globalThis.CierreClassic = {
   create({data, state, $, model, document, Plotly, width, metrics, selected, kind, month, months, closure, colors, color,
     fmt, pct, signed, signClass, escape, delta, legend, calculationHelp, helpButton, plotLayout, plotConfig, toggleCategory, proposal = null}) {
     let rendered = null;
+    const monthlyColors = {real: color('monthly-real'), forecast: color('monthly-forecast')};
+    const annualColors = {real: color('annual-real'), forecast: color('annual-forecast')};
     let annualObserver = null;
     let annualResizeFrame = 0;
     const axisMeasure = document.createElement('canvas').getContext('2d');
@@ -137,7 +139,7 @@ globalThis.CierreClassic = {
         panel('monthly-panel', `Evolución mensual ${data.year}: Real + Forecast vs Presupuesto`, '<p id="monthly-period" class="period-note"></p><div id="monthly-chart" class="plot" role="img" aria-label="Evolución mensual"></div><div id="monthly-legend"></div><p id="history-note" class="legend-note"></p>') +
         panel('variance-panel', 'Desviaciones acumuladas por categoría', '<p id="variance-period" class="period-note"></p><div id="variance-chart" class="plot" role="img" aria-label="Desviaciones acumuladas por categoría"></div>' + legend([['Mayor gasto vs Ppto', colors.bad], ['Menor gasto vs Ppto', colors.good]])) +
         panel('execution-panel', 'Ejecución y desviación', '<div class="table-wrap" tabindex="0" role="region" aria-label="Ejecución y desviación por categoría"><table id="category-table"></table></div>') +
-        panel('annual-panel', 'Ppto FY vs Forecast FY vs Real acumulado', `<p class="period-note">FCST al cierre de ${closure.toLowerCase()} ${data.year} ${forecastHelp('help-forecast-plot')}</p><div id="annual-chart" class="plot" role="img" aria-label="Presupuesto anual, forecast anual y real acumulado por categoría"></div><div id="annual-legend"></div>`) + '</div>';
+        panel('annual-panel', 'PPTO FY vs Forecast FY vs Real acumulado', `<p class="period-note">FCST al cierre de ${closure.toLowerCase()} ${data.year} ${forecastHelp('help-forecast-plot')}</p><div id="annual-chart" class="plot" role="img" aria-label="Presupuesto anual, forecast anual y real acumulado por categoría"></div><div id="annual-legend"></div>`) + '</div>';
     }
 
     function table(rows, totals) {
@@ -165,7 +167,7 @@ globalThis.CierreClassic = {
         xanchor: state.month >= 4 && state.month <= 9 ? 'center' : 'auto',
         yref: 'y', y: top, yanchor: 'bottom', yshift: 8, showarrow: false,
         align: 'left', font: {family: 'Segoe UI, Arial, sans-serif', size: 12},
-        text: `<span style="color:${colors.actual}"><b>REAL ${data.year}: ${fmt(real)}</b></span><br>` +
+        text: `<span style="color:${monthlyColors.real}"><b>REAL ${data.year}: ${fmt(real)}</b></span><br>` +
           `<span style="color:#805600"><b>PPTO ${data.year}: ${fmt(budget)}</b></span>`};
     }
 
@@ -180,17 +182,17 @@ globalThis.CierreClassic = {
       table(rows, group.series);
       $('monthly-period').textContent = forecastPeriod();
       $('variance-period').textContent = `REAL − PPTO · ${ytdPeriod()}`;
-      $('annual-legend').innerHTML = legend([[`Real enero–${month().toLowerCase()}`, colors.actual], ['Forecast FY', colors.forecast], ['Ppto FY', colors.budget]]);
+      $('annual-legend').innerHTML = legend([[`Real enero–${month().toLowerCase()}`, annualColors.real], ['Forecast FY', annualColors.forecast], ['PPTO FY', colors.budget]]);
       const historyDash = 'dot';
-      const legends = [[`Real ${data.year}`, colors.actual], [`Forecast ${data.year}`, colors.forecast], ['Presupuesto', colors.budget, true]];
+      const legends = [[`Real ${data.year}`, monthlyColors.real], [`Forecast ${data.year}`, monthlyColors.forecast], ['Presupuesto', colors.budget, true]];
       if (series.prior) legends.push([`Real ${data.year - 1}`, colors.prior, true, historyDash]);
       $('monthly-legend').innerHTML = legend(legends);
       $('history-note').textContent = focused && !series.prior ? `Histórico ${data.year - 1} no incorporado por categoría.` : selected().history_note;
       const x = Array.from({length: 12}, (_, i) => i + 1);
       const hover = name => `%{customdata}<br>${name}: %{y:,.0f} ${state.currency}<extra></extra>`;
       const monthly = [
-        {type: 'bar', x, y: series.actual, customdata: months, name: 'Real', marker: {color: colors.actual}, hovertemplate: hover('Real')},
-        {type: 'bar', x, y: series.forecast, customdata: months, name: 'Forecast', marker: {color: colors.forecast}, hovertemplate: hover('Forecast')},
+        {type: 'bar', x, y: series.actual, customdata: months, name: 'Real', marker: {color: monthlyColors.real}, hovertemplate: hover('Real')},
+        {type: 'bar', x, y: series.forecast, customdata: months, name: 'Forecast', marker: {color: monthlyColors.forecast}, hovertemplate: hover('Forecast')},
         {type: 'scatter', mode: 'lines+markers', x, y: series.budget, customdata: months, name: 'Presupuesto', line: {color: colors.budget, width: 3}, marker: {size: 5}, hovertemplate: hover('Presupuesto')},
       ];
       if (series.prior) monthly.push({type: 'scatter', mode: 'lines', x, y: series.prior, customdata: months, name: `Real ${data.year - 1}`, line: {color: colors.prior, width: 2, dash: historyDash}, hovertemplate: hover(`Real ${data.year - 1}`)});
@@ -205,7 +207,7 @@ globalThis.CierreClassic = {
         textfont: {color: differenceColors, size: 12}, constraintext: 'none', cliponaxis: false,
         hovertext: proposal ? rows.map(proposal.varianceText) : undefined,
         hovertemplate: proposal ? '%{hovertext}<extra></extra>' : `%{customdata[0]}<br>Real − Ppto: %{x:,.0f} ${state.currency}<extra></extra>`}];
-      const annual = [['Ppto FY', 'budgetYear', colors.budget], ['Forecast FY', 'forecastYear', colors.forecast], ['Real acumulado', 'actualYtd', colors.actual]].map(([name, key, colour]) => ({
+      const annual = [['PPTO FY', 'budgetYear', colors.budget], ['Forecast FY', 'forecastYear', annualColors.forecast], ['Real acumulado', 'actualYtd', annualColors.real]].map(([name, key, colour]) => ({
         type: 'bar', orientation: 'h', name, x: rows.map(r => r.m[key]), y: ids, customdata,
         marker: {color: colour, opacity}, hovertemplate: `%{customdata[0]}<br>${name}: %{x:,.0f} ${state.currency}<extra></extra>`,
       }));

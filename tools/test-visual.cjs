@@ -63,7 +63,13 @@ async function main() {
         };
         const checkDetailTitles = async () => {
           await expect(app.locator('#execution-panel h3')).toHaveText('Ejecución y desviación');
-          await expect(app.locator('#annual-panel h3')).toHaveText('Ppto FY vs Forecast FY vs Real acumulado');
+          await expect(app.locator('#annual-panel h3')).toHaveText('PPTO FY vs Forecast FY vs Real acumulado');
+          const bank = (await app.getAttribute('data-brand')) === 'bank';
+          const chartColors = node => node.data.filter(t => t.type === 'bar').map(t => t.marker.color);
+          assert.deepEqual(await app.locator('#annual-chart').evaluate(chartColors), ['#ffb81c','#608f9d','#254e5d']);
+          assert.deepEqual(await app.locator('#monthly-chart').evaluate(chartColors), bank ? ['#523178','#a58bc9'] : ['#414146','#85838a']);
+          await expect(app.locator('#category-table thead th').first()).toHaveCSS('background-color',bank ? 'rgb(82, 49, 120)' : 'rgb(65, 65, 70)');
+          await expect(app.locator('#category-table tfoot td').first()).toHaveCSS('background-color',bank ? 'rgb(241, 236, 247)' : 'rgb(234, 232, 235)');
         };
         for (const business of ['banco_peru', 'banco_chile', 'retail_chile', 'retail_peru']) {
           await update(dataView(fixture(business)));
@@ -144,7 +150,14 @@ async function main() {
           await expect(app.locator('.tabs [aria-selected=false] svg').first()).toHaveCSS('stroke', accent);
           const logo = app.locator('.masthead .brand').getByRole('img');
           await expect(app.locator('.scope-bar + .navigation')).toHaveCount(1);
-          if (key === 'corp_ti') await expect(logo).toHaveCount(2);
+          if (key === 'corp_ti') {
+            await expect(logo).toHaveCount(2);
+            const {PNG} = require('playwright-core/lib/utilsBundle');
+            const png = PNG.sync.read(await app.locator('.brand .bank-logo').screenshot());
+            const rgb = (x,y) => [...png.data.subarray(4*(y*png.width+x),4*(y*png.width+x)+3)];
+            assert.deepEqual(rgb(10,10), [34,30,32], 'the original purple tile must not appear');
+            assert.ok(rgb(38,54)[0] > 240 && rgb(38,54)[1] > 150, 'bank underline must remain visible');
+          }
           for (const button of await app.locator('.scope-bar button').all()) {
             await button.click(); await ready();
             const scope = await button.getAttribute('data-scope');

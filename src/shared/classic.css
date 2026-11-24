@@ -1,4 +1,5 @@
 :root {--forecast: #a58bc9; --budget: #ffb81c; --prior: #8c8c99}
+body {--monthly-real: var(--actual); --monthly-forecast: var(--forecast); --annual-real: #254e5d; --annual-forecast: #608f9d}
 body {font-family: "Segoe UI", Arial, Helvetica, sans-serif; background: #e7e3ef}
 .navigation, .masthead, main, footer {max-width: 1600px; margin-left: auto; margin-right: auto}
 .navigation {padding: 10px 22px}
@@ -29,8 +30,11 @@ body[data-brand=corp] .brand {
 }
 .brand [data-scope-logo] {display:none}
 .brand [data-scope-logo][data-active] {display:block}
-body[data-brand=corp] .bank-logo {--bank-logo-size: 72px}
-body:is([data-brand=corp], [data-brand=retail]) {--brand-ink: #221e20}
+body[data-brand=corp] .bank-logo {--bank-logo-size: 72px; filter: url(#corp-bank-wordmark)}
+body:is([data-brand=corp], [data-brand=retail]) {
+  --brand-ink: #221e20; --graphite: #414146; --monthly-real: var(--graphite); --monthly-forecast: #85838a;
+  --total-background: #eae8eb;
+}
 body:is([data-brand=corp], [data-brand=retail]) .masthead {background-color: var(--brand-ink)}
 body:is([data-brand=corp], [data-brand=retail]) :is(.scope-bar button[aria-pressed=false], .tabs button[aria-selected=false],
     .kpi-number, .detail-grid .section-heading h3) {color: var(--brand-ink)}
@@ -81,7 +85,7 @@ footer {padding-left: 44px; padding-right: 44px; background: #f7f5fb; font-size:
 .legend-note {font-size: 11.5px; margin-top: 4px}
 .table-wrap {border: 0; border-radius: 0}
 #category-table {width: 100%; min-width: 850px; font-size: 13px}
-#category-table thead th {font-size: 12.5px; padding: 4px 2px; line-height: 1.1; font-weight: 700; border: 1px solid #fff}
+#category-table thead th {font-size: 12.5px; padding: 4px 2px; line-height: 1.1; font-weight: 700; border: 1px solid #fff; background-color: var(--graphite, var(--purple))}
 #category-table th:first-child {width: 20%}
 #category-table td, #category-table tbody th, #category-table tfoot th {padding: 3px 7px; line-height: 1.3}
 #category-table td {white-space: nowrap}
@@ -89,7 +93,8 @@ footer {padding-left: 44px; padding-right: 44px; background: #f7f5fb; font-size:
 #category-table tbody tr {cursor: pointer}
 #category-table tbody tr.selected th, #category-table tbody tr.selected td {box-shadow: inset 0 0 0 2px var(--gold)}
 #category-table tbody tr.selected {background: #fff8e7}
-#category-table tfoot th, #category-table tfoot td {background: var(--lavender); font-weight: 800; color: var(--purple)}
+#category-table tfoot th, #category-table tfoot td {background: var(--total-background, var(--lavender)); font-weight: 800; color: var(--graphite, var(--purple))}
+body:is([data-brand=corp], [data-brand=retail]) #category-table tfoot .category-button {color: inherit}
 .category-button {font-size: 13px; font-weight: 700; line-height: 1.3; min-height: 20px}
 .sort-button {display: flex; align-items: center; justify-content: flex-end; gap: 2px; width: 100%; background: transparent; color: inherit; padding: 2px 0; min-height: 32px; text-align: right; font-size: inherit; font-weight: inherit; line-height: 1.1}
 th:first-child .sort-button {justify-content: flex-start; text-align: left}
