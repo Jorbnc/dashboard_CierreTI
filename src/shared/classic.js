@@ -110,19 +110,21 @@ globalThis.CierreClassic = {
         `${data.year} vs. ${data.year - 1} acumulado`, 'Uso del PPTO anual'];
       const validity = `<small class="forecast-validity">Cierre: ${closure.toLowerCase()} ${data.year}</small>`;
       const card = (scope, i, content) => `<article class="kpi-card" data-scope="${scope}" data-kpi="${i}" aria-label="${escape(labels[i])}"><div class="kpi-label">${labels[i]}${i === 2 ? validity : ''}</div>${content}</article>`;
-      const value = (n, name) => `<div class="kpi-value" data-metric="${name}">${fmt(n)}<small>${state.currency}</small></div>`;
+      const number = (n, format) => Number.isFinite(n) ? `<span class="kpi-number">${format(n)}</span>` : format(n);
+      const value = (n, name) => `<div class="kpi-value" data-metric="${name}">${number(n, fmt)}<small>${state.currency}</small></div>`;
       const rows = [['Total', 'Gastos totales', selected().total, color('navy')], ['Opex', 'OPEX', selected().types.Opex.series, color('violet')], ['Capex', 'CAPEX', selected().types.Capex.series, color('magenta')]];
       $('report-panel').innerHTML = `<div class="column-heads" aria-hidden="true">${labels.map((l, i) => `<div><span>${l}</span>${i === 2 ? validity : ''}</div>`).join('')}</div>` + rows.map(([scope, label, series, colour]) => {
         const m = metrics(series);
+        const yoy = number(model.relative(m.actualYtd, m.priorYtd), n => signed(n, pct));
         const history = m.priorYtd === null
           ? `<div class="kpi-value unavailable">N/D</div><div class="kpi-sub">Histórico ${data.year - 1} no disponible en ${state.currency}.</div>`
-          : `${proposal ? proposal.historyValue(scope, label, m) : `<div class="kpi-value" data-metric="yoy">${signed(model.relative(m.actualYtd, m.priorYtd), pct)}</div>`}<div class="kpi-sub">REAL ${data.year - 1}: ${fmt(m.priorYtd)}<br>REAL ${data.year}: ${fmt(m.actualYtd)} ${state.currency}</div><div class="delta neutral">Forecast anual vs. ${data.year - 1}: ${signed(model.relative(m.forecastYear, m.priorYear), pct)}</div>`;
+          : `${proposal ? proposal.historyValue(scope, label, m, yoy) : `<div class="kpi-value" data-metric="yoy">${yoy}</div>`}<div class="kpi-sub">REAL ${data.year - 1}: ${fmt(m.priorYtd)}<br>REAL ${data.year}: ${fmt(m.actualYtd)} ${state.currency}</div><div class="delta neutral">Forecast anual vs. ${data.year - 1}: ${signed(model.relative(m.forecastYear, m.priorYear), pct)}</div>`;
         return `<section class="summary-section" aria-label="${label}"><h3 class="row-title" style="--row-color:${colour}">${label}${scope === 'Total' ? componentsHelp() : ''}</h3><div class="kpi-grid">` +
           card(scope, 0, value(m.actualMonth, 'actual-month') + `<div class="kpi-sub">PPTO: ${fmt(m.budgetMonth)} ${state.currency}</div>` + delta(m.actualMonth, m.budgetMonth)) +
           card(scope, 1, value(m.actualYtd, 'actual-ytd') + `<div class="kpi-sub">PPTO: ${fmt(m.budgetYtd)} ${state.currency}</div>` + delta(m.actualYtd, m.budgetYtd)) +
           card(scope, 2, value(m.forecastYear, 'forecast-year') + `<div class="kpi-sub">PPTO anual: ${fmt(m.budgetYear)} ${state.currency}</div>` + delta(m.forecastYear, m.budgetYear)) +
           card(scope, 3, history) +
-          card(scope, 4, `<div class="label-with-help"><div class="kpi-value" data-metric="usage">${pct(m.usage)}</div>${calculationHelp(scope, label, m)}</div><div class="kpi-sub">Esperado a ${month().toLowerCase()}: <span data-metric="expected">${pct(m.expected)}</span></div><div class="usage-bar" ${m.usage === null ? 'hidden' : ''} aria-hidden="true"><span class="fill" style="width:${Math.max(0, Math.min(100, m.usage ?? 0))}%"></span><span class="expected" style="left:${Math.max(0, Math.min(99, m.expected ?? 0))}%"></span></div><div class="quiet-note">PPTO disponible a ${month().toLowerCase()}: ${fmt(m.budgetYear - m.actualYtd)}<br>FCST ${data.cutoff < 12 ? `${months[data.cutoff].slice(0, 3).toLowerCase()}–dic` : 'pendiente'}: ${fmt(m.future)} ${state.currency}</div>`) +
+          card(scope, 4, `<div class="label-with-help"><div class="kpi-value" data-metric="usage">${number(m.usage, pct)}</div>${calculationHelp(scope, label, m)}</div><div class="kpi-sub">Esperado a ${month().toLowerCase()}: <span data-metric="expected">${pct(m.expected)}</span></div><div class="usage-bar" ${m.usage === null ? 'hidden' : ''} aria-hidden="true"><span class="fill" style="width:${Math.max(0, Math.min(100, m.usage ?? 0))}%"></span><span class="expected" style="left:${Math.max(0, Math.min(99, m.expected ?? 0))}%"></span></div><div class="quiet-note">PPTO disponible a ${month().toLowerCase()}: ${fmt(m.budgetYear - m.actualYtd)}<br>FCST ${data.cutoff < 12 ? `${months[data.cutoff].slice(0, 3).toLowerCase()}–dic` : 'pendiente'}: ${fmt(m.future)} ${state.currency}</div>`) +
           '</div></section>';
       }).join('');
     }

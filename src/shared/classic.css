@@ -30,6 +30,12 @@ body[data-brand=corp] .brand {
 .brand [data-scope-logo] {display:none}
 .brand [data-scope-logo][data-active] {display:block}
 body[data-brand=retail] .masthead {background: #000}
+body[data-brand=corp] {--corp-ink: #221e20}
+body[data-brand=corp] .masthead {background-color: var(--corp-ink)}
+body[data-brand=corp] .scope-bar button[aria-pressed=true],
+body[data-brand=corp] .tabs button[aria-selected=true] {background-color: var(--corp-ink); border-color: var(--corp-ink)}
+body[data-brand=corp] .kpi-number,
+body[data-brand=corp] .detail-grid .section-heading h3 {color: var(--corp-ink)}
 .fixed-currency {font-size: 13px; font-weight: 700; color: var(--purple)}
 .scope-currency {width:154px; min-height:34px; display:flex; align-items:center; justify-content:flex-end}
 #month-status.sr-only {position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0}

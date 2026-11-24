@@ -8,7 +8,7 @@ globalThis.CierreProposal = {
     const gapHelp = m => `<p class="tooltip-section">Brecha = Uso − Esperado (puntos porcentuales)</p><p class="tooltip-formula">${Number.isFinite(m.usage) && Number.isFinite(m.expected)
       ? `${pct(m.usage)} − ${pct(m.expected)} ≈ <b>${signed(m.usage - m.expected, pct).replace('%', ' p.p.')}</b>`
       : 'N/D: El PPTO anual no es positivo.'}</p><p>La variación frente al PPTO acumulado usa otro denominador: ${signed(model.relative(m.actualYtd, m.budgetYtd), pct)}.</p>`;
-    function historyValue(scope, label, m) {
+    function historyValue(scope, label, m, yoy) {
       const comparison = (heading, actualLabel, actual, priorLabel, prior) => {
         const result = model.relative(actual, prior);
         return `<p class="tooltip-section">${heading}</p><p>${actualLabel}: <b>${fmt(actual)} ${state.currency}</b><br>${priorLabel}: <b>${fmt(prior)} ${state.currency}</b></p><p class="tooltip-formula">${Number.isFinite(result)
@@ -17,7 +17,7 @@ globalThis.CierreProposal = {
       };
       const content = comparison(`Acumulado enero a ${month().toLowerCase()}`, `REAL ${data.year}`, m.actualYtd, `REAL ${data.year - 1}`, m.priorYtd) +
         comparison(`Anual enero–diciembre · FCST vigente a ${closure.toLowerCase()}`, `FCST ${data.year}`, m.forecastYear, `REAL ${data.year - 1}`, m.priorYear);
-      return `<button type="button" class="kpi-value history-trigger" data-metric="yoy" data-help="help-history-${scope}" aria-label="Detalle del comparativo histórico: ${escape(label)}" aria-expanded="false">${signed(model.relative(m.actualYtd, m.priorYtd), pct)}</button><template id="help-history-${scope}">${content}</template>`;
+      return `<button type="button" class="kpi-value history-trigger" data-metric="yoy" data-help="help-history-${scope}" aria-label="Detalle del comparativo histórico: ${escape(label)}" aria-expanded="false">${yoy}</button><template id="help-history-${scope}">${content}</template>`;
     }
     function monthlyTraces(traces, series) {
       traces.forEach((trace, index) => {

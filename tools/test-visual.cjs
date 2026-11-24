@@ -135,12 +135,17 @@ async function main() {
         for (const key of ['bancos','retail','corp_ti']) {
           await update(dataView(portfolioFixture(key))); await ready();
           await checkSourceBadge();
+          const accent = key === 'corp_ti' ? 'rgb(34, 30, 32)' : 'rgb(82, 49, 120)';
           const logo = app.locator('.masthead .brand').getByRole('img');
           await expect(app.locator('.scope-bar + .navigation')).toHaveCount(1);
           if (key === 'corp_ti') await expect(logo).toHaveCount(2);
           for (const button of await app.locator('.scope-bar button').all()) {
             await button.click(); await ready();
             const scope = await button.getAttribute('data-scope');
+            await expect(button).toHaveCSS('background-color', accent);
+            const actual = app.locator('[data-scope=Total] [data-metric=actual-month]');
+            await expect(actual.locator('.kpi-number')).toHaveCSS('color', accent);
+            await expect(actual.locator('small')).toHaveCSS('color', 'rgb(110, 102, 128)');
             await checkLogoSizes();
             await expect(app.locator('.identity h1')).toHaveText(await button.innerText());
             if (scope === 'corp_ti') await expect(logo).toHaveCount(2);
@@ -173,6 +178,8 @@ async function main() {
           for (const tab of ['opex','capex']) {
             await app.locator('#tab-'+tab).click(); await ready();
             await checkDetailTitles(); await checkSourceBadge();
+            await expect(app.locator('#tab-'+tab)).toHaveCSS('background-color', accent);
+            for (const title of await app.locator('.detail-grid h3').all()) await expect(title).toHaveCSS('color', accent);
           }
           await expect(app.locator('#monthly-chart .barlayer .point')).not.toHaveCount(0);
         }
