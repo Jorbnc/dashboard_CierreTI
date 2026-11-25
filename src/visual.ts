@@ -86,7 +86,7 @@ export class Visual implements powerbi.extensibility.visual.IVisual {
             // Identity and currencies are allow-listed by the adapter; financial text is escaped by the renderer.
             // eslint-disable-next-line powerbi-visuals/no-inner-outer-html -- Static markup and allow-listed identities only.
             this.content.innerHTML = markup.replace(/\/\*__(ENTITY|IDENTITY|BRAND|CURRENCY)__\*\//g, (_, key) => replacements[key]);
-            this.app = mount(this.content, data, {model, classic, proposal, plotly: Plotly, icons: lucide,
+            this.app = mount(this.content, data, {model, classic, proposal, plotly: Plotly, icons: lucide, flags: brands,
               highContrast: () => {
                 const p = this.host.colorPalette;
                 return p?.isHighContrast ? {fg: p.foreground.value, bg: p.background.value, selected: p.foregroundSelected.value} : null;

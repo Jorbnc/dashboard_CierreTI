@@ -137,7 +137,16 @@ async function main() {
             await expect(actual.locator('.kpi-number')).toHaveCSS('color', accent);
             await expect(actual.locator('small')).toHaveCSS('color', 'rgb(110, 102, 128)');
             await checkLogoSizes();
-            await expect(app.locator('.identity h1')).toHaveText(await button.innerText());
+            const country = {banco_chile:'Chile', banco_peru:'Perú', retail_chile:'Chile', retail_peru:'Perú'}[scope];
+            const flag = app.locator('.identity').getByRole('img');
+            await expect(app.locator('.identity h1')).toHaveText(country
+              ? (scope.startsWith('banco_') ? 'Banco Ripley' : 'Retail') : await button.innerText());
+            await expect(flag).toHaveCount(country ? 1 : 0);
+            if (country) {
+              await expect(flag).toHaveAccessibleName(country);
+              const svg = fs.readFileSync(path.join(root,'src/shared/branding',country === 'Chile' ? 'chile.svg' : 'peru.svg'));
+              await expect(flag).toHaveAttribute('src','data:image/svg+xml;base64,'+svg.toString('base64'));
+            }
             if (scope === 'corp_ti') await expect(logo).toHaveCount(2);
             else {
               const bank = scope.startsWith('banco');
@@ -159,10 +168,12 @@ async function main() {
             await app.locator('[data-currency=MSoles]').click(); await ready();
             await update(dataView(portfolioFixture(key))); await ready();
             await expect(logo).toHaveAccessibleName('Banco Ripley');
-            await expect(app.locator('.identity h1')).toHaveText('Banco Perú');
+            await expect(app.locator('.identity h1')).toHaveText('Banco Ripley');
+            await expect(app.locator('.identity').getByRole('img')).toHaveAccessibleName('Perú');
             await expect(app).toHaveAttribute('data-currency','MSoles');
             await app.locator('button[data-scope=corp_ti]').click(); await ready();
             await expect(logo).toHaveCount(2);
+            await expect(app.locator('.identity').getByRole('img')).toHaveCount(0);
             await expect(app).toHaveAttribute('data-currency','MMCLP');
           }
           for (const tab of ['opex','capex']) {

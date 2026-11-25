@@ -30,10 +30,23 @@
   const scopeNames = {bancos: 'Bancos', retail: 'Retail', corp_ti: data.entity, banco_chile: 'Banco Chile',
     banco_peru: 'Banco Perú', retail_chile: 'Retail Chile', retail_peru: 'Retail Perú'};
   const scopeLabel = key => key === data.business && key !== 'corp_ti' ? 'Total ' + scopeNames[key] : scopeNames[key];
-  let scopeBar;
+  let scopeBar, updateScopeIdentity;
   let currencyGroup, fixedCurrency;
   const scopeLogos = root.querySelectorAll('.brand [data-scope-logo]');
   if (data.choices) {
+    const heading = root.querySelector('.identity h1');
+    const flags = Object.entries({chile: 'Chile', peru: 'Perú'}).map(([country, name]) => {
+      const img = owner.createElement('img');
+      img.className = 'country-flag'; img.alt = name; img.src = dependencies.flags[country];
+      img.width = 40; img.height = 34; img.hidden = true;
+      heading.before(img);
+      return [country, img];
+    });
+    updateScopeIdentity = scope => {
+      const member = data.members[scope];
+      heading.textContent = member ? (member.brand === 'bank' ? 'Banco Ripley' : 'Retail') : scopeLabel(scope);
+      for (const [country, img] of flags) img.hidden = !member || !scope.endsWith('_' + country);
+    };
     if (!Object.hasOwn(data.choices, state.scope)) state.scope = data.business;
     data.currencies = model.portfolioCurrencies(data, state.scope);
     fixedCurrency = root.querySelector('.fixed-currency');
@@ -209,7 +222,7 @@
         if (!data.currencies[desired.currency]) desired.currency = data.default_currency;
         Object.assign(state, desired);
         if (scopeBar) {
-          root.querySelector('.identity h1').textContent = scopeLabel(state.scope);
+          updateScopeIdentity(state.scope);
           for (const button of scopeBar.children) button.setAttribute('aria-pressed', String(button.dataset.scope === state.scope));
           for (const button of currencyGroup.children) button.hidden = !data.currencies[button.dataset.currency];
           currencyGroup.hidden = Object.keys(data.currencies).length === 1;
