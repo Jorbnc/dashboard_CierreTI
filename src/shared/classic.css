@@ -16,6 +16,8 @@ body {font-family: "Segoe UI", Arial, Helvetica, sans-serif; background: #e7e3ef
   min-height: 84px; padding: 2px 22px; gap: 20px;
 }
 .identity h1 {font-size: 22px; font-weight: 700}
+.identity:has(.scope-flags) {flex-wrap: wrap; gap: 3px 8px}
+.scope-flags {display: inline-flex; align-items: center; gap: 4px}
 .country-flag {width: 40px; height: 34px; background: none; object-fit: contain}
 #page-title {font-size: 27px; font-weight: 700}
 .brand {justify-self: end}
@@ -166,6 +168,10 @@ body[data-contrast=high] #category-table tfoot td, body[data-contrast=high] #cat
   .kpi-grid {grid-template-columns: minmax(0, 1fr)}
   .chart-section {padding: 10px 12px}
   .section-heading {min-height: 0}
+}
+@media (max-width: 375px) {
+  body[data-brand=corp] .masthead {padding-inline: 12px; column-gap: 8px}
+  body[data-brand=corp] .identity h1 {font-size: 18px}
 }
 @media print {
   .column-heads {display: grid}

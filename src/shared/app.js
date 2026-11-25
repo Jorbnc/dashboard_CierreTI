@@ -35,17 +35,22 @@
   const scopeLogos = root.querySelectorAll('.brand [data-scope-logo]');
   if (data.choices) {
     const heading = root.querySelector('.identity h1');
+    const flagGroup = owner.createElement('span');
+    flagGroup.className = 'scope-flags';
+    heading.before(flagGroup);
     const flags = Object.entries({chile: 'Chile', peru: 'Perú'}).map(([country, name]) => {
       const img = owner.createElement('img');
       img.className = 'country-flag'; img.alt = name; img.src = dependencies.flags[country];
       img.width = 40; img.height = 34; img.hidden = true;
-      heading.before(img);
+      flagGroup.append(img);
       return [country, img];
     });
     updateScopeIdentity = scope => {
-      const member = data.members[scope];
-      heading.textContent = member ? (member.brand === 'bank' ? 'Banco Ripley' : 'Retail') : scopeLabel(scope);
-      for (const [country, img] of flags) img.hidden = !member || !scope.endsWith('_' + country);
+      const members = data.choices[scope];
+      const brands = new Set(members.map(key => data.members[key].brand));
+      heading.textContent = brands.size > 1 ? data.entity : brands.has('bank') ? 'Banco Ripley' : 'Retail';
+      for (const [country, img] of flags) img.hidden = !members.some(key => key.endsWith('_' + country));
+      for (const logo of scopeLogos) logo.toggleAttribute('data-active', brands.has(logo.dataset.scopeLogo));
     };
     if (!Object.hasOwn(data.choices, state.scope)) state.scope = data.business;
     data.currencies = model.portfolioCurrencies(data, state.scope);
@@ -228,10 +233,6 @@
           currencyGroup.hidden = Object.keys(data.currencies).length === 1;
           fixedCurrency.hidden = !currencyGroup.hidden;
           fixedCurrency.textContent = state.currency;
-        }
-        if (scopeLogos.length) {
-          const brands = new Set(data.choices[state.scope].map(key => data.members[key].brand));
-          for (const logo of scopeLogos) logo.toggleAttribute('data-active', brands.has(logo.dataset.scopeLogo));
         }
         await render(replace);
       }

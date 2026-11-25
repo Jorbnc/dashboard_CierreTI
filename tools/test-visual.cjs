@@ -138,11 +138,13 @@ async function main() {
             await expect(actual.locator('small')).toHaveCSS('color', 'rgb(110, 102, 128)');
             await checkLogoSizes();
             const country = {banco_chile:'Chile', banco_peru:'Perú', retail_chile:'Chile', retail_peru:'Perú'}[scope];
-            const flag = app.locator('.identity').getByRole('img');
-            await expect(app.locator('.identity h1')).toHaveText(country
-              ? (scope.startsWith('banco_') ? 'Banco Ripley' : 'Retail') : await button.innerText());
-            await expect(flag).toHaveCount(country ? 1 : 0);
-            if (country) {
+            const flags = app.locator('.identity').getByRole('img');
+            await expect(app.locator('.identity h1')).toHaveText(scope === 'corp_ti' ? 'Ripley Corp'
+              : scope.startsWith('banco') ? 'Banco Ripley' : 'Retail');
+            const countries = country ? [country] : ['Chile','Perú'];
+            await expect(flags).toHaveCount(countries.length);
+            for (const [i, country] of countries.entries()) {
+              const flag = flags.nth(i);
               await expect(flag).toHaveAccessibleName(country);
               const svg = fs.readFileSync(path.join(root,'src/shared/branding',country === 'Chile' ? 'chile.svg' : 'peru.svg'));
               await expect(flag).toHaveAttribute('src','data:image/svg+xml;base64,'+svg.toString('base64'));
@@ -173,7 +175,7 @@ async function main() {
             await expect(app).toHaveAttribute('data-currency','MSoles');
             await app.locator('button[data-scope=corp_ti]').click(); await ready();
             await expect(logo).toHaveCount(2);
-            await expect(app.locator('.identity').getByRole('img')).toHaveCount(0);
+            await expect(app.locator('.identity').getByRole('img')).toHaveCount(2);
             await expect(app).toHaveAttribute('data-currency','MMCLP');
           }
           for (const tab of ['opex','capex']) {
