@@ -1,6 +1,8 @@
 expression pWorkbookPath = "C:\Users\jnunezca\OneDrive - Ripley Corp\dashboards\input\CierreTI\2610_dashboard_data_final.xlsx" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: b8a3b4d1-8e4a-4cde-8d38-916fe92515ad
 
+	annotation PBI_ResultType = Text
+
 expression fxCierreSum =
 		// Binary64 expansion summation, including the half-even final correction used by math.fsum.
 		// Used for validation only: published cells are never rounded or reconstructed from totals.
@@ -40,6 +42,7 @@ expression fxCierreSum =
 		in
 		    if Finite(Result) then Result
 		    else error Error.Record("Cierre.Number", "Nonfinite sum.", null)
+	lineageTag: 96bb2baa-9550-4f2f-957c-62cb3f2117fe
 
 expression fxCierreXlsx =
 		// Dependency: fxCierreSum. Import each .pq as a function expression.
@@ -453,3 +456,5 @@ expression fxCierreXlsx =
 		        else Fail("Validaci#(00F3)n incompleta")
 		in
 		    Value.ReplaceMetadata(Result, [CierreDiagnostics = Diagnostics])
+	lineageTag: 3522fef3-e94d-4669-ab4c-b27f50c42dcc
+

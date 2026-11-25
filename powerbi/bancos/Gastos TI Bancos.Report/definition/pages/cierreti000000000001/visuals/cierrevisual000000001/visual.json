@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "cierrevisual000000001",
   "position": {
     "x": 0,
     "y": 0,
     "z": 0,
-    "width": 1600,
     "height": 960,
+    "width": 1600,
     "tabOrder": 0
   },
   "visual": {
@@ -534,7 +534,346 @@
           }
         }
       ]
-    },
-    "drillFilterOtherVisuals": false
+    }
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "06f737ca1cd9431f1d53",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "id"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "3980fba9caf6ea814513",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "business"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "fd3afc6ce92a0ead563c",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "entity"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "a194fc23754ea8fd1773",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "brand"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "4255d2bef934b588549d",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "default_currency"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "b5bcfab2bf2c37e9fc8a",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "year"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "3bde48b728de22cda884",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "cutoff"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "3f5fe6b056c291469cf7",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "source"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "26c3abae428b32d58558",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "sheet"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "00b896c6fe91b4024dab",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "unit"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "9708287fdfb492a304c6",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "level"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "5867621f667569bd1633",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "kind"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "3db59ccfa9f43c90bd66",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "category"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "5d9517fb9bfdc3bbfd41",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "label"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "7f7e78f77e00525fc7c6",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "month"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "3f48ef430acaf71b0dac",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "actual"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "06c433052997dd971066",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "forecast"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "61c0caf102bbc56a0f0d",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "budget"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "b99a9f01e58905b74a24",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "prior"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "944c4587613c6cc31dff",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "range_execution_forecast"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "6973b523a51c124d5896",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "range_budget"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "52d057261b0bec3f1043",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "range_prior"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "57c049dd04faa07f83f0",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "history_note"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "66ab0249299ee61fcafb",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Cierre"
+              }
+            },
+            "Property": "expected_rows"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
   }
 }

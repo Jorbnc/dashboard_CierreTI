@@ -156,3 +156,4 @@ table Cierre
 				        Table.TransformColumns(fxCierreXlsx(Workbook, SourceName, member), {{"id", each "bancos|" & _, type text}})))
 				in
 				    Result
+
