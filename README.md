@@ -2,7 +2,7 @@
 
 Un repositorio independiente, un visual SDK compartido **sin cifras incrustadas** y siete PBIP: Banco Chile, Banco Perú, Retail Chile, Retail Perú, Bancos, Retail y Ripley Corp. El flujo predeterminado es **XLSX directo con Power Query M** en `powerbi/`. Windows usa solo **Git Bash + Power BI Desktop**, sin Python, Node ni manejo regular de JSON.
 
-Los tres consolidados importan las monedas nativas de sus sociedades y ofrecen solo las comunes al filtro. Con 2610 final, los totales se muestran en MMCLP; al filtrar Banco Perú se puede cambiar a MSoles sin conversión. Actualizar el modelo en Desktop antes de republicar. Los porcentajes se recalculan sobre las sumas. Solo los dos bancos individuales ofrecen PDF. El selector no restringe acceso: otorgar permisos según el perímetro completo. Para preparar los siete, ejecutar la preparación Python con fuente explícita, compilar el SDK y usar `npm run package:projects` sin filtro; el snapshot histórico sigue siendo de cuatro sociedades.
+Los tres consolidados importan las monedas nativas de sus sociedades y ofrecen solo las comunes al filtro. Con 2610 final, los totales se muestran en MMCLP; al filtrar Banco Perú se puede cambiar a MSoles sin conversión. Actualizar el modelo en Desktop antes de republicar. Los porcentajes se recalculan sobre las sumas. El selector no restringe acceso: otorgar permisos según el perímetro completo. Para preparar los siete, ejecutar la preparación Python con fuente explícita, compilar el SDK y usar `npm run package:projects` sin filtro; el snapshot histórico sigue siendo de cuatro sociedades.
 
 El usuario confirmo **funcionamiento en Desktop el 16/11/2026**, tras retirar hashes y corregir `pWorkbookPath`; despues informo acceso de un destinatario a Service con un problema del selector en Opera. No equivale a aceptacion financiera y funcional exhaustiva de los cuatro modelos. El parser oficial Power Query en Linux valida sintaxis, no ejecucion. La evidencia snapshot `2609-v0.2.0.1` es de otra via, no prueba de XLSX nativo.
 
@@ -10,11 +10,7 @@ El usuario confirmo **funcionamiento en Desktop el 16/11/2026**, tras retirar ha
 
 **0.1.0.12:** los siete HTML y PBIP omiten la insignia «Fuente XLSX» en las tres pestañas y usan los mismos títulos breves en OPEX/CAPEX. Los cambios de formato por negocio descritos a continuación son históricos. No cambian cálculos, permisos de PDF ni parámetros.
 
-### Descarga de PDF en bancos (0.1.0.10)
-
-El botón **PDF** con flecha guarda la vista activa con sus estilos de pantalla y toda su altura, normalmente a doble resolución. La página conserva sus proporciones en vez de recomponer las tarjetas en A4; el texto no es seleccionable. El PDF se genera en memoria, sin servicio externo. En Desktop/Service se entrega exclusivamente por la [File Download API](https://learn.microsoft.com/en-us/power-bi/developer/visuals/file-download-api): requiere permiso del tenant y consentimiento del usuario; denegarlo no bloquea el reporte. El menú nativo Exportar no cambia.
-
-En Linux, después de preparar los dos bancos, compilar y probar el visual, usar `npm run package:projects -- --business banco_chile banco_peru` y `npm run check`. Este procedimiento selectivo corresponde al hito 0.1.0.10; la entrega conjunta posterior incluye los siete proyectos. En Windows, sincronizar con Desktop cerrado, probar CAPEX del mes en cada PBIP y republicar para verificar la descarga con un lector en Service. No cambiar modelo ni parámetro por este ajuste.
+**0.1.0.26:** interfaz compacta en los siete proyectos. El reporte termina en Fuente y criterios; la descarga propia de PDF queda en pausa. El visual no solicita permisos de descarga. El menú nativo de Power BI no cambia.
 
 ### Nombres activos y formato anterior (0.1.0.8)
 

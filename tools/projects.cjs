@@ -24,7 +24,7 @@ const entries = unzipSync(archive);
 const resourceName = `resources/${guid}.pbiviz.json`;
 const decode = key => JSON.parse(Buffer.from(entries[key]).toString('utf8'));
 const metadata = decode('package.json'), resource = decode(resourceName);
-require('node:assert/strict').deepEqual(resource.capabilities.privileges, [{name:'ExportContent', essential:false}]);
+require('node:assert/strict').deepEqual(resource.capabilities.privileges, []);
 if (metadata.visual.guid !== guid || metadata.visual.version !== config.visual.version)
   throw new Error('Identidad o permisos inesperados en el paquete.');
 const columns = Object.keys(fields);

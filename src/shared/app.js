@@ -123,46 +123,6 @@
   let destroyed = false;
   let renderDone = Promise.resolve();
   let finishRender;
-  const pdfButton = $('download-pdf');
-  const offerPDF = isProposal && ['banco_chile', 'banco_peru'].includes(data.business) && dependencies.delivery && dependencies.pdf;
-  let viewRevision = 0, exporting = false;
-  function syncPdfButton() {
-    if (!offerPDF) return;
-    pdfButton.hidden = !offerPDF;
-    pdfButton.disabled = !offerPDF || exporting || rendering || document.body.dataset.ready !== 'true' || !!$('report-panel').querySelector('[role=alert]');
-    pdfButton.setAttribute('aria-busy', String(exporting));
-  }
-  if (!offerPDF) pdfButton.remove();
-  else listen(pdfButton, 'click', async () => {
-    if (pdfButton.disabled || !offerPDF) return;
-    const revision = viewRevision;
-    const current = () => !destroyed && revision === viewRevision;
-    const status = $('pdf-status');
-    let submitted = false;
-    exporting = true;
-    syncPdfButton();
-    status.textContent = '';
-    try {
-      const reason = await dependencies.delivery.check();
-      if (!current()) return;
-      if (reason) {status.textContent = reason; return;}
-      const {bytes, filename} = await dependencies.pdf.create(root, dependencies.pdfLib, {
-        business: data.business, entity: data.entity, page: state.page, year: data.year, month: state.month, currency: state.currency,
-      }, current);
-      if (!current()) return;
-      submitted = true;
-      const completed = await dependencies.delivery.save(bytes, filename);
-      if (!destroyed && !completed) status.textContent = 'No se completó la descarga del PDF.';
-    } catch {
-      if (current()) status.textContent = 'No se pudo descargar la vista en PDF. Inténtalo de nuevo.';
-    } finally {
-      exporting = false;
-      if (!destroyed) {
-        if (!submitted && !current()) status.textContent = 'La vista cambió. Vuelve a descargar el PDF de la selección actual.';
-        syncPdfButton();
-      }
-    }
-  });
   let helpTrigger = null;
   let helpAnchor = null;
   let helpPinned = false;
@@ -232,14 +192,11 @@
   // Coalesce controls while Plotly finishes; never remove an in-flight graph.
   async function requestRender(update = {}, rebuild = false) {
     if (destroyed) return;
-    viewRevision++;
-    $('pdf-status').textContent = '';
     closeHelp();
     Object.assign(desired, update);
     pending = true;
     rebuildPending ||= rebuild;
     document.body.dataset.ready = 'false';
-    syncPdfButton();
     if (rendering) return renderDone;
     rendering = true;
     renderDone = new Promise(resolve => {finishRender = resolve;});
@@ -271,7 +228,6 @@
     } finally {
       rendering = false;
       document.body.dataset.ready = 'true';
-      syncPdfButton();
       finishRender();
     }
   }
@@ -464,15 +420,13 @@
   function sourceInfo() {
     const ranges = selected().ranges;
     const perimeter = data.choices ? data.choices[state.scope].map(k => scopeNames[k]).join(' + ') : data.entity;
-    const aliases = data.choices ? Object.assign({}, ...data.choices[state.scope].map(k => data.members[k].aliases)) : data.aliases;
     $('source-content').innerHTML = `<p><b>Fuente única:</b> ${escape(data.source)} · Hoja ${escape(data.sheet)} · ${escape(perimeter)}. Valores almacenados, sin recalcular vínculos externos. Los subtotales Corp y los bloques Negocio no se añaden.</p>
       <p><b>Períodos:</b> ${scenarioText(`Mes consultado ${month().toLowerCase()} ${data.year}; acumulado enero a ${month().toLowerCase()}. Cierre fuente ${closure.toLowerCase()} ${data.year}. FCST anual vigente = REAL enero a ${closure.toLowerCase()} + FCST posterior hasta diciembre. No representa una proyección histórica del mes consultado.`)}</p>
       <p><b>Escala:</b> ${state.currency === 'MSoles' ? 'MSoles = miles de soles. El bloque de origen ya está en miles de soles; no se divide nuevamente.' : 'MMCLP = Millones de Pesos (CLP). El bloque de origen ya está en esa escala; no se divide nuevamente.'} Cada moneda proviene de su bloque, sin aplicar un tipo de cambio nuevo.</p>
       <p><b>Rangos:</b> ${scenarioText(`REAL + FCST ${ranges.execution_forecast}; PPTO ${ranges.budget}${ranges.prior ? `; REAL ${data.year - 1} ${ranges.prior}` : ''}.`)}</p>
       <p><b>Histórico:</b> ${scenarioText(selected().history_note)}</p>
       ${selected().types.CO ? '<p><b>Composición del Total:</b> OPEX + CAPEX + CO. CO se conserva por separado, sin reclasificarlo. Las páginas OPEX y CAPEX no incluyen CO.</p>' : ''}
-      <p><b>Indicadores:</b> ${scenarioText(`Uso = 100 × REAL acumulado / PPTO anual; esperado = 100 × PPTO acumulado / PPTO anual. ${classic ? 'PPTO disponible al mes consultado = PPTO anual menos REAL acumulado al mes. FCST pendiente comprende solo meses posteriores al cierre fuente.' : 'Saldo al cierre = PPTO anual menos REAL al cierre fuente.'} Variación = REAL o FCST menos PPTO. Porcentaje N/D si el denominador no es positivo. Los negativos se conservan; bajo PPTO no implica ahorro definitivo.`)}</p>
-      <p><b>Presentación:</b> ${Object.keys(aliases).length ? Object.entries(aliases).map(([key, label]) => `${escape(key)}: ${escape(label)}`).join('; ') + '. ' : 'Categorías originales de la fuente. '}Son rótulos de categoría, no un desglose por proveedor. Montos sin decimales y porcentajes con dos. Punto para miles y coma decimal, sin redondeos intermedios.</p>`;
+      <p><b>Indicadores:</b> ${scenarioText(`Uso = 100 × REAL acumulado / PPTO anual; esperado = 100 × PPTO acumulado / PPTO anual. ${classic ? 'PPTO disponible al mes consultado = PPTO anual menos REAL acumulado al mes. FCST pendiente comprende solo meses posteriores al cierre fuente.' : 'Saldo al cierre = PPTO anual menos REAL al cierre fuente.'} Variación = REAL o FCST menos PPTO. Porcentaje N/D si el denominador no es positivo. Los negativos se conservan; bajo PPTO no implica ahorro definitivo.`)}</p>`;
   }
 
   async function render(rebuild) {
@@ -494,7 +448,6 @@
     $('report-panel').setAttribute('aria-labelledby', `tab-${state.page}`);
     if ($('context')) $('context').textContent = `FUENTE · CIERRE ${closure.toUpperCase()} ${data.year}`;
     $('page-title').textContent = `${state.page === 'summary' ? classic ? 'Gastos Tecnológicos' : 'Gastos tecnológicos' : kind().toUpperCase()} | ${classic && state.month === data.cutoff ? 'Cierre ' : ''}${month()} ${data.year}`;
-    $('footer-cutoff').textContent = `${closure} ${data.year} · ${state.currency}`;
     $('layout-label').hidden = !integrated || state.page !== 'summary';
     $('month-status').hidden = !classic && state.month === data.cutoff;
     $('month-status').classList.toggle('sr-only', !!classic);

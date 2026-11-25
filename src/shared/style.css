@@ -172,7 +172,6 @@ td {white-space: nowrap}
 #source-content {line-height: 1.7; overflow-wrap: anywhere; max-width: 1100px}
 #source-content p + p {margin-top: 6px}
 code {font-size: 11px}
-footer {max-width: 1680px; margin: auto; display: flex; justify-content: space-between; padding: 8px 36px 22px; font-size: 10px; color: var(--muted)}
 
 @container (max-width: 160px) {
   .kpi-value {font-size: 28px}
@@ -213,7 +212,6 @@ footer {max-width: 1680px; margin: auto; display: flex; justify-content: space-b
   .plot.tall {height: 400px}
   .detail-grid {gap: 22px}
   .legend {gap: 9px}
-  footer {padding: 5px 16px 20px; gap: 15px; line-height: 1.5}
 }
 @media (max-width: 380px) {
   .currency button {min-width: 65px; padding: 0 9px}
@@ -228,5 +226,4 @@ footer {max-width: 1680px; margin: auto; display: flex; justify-content: space-b
   .chart-section {break-inside: avoid; margin-bottom: 20px}
   .masthead {padding: 12px 18px; print-color-adjust: exact}
   .table-wrap {overflow: visible}
-  footer {padding: 12px 18px}
 }

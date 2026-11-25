@@ -51,7 +51,7 @@ for (const business of Object.keys(scopes)) {
     assert.equal(resource.visual.version, manifest.version);
   }
   assert.deepEqual(resource.capabilities.privileges,
-    ['0.1.0.7','0.1.0.8'].includes(resource.visual.version) ? [] : [{name:'ExportContent', essential:false}]);
+    /^0\.1\.0\.(9|1\d|2[0-5])$/.test(resource.visual.version) ? [{name:'ExportContent', essential:false}] : []);
   assert.ok(!resource.content.js.includes('2609_dashboard_data.xlsx'), 'El paquete no debe contener datos de la fuente');
 }
 console.log('7 PBIP: enlaces, aislamiento, versiones y recursos coherentes. Validación local, no sustituye Desktop.');
