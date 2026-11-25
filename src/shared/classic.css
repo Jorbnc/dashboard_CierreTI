@@ -84,6 +84,7 @@ main {padding: 8px 44px 12px; background: #f7f5fb}
 .legend .swatch.line {height: 3px}
 .legend .swatch.line.dotted {width: 20px; height: 0; border-top: 2px dotted var(--color); background: transparent}
 .legend .budget-fill {border: 1px solid var(--budget-stroke)}
+body[data-contrast=normal] .legend .forecast-hatch {background-image: repeating-linear-gradient(135deg, transparent 0 4px, #fff 4px 5px)}
 .legend .swatch.line {position: relative; width: 20px}
 .legend :is(.budget-line,.dotted)::after {
   content: ""; position: absolute; left: 7px; top: -2px; width: 5px; height: 5px;
@@ -112,6 +113,43 @@ th[aria-sort=ascending] .sort-button svg, th[aria-sort=descending] .sort-button 
 .plot {flex-shrink: 0}
 #monthly-chart .scatterlayer .js-line {
   filter: drop-shadow(0 0.8px 0 var(--plot-paper)) drop-shadow(0 -0.8px 0 var(--plot-paper));
+}
+/* Retail Claro belongs to the report, never to a member selected inside Ripley Corp. */
+body[data-brand=retail][data-contrast=normal] {
+  --retail-accent: #c30f68; --brand-ink: #333; --graphite: #333;
+  --purple: #464646; --violet: #565656; --navy: #1a1a1a; --magenta: #565656;
+  --actual: #333333; --forecast: #6a6a6a; --prior: #565656;
+  --monthly-real: var(--actual); --monthly-forecast: var(--forecast);
+  --annual-real: var(--actual); --annual-forecast: var(--forecast);
+  --monthly-budget-stroke: #565656; --monthly-budget-fill: #f1f1f1; --budget-text: #464646;
+  --selection-ink: #1a1a1a; --month-band: rgba(106,106,106,.14); --plot-grid: #e1e1e1;
+  --border: #dbdbdb; --muted: #565656; --lavender: #f1f1f1; --total-background: #e1e1e1;
+  background: #f7f7f7; color: var(--brand-ink);
+  & main {background: #f7f7f7}
+  & .masthead, & :is(.scope-bar button[aria-pressed=true], .tabs button[aria-selected=true]) {
+    background-color: var(--retail-accent); border-color: var(--retail-accent); color: #fff;
+  }
+  & :is(.tabs button[aria-selected=false], .scope-bar button[aria-pressed=false], #month, #month-options) {border-color: #ccc}
+  & .scope-bar {border-color: var(--border)}
+  & .column-heads > div, & .kpi-label {background: #dbdbdb; color: var(--brand-ink)}
+  & .column-heads > div {box-shadow: 0 3px 6px #3a3a3a40}
+  & .kpi-label {border-radius: 4px; padding: 4px 8px}
+  & :is(.kpi-card, .chart-section) {box-shadow: 0 2px 6px #3a3a3a14}
+  & .kpi-value small {color: var(--muted)}
+  & .detail-grid .section-heading h3 {color: #221e20}
+  & :is(.legend, .category-button, .help-button:hover) {color: var(--brand-ink)}
+  & .scenario-forecast {--scenario-color: var(--muted)}
+  & #monthly-chart, & #calculation-tooltip {filter: grayscale(1)}
+  & #monthly-legend .budget-line::after {background: var(--monthly-budget-fill)}
+  & #category-table thead th {background: #f1f1f1; color: var(--brand-ink)}
+  & #category-table thead :is(.help-button,.sort-button svg) {color: inherit}
+  & #category-table :is(td,th) {border-bottom-color: #f0f0f0}
+  & #category-table tfoot :is(td,th) {border-top-color: #ccc}
+  & #category-table tbody tr:is(:hover,.selected) {background: #f7f7f7}
+  & #category-table tr.selected :is(td,th) {box-shadow: inset 0 0 0 2px var(--muted)}
+  & #category-table .pct-cell.good {background: #e3f4e8; color: #1f7839}
+  & #category-table .pct-cell.bad {background: #fbe3e6; color: var(--red)}
+  & :focus-visible {outline-color: var(--muted)}
 }
 /* The host and standalone reader supply the same three system colors. */
 body[data-contrast=high][data-brand] {

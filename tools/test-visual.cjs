@@ -63,17 +63,24 @@ async function main() {
         const checkDetailTitles = async () => {
           await expect(app.locator('#execution-panel h3')).toHaveText('Ejecución y desviación');
           await expect(app.locator('#annual-panel h3')).toHaveText('PPTO FY vs Forecast FY vs Real acumulado');
-          const bank = (await app.getAttribute('data-brand')) === 'bank';
+          const brand = await app.getAttribute('data-brand'), bank = brand === 'bank', retail = brand === 'retail';
           const chartColors = node => node.data.filter(t => t.type === 'bar').map(t => t.marker.color);
-          const monthly = bank ? ['#523178','#a58bc9'] : ['#414146','#939198'];
+          const monthly = bank ? ['#523178','#a58bc9'] : retail ? ['#333333','#6a6a6a'] : ['#414146','#939198'];
+          const swatches = bank ? ['rgb(165, 139, 201)','rgb(82, 49, 120)'] : retail ? ['rgb(106, 106, 106)','rgb(51, 51, 51)'] : ['rgb(147, 145, 152)','rgb(65, 65, 70)'];
           assert.deepEqual(await app.locator('#annual-chart').evaluate(chartColors), ['#ffb81c',monthly[1],monthly[0]]);
           assert.deepEqual(await app.locator('#annual-legend .swatch').evaluateAll(keys=>keys.map(k=>getComputedStyle(k).backgroundColor)),
-            ['rgb(255, 184, 28)',...(bank ? ['rgb(165, 139, 201)','rgb(82, 49, 120)'] : ['rgb(147, 145, 152)','rgb(65, 65, 70)'])]);
+            ['rgb(255, 184, 28)',...swatches]);
           assert.deepEqual(await app.locator('#monthly-chart').evaluate(chartColors), monthly);
           const forecastKey = app.locator('#monthly-legend .legend > span').filter({hasText: /^Forecast /i}).locator('.swatch');
-          await expect(forecastKey).toHaveCSS('background-color', bank ? 'rgb(165, 139, 201)' : 'rgb(147, 145, 152)');
-          await expect(app.locator('#category-table thead th').first()).toHaveCSS('background-color',bank ? 'rgb(82, 49, 120)' : 'rgb(65, 65, 70)');
-          await expect(app.locator('#category-table tfoot td').first()).toHaveCSS('background-color',bank ? 'rgb(241, 236, 247)' : 'rgb(234, 232, 235)');
+          await expect(forecastKey).toHaveCSS('background-color', swatches[0]);
+          for (const name of ['monthly','annual']) {
+            const plot = app.locator('#'+name+'-chart');
+            assert.deepEqual(await plot.evaluate(el=>el.data.filter(t=>t.type==='bar').map(t=>t.marker.pattern?.shape || '')),
+              name === 'monthly' ? ['','/'] : ['','/','']);
+            await expect(app.locator('#'+name+'-legend .forecast-hatch')).toHaveCSS('background-image',/repeating-linear-gradient/);
+          }
+          await expect(app.locator('#category-table thead th').first()).toHaveCSS('background-color',retail ? 'rgb(241, 241, 241)' : swatches[1]);
+          await expect(app.locator('#category-table tfoot td').first()).toHaveCSS('background-color',bank ? 'rgb(241, 236, 247)' : retail ? 'rgb(225, 225, 225)' : 'rgb(234, 232, 235)');
         };
         for (const business of ['banco_peru', 'banco_chile', 'retail_chile', 'retail_peru']) {
           await update(dataView(fixture(business)));
@@ -113,12 +120,14 @@ async function main() {
         for (const key of ['bancos','retail','corp_ti']) {
           await update(dataView(portfolioFixture(key))); await ready();
           await checkSourceBadge();
-          const accent = key === 'bancos' ? 'rgb(82, 49, 120)' : 'rgb(34, 30, 32)';
+          const retail = key === 'retail';
+          const accent = key === 'bancos' ? 'rgb(82, 49, 120)' : retail ? 'rgb(195, 15, 104)' : 'rgb(34, 30, 32)';
+          const ink = retail ? 'rgb(51, 51, 51)' : accent;
           const header = app.locator('.column-heads > div').first();
-          await expect(header).toHaveCSS('background-color', accent);
+          await expect(header).toHaveCSS('background-color', retail ? 'rgb(219, 219, 219)' : accent);
           await expect(header).toHaveCSS('border-radius', '8px');
-          await expect(app.locator('.scope-bar [aria-pressed=false]').first()).toHaveCSS('color', accent);
-          await expect(app.locator('.tabs [aria-selected=false] svg').first()).toHaveCSS('stroke', accent);
+          await expect(app.locator('.scope-bar [aria-pressed=false]').first()).toHaveCSS('color', ink);
+          await expect(app.locator('.tabs [aria-selected=false] svg').first()).toHaveCSS('stroke', ink);
           const logo = app.locator('.masthead .brand').getByRole('img');
           await expect(app.locator('.scope-bar + .navigation')).toHaveCount(1);
           if (key === 'corp_ti') {
@@ -134,8 +143,8 @@ async function main() {
             const scope = await button.getAttribute('data-scope');
             await expect(button).toHaveCSS('background-color', accent);
             const actual = app.locator('[data-scope=Total] [data-metric=actual-month]');
-            await expect(actual.locator('.kpi-number')).toHaveCSS('color', accent);
-            await expect(actual.locator('small')).toHaveCSS('color', 'rgb(110, 102, 128)');
+            await expect(actual.locator('.kpi-number')).toHaveCSS('color', ink);
+            await expect(actual.locator('small')).toHaveCSS('color', retail ? 'rgb(86, 86, 86)' : 'rgb(110, 102, 128)');
             await checkLogoSizes();
             const country = {banco_chile:'Chile', banco_peru:'Perú', retail_chile:'Chile', retail_peru:'Perú'}[scope];
             const flags = app.locator('.identity').getByRole('img');
@@ -182,7 +191,7 @@ async function main() {
             await app.locator('#tab-'+tab).click(); await ready();
             await checkDetailTitles(); await checkSourceBadge();
             await expect(app.locator('#tab-'+tab)).toHaveCSS('background-color', accent);
-            for (const title of await app.locator('.detail-grid h3').all()) await expect(title).toHaveCSS('color', accent);
+            for (const title of await app.locator('.detail-grid h3').all()) await expect(title).toHaveCSS('color', retail ? 'rgb(34, 30, 32)' : accent);
           }
           await expect(app.locator('#monthly-chart .barlayer .point')).not.toHaveCount(0);
         }

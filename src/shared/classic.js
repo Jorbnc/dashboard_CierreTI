@@ -116,9 +116,11 @@ globalThis.CierreClassic = {
       $('report-panel').innerHTML = `<div class="column-heads" aria-hidden="true">${labels.map((l, i) => `<div><span>${l}</span>${i === 2 ? validity : ''}</div>`).join('')}</div>` + rows.map(([scope, label, series, colour]) => {
         const m = metrics(series);
         const yoy = number(model.relative(m.actualYtd, m.priorYtd), n => signed(n, pct));
+        const annualChange = model.relative(m.forecastYear, m.priorYear);
+        const annualTone = data.brand === 'retail' ? signClass(annualChange, 2) : 'neutral';
         const history = m.priorYtd === null
           ? `<div class="kpi-value unavailable">N/D</div><div class="kpi-sub">Histórico ${data.year - 1} no disponible en ${state.currency}.</div>`
-          : `${proposal ? proposal.historyValue(scope, label, m, yoy) : `<div class="kpi-value" data-metric="yoy">${yoy}</div>`}<div class="kpi-sub">REAL ${data.year - 1}: ${fmt(m.priorYtd)}<br>REAL ${data.year}: ${fmt(m.actualYtd)} ${state.currency}</div><div class="delta neutral">Forecast anual vs. ${data.year - 1}: ${signed(model.relative(m.forecastYear, m.priorYear), pct)}</div>`;
+          : `${proposal ? proposal.historyValue(scope, label, m, yoy) : `<div class="kpi-value" data-metric="yoy">${yoy}</div>`}<div class="kpi-sub">REAL ${data.year - 1}: ${fmt(m.priorYtd)}<br>REAL ${data.year}: ${fmt(m.actualYtd)} ${state.currency}</div><div class="delta ${annualTone}">Forecast anual vs. ${data.year - 1}: ${signed(annualChange, pct)}</div>`;
         return `<section class="summary-section" aria-label="${label}"><h3 class="row-title" style="--row-color:${colour}">${label}${scope === 'Total' ? componentsHelp() : ''}</h3><div class="kpi-grid">` +
           card(scope, 0, value(m.actualMonth, 'actual-month') + `<div class="kpi-sub">PPTO: ${fmt(m.budgetMonth)} ${state.currency}</div>` + delta(m.actualMonth, m.budgetMonth)) +
           card(scope, 1, value(m.actualYtd, 'actual-ytd') + `<div class="kpi-sub">PPTO: ${fmt(m.budgetYtd)} ${state.currency}</div>` + delta(m.actualYtd, m.budgetYtd)) +
@@ -182,16 +184,20 @@ globalThis.CierreClassic = {
       $('variance-period').textContent = `REAL − PPTO · ${ytdPeriod()}`;
       const hc = document.body.dataset.contrast === 'high';
       const paper = color('plot-paper'), ink = color('selection-ink'), gold = color('budget-stroke');
-      const monthlyColors = {real: color('monthly-real'), forecast: color('monthly-forecast')};
+      const monthlyColors = {real: color('monthly-real'), forecast: color('monthly-forecast'),
+        budgetStroke: color('monthly-budget-stroke') || gold, budgetFill: color('monthly-budget-fill') || colors.budget};
       const annualKeys = [
         ['PPTO FY', 'budgetYear', colors.budget, 'budget-fill', '.'],
-        ['Forecast FY', 'forecastYear', color('annual-forecast'), 'hatched', '/'],
+        ['Forecast FY', 'forecastYear', color('annual-forecast'), 'forecast-hatch hatched', '/'],
         ['Real acumulado', 'actualYtd', color('annual-real'), '', ''],
       ];
-      const pattern = shape => hc ? {pattern: {shape, bgcolor: paper, fgcolor: color('muted'), size: 6, solidity: 0.35}} : {};
+      const pattern = shape => {
+        if (hc) return {pattern: {shape, bgcolor: paper, fgcolor: color('muted'), size: 6, solidity: 0.35}};
+        return shape === '/' ? {pattern: {shape, fillmode: 'overlay', fgcolor: '#fff', size: 5, solidity: 0.18}} : {};
+      };
       $('annual-legend').innerHTML = legend(annualKeys.map(([name,key,fill,role]) => [key === 'actualYtd' ? `Real enero–${month().toLowerCase()}` : name, fill, false, null, role]));
       const historyDash = 'dot';
-      const legends = [[`Real ${data.year}`, monthlyColors.real], [`Forecast ${data.year}`, monthlyColors.forecast, false, null, 'hatched'], ['Presupuesto', gold, true, null, 'budget-line']];
+      const legends = [[`Real ${data.year}`, monthlyColors.real], [`Forecast ${data.year}`, monthlyColors.forecast, false, null, 'forecast-hatch hatched'], ['Presupuesto', monthlyColors.budgetStroke, true, null, 'budget-line']];
       if (series.prior) legends.push([`Real ${data.year - 1}`, colors.prior, true, historyDash]);
       $('monthly-legend').innerHTML = legend(legends);
       $('history-note').textContent = focused && !series.prior ? `Histórico ${data.year - 1} no incorporado por categoría.` : selected().history_note;
@@ -200,7 +206,7 @@ globalThis.CierreClassic = {
       const monthly = [
         {type: 'bar', x, y: series.actual, customdata: months, name: 'Real', marker: {color: monthlyColors.real}, hovertemplate: hover('Real')},
         {type: 'bar', x, y: series.forecast, customdata: months, name: 'Forecast', marker: {color: monthlyColors.forecast, ...pattern('/')}, hovertemplate: hover('Forecast')},
-        {type: 'scatter', mode: 'lines+markers', x, y: series.budget, customdata: months, name: 'Presupuesto', line: {color: gold, width: 3}, marker: {size: 6, color: colors.budget, line: {color: hc ? paper : gold, width: 1}}, hovertemplate: hover('Presupuesto')},
+        {type: 'scatter', mode: 'lines+markers', x, y: series.budget, customdata: months, name: 'Presupuesto', line: {color: monthlyColors.budgetStroke, width: 3}, marker: {size: 6, color: monthlyColors.budgetFill, line: {color: hc ? paper : monthlyColors.budgetStroke, width: 1}}, hovertemplate: hover('Presupuesto')},
       ];
       if (series.prior) monthly.push({type: 'scatter', mode: 'lines+markers', x, y: series.prior, customdata: months, name: `Real ${data.year - 1}`, line: {color: colors.prior, width: 2, dash: historyDash},
         marker: {symbol: 'diamond', size: 6, color: paper, line: {color: colors.prior, width: 1.5}}, hovertemplate: hover(`Real ${data.year - 1}`)});

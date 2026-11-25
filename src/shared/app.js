@@ -250,7 +250,9 @@
     return `<div class="segmented" role="group" aria-label="${{ranking: 'Período del ranking', matrix: 'Magnitud de la matriz'}[key]}">${options.map(([value, label]) => `<button data-control="${key}" data-value="${value}" aria-pressed="${state[key] === value}">${scenarioText(label)}</button>`).join('')}</div>`;
   }
   function delta(actual, budget) {
-    return `<div class="delta-row"><span class="delta ${signClass(actual - budget)}">${signed(actual - budget)} (${signed(model.relative(actual, budget), pct)})</span><span class="delta-reference">vs. ${scenarioValue('budget', 'PPTO')}</span></div>`;
+    const percent = model.relative(actual, budget);
+    const tone = data.brand === 'retail' ? signClass(percent, 2) : signClass(actual - budget);
+    return `<div class="delta-row"><span class="delta ${tone}">${signed(actual - budget)} (${signed(percent, pct)})</span><span class="delta-reference">vs. ${scenarioValue('budget', 'PPTO')}</span></div>`;
   }
   function legend(items) {
     return `<div class="legend">${items.map(([label, colour, line, dash, role = '']) => `<span><i aria-hidden="true" class="swatch ${role} ${line ? 'line' : ''}${dash === 'dot' ? ' dotted' : ''}" style="--color:${colour}"></i>${scenarioText(label)}</span>`).join('')}</div>`;
