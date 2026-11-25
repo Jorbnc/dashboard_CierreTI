@@ -121,7 +121,7 @@ async function main() {
           await update(dataView(portfolioFixture(key))); await ready();
           await checkSourceBadge();
           const retail = key === 'retail';
-          const accent = key === 'bancos' ? 'rgb(82, 49, 120)' : retail ? 'rgb(195, 15, 104)' : 'rgb(34, 30, 32)';
+          const accent = key === 'bancos' ? 'rgb(82, 49, 120)' : retail ? 'rgb(253, 0, 140)' : 'rgb(34, 30, 32)';
           const ink = retail ? 'rgb(51, 51, 51)' : accent;
           const header = app.locator('.column-heads > div').first();
           await expect(header).toHaveCSS('background-color', retail ? 'rgb(219, 219, 219)' : accent);

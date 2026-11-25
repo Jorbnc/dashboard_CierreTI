@@ -116,7 +116,7 @@ th[aria-sort=ascending] .sort-button svg, th[aria-sort=descending] .sort-button 
 }
 /* Retail Claro belongs to the report, never to a member selected inside Ripley Corp. */
 body[data-brand=retail][data-contrast=normal] {
-  --retail-accent: #c30f68; --brand-ink: #333; --graphite: #333;
+  --retail-accent: #fd008c; --brand-ink: #333; --graphite: #333;
   --purple: #464646; --violet: #565656; --navy: #1a1a1a; --magenta: #565656;
   --actual: #333333; --forecast: #6a6a6a; --prior: #565656;
   --monthly-real: var(--actual); --monthly-forecast: var(--forecast);
