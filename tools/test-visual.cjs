@@ -88,6 +88,11 @@ async function main() {
           await checkLogoSizes();
           await checkSourceBadge();
           await expect(app.locator('[role=tab]')).toHaveCount(3);
+          const annual = app.locator('[data-scope=Total] [data-metric=annual-yoy]');
+          const hasPrior = business.startsWith('banco');
+          await expect(annual).toHaveText(hasPrior ? '+78 (+100,00%)' : 'N/D');
+          await expect(annual).toHaveClass(hasPrior ? 'delta bad' : 'delta neutral');
+          await expect(app.locator('[data-kpi="2"] .annual-history .delta-reference').first()).toHaveText('vs 2029 REAL');
           await expect(app.locator('#download-pdf,#pdf-status,footer')).toHaveCount(0);
           await app.locator('#month').click(); await app.locator('[data-month-option="3"]').click(); await ready();
           await checkSourceBadge();
@@ -167,6 +172,8 @@ async function main() {
               assert.equal(await logo.getAttribute('src'), 'data:image/png;base64,' + img.toString('base64'));
             }
             const expected = {corp_ti:45,bancos:20,retail:25,banco_chile:10,banco_peru:10,retail_chile:15,retail_peru:10}[scope];
+            await expect(app.locator('[data-scope=Total] [data-metric=annual-yoy]')).toHaveText(
+              scope==='bancos' ? '+156 (+100,00%)' : scope.startsWith('banco_') ? '+78 (+100,00%)' : 'N/D');
             await expect(app.locator('[data-kpi="0"][data-scope=Total] [data-metric=actual-month]')).toHaveText(expected+'MMCLP');
             if (scope === 'banco_peru') {
               await app.getByRole('button',{name:'MSoles',exact:true}).click(); await ready();
@@ -216,6 +223,13 @@ async function main() {
         await expect(app).toHaveAttribute('data-page', 'capex');
         await expect(frame.locator('#host2 .cierre-app')).toHaveAttribute('data-page', 'summary');
         assert.deepEqual(await frame.evaluate(() => window.harness.events.filter(e => e === 'fail')), []);
+        for (const [factor,expected,tone] of [[0,'+156 (N/D)','neutral'],[-1,'+312 (N/D)','neutral'],[1,'0 (0,00%)','neutral'],[1.00001,'0 (0,00%)','neutral'],[2,'-156 (-50,00%)','good']]) {
+          const rows = fixture('banco_chile');
+          rows.forEach(r=>{if(r.prior!==null) r.prior=factor*(r.actual??r.forecast);});
+          await update(dataView(rows)); await ready(); await app.locator('#tab-summary').click(); await ready();
+          const chip=app.locator('[data-scope=Total] [data-metric=annual-yoy]');
+          await expect(chip).toHaveText(expected); await expect(chip).toHaveClass('delta '+tone);
+        }
         const hostile = fixture();
         hostile.filter(r => r.level === 'category').forEach(r => {r.label = '<img src=x onerror="window.compromised=true">';});
         await update(dataView(hostile));

@@ -104,6 +104,21 @@ globalThis.CierreClassic = {
       });
     }
 
+    function historyIndicator(scope, label, current, prior, annual = false) {
+      const percent = model.relative(current, prior);
+      const difference = Number.isFinite(prior) ? current - prior : null;
+      const text = annual && difference !== null ? `${signed(difference)} (${signed(percent, pct)})` : signed(percent, pct);
+      const content = !annual && Number.isFinite(percent) ? `<span class="kpi-number">${text}</span>` : text;
+      const priorLabel = annual ? `${data.year - 1} REAL` : `REAL ${data.year - 1}`;
+      const metric = annual ? 'annual-yoy' : 'yoy';
+      const css = annual ? 'delta ' + signClass(percent, 2) : 'kpi-value history-trigger';
+      const id = annual ? `help-history-annual-${scope}` : `help-history-${scope}`;
+      const heading = annual ? `Anual enero–diciembre · FCST vigente a ${closure.toLowerCase()}` : `Acumulado enero a ${month().toLowerCase()}`;
+      const reference = Number.isFinite(prior) ? fmt(prior) + ' ' + state.currency : 'N/D';
+      const formula = Number.isFinite(percent) ? `(${fmt(current)} / ${fmt(prior)} − 1) × 100 ≈ <b>${signed(percent, pct)}</b>`
+        : 'N/D: Histórico ausente o denominador no positivo.';
+      return `<button type="button" class="${css}" data-metric="${metric}" data-help="${id}" aria-expanded="false" aria-label="Variación ${annual ? 'anual' : 'acumulada'}: ${text} vs ${priorLabel}, ${escape(label)}: ver cálculo">${content}</button><template id="${id}"><p class="tooltip-section">${heading}</p><p>${annual ? 'FCST' : 'REAL'} ${data.year}: <b>${fmt(current)} ${state.currency}</b><br>${priorLabel}: <b>${reference}</b></p><p class="tooltip-formula">${formula}</p></template>`;
+    }
     function summary() {
       stopAnnualObserver();
       const labels = [`${month()} ${data.year}`, `Acumulado a ${month().toLowerCase()}`, `Forecast ${data.year}`,
@@ -115,16 +130,16 @@ globalThis.CierreClassic = {
       const rows = [['Total', 'Gastos totales', selected().total, color('navy')], ['Opex', 'OPEX', selected().types.Opex.series, color('violet')], ['Capex', 'CAPEX', selected().types.Capex.series, color('magenta')]];
       $('report-panel').innerHTML = `<div class="column-heads" aria-hidden="true">${labels.map((l, i) => `<div><span>${l}</span>${i === 2 ? validity : ''}</div>`).join('')}</div>` + rows.map(([scope, label, series, colour]) => {
         const m = metrics(series);
-        const yoy = number(model.relative(m.actualYtd, m.priorYtd), n => signed(n, pct));
-        const annualChange = model.relative(m.forecastYear, m.priorYear);
-        const annualTone = data.brand === 'retail' ? signClass(annualChange, 2) : 'neutral';
+        const priorLabel = `${data.year - 1} REAL`;
+        const reference = Number.isFinite(m.priorYear) ? fmt(m.priorYear) + ' ' + state.currency : 'N/D';
+        const annualHistory = `<div class="annual-history"><div class="kpi-sub">${priorLabel}: ${reference}</div><div class="delta-row">${historyIndicator(scope, label, m.forecastYear, m.priorYear, true)}<span class="delta-reference">vs ${priorLabel}</span></div></div>`;
         const history = m.priorYtd === null
           ? `<div class="kpi-value unavailable">N/D</div><div class="kpi-sub">Histórico ${data.year - 1} no disponible en ${state.currency}.</div>`
-          : `${proposal ? proposal.historyValue(scope, label, m, yoy) : `<div class="kpi-value" data-metric="yoy">${yoy}</div>`}<div class="kpi-sub">REAL ${data.year - 1}: ${fmt(m.priorYtd)}<br>REAL ${data.year}: ${fmt(m.actualYtd)} ${state.currency}</div><div class="delta ${annualTone}">Forecast anual vs. ${data.year - 1}: ${signed(annualChange, pct)}</div>`;
+          : `${historyIndicator(scope, label, m.actualYtd, m.priorYtd)}<div class="kpi-sub">REAL ${data.year - 1}: ${fmt(m.priorYtd)}<br>REAL ${data.year}: ${fmt(m.actualYtd)} ${state.currency}</div>`;
         return `<section class="summary-section" aria-label="${label}"><h3 class="row-title" style="--row-color:${colour}">${label}${scope === 'Total' ? componentsHelp() : ''}</h3><div class="kpi-grid">` +
           card(scope, 0, value(m.actualMonth, 'actual-month') + `<div class="kpi-sub">PPTO: ${fmt(m.budgetMonth)} ${state.currency}</div>` + delta(m.actualMonth, m.budgetMonth)) +
           card(scope, 1, value(m.actualYtd, 'actual-ytd') + `<div class="kpi-sub">PPTO: ${fmt(m.budgetYtd)} ${state.currency}</div>` + delta(m.actualYtd, m.budgetYtd)) +
-          card(scope, 2, value(m.forecastYear, 'forecast-year') + `<div class="kpi-sub">PPTO anual: ${fmt(m.budgetYear)} ${state.currency}</div>` + delta(m.forecastYear, m.budgetYear)) +
+          card(scope, 2, value(m.forecastYear, 'forecast-year') + `<div class="kpi-sub">PPTO anual: ${fmt(m.budgetYear)} ${state.currency}</div>` + delta(m.forecastYear, m.budgetYear) + annualHistory) +
           card(scope, 3, history) +
           card(scope, 4, `<div class="label-with-help"><div class="kpi-value" data-metric="usage">${number(m.usage, pct)}</div>${calculationHelp(scope, label, m)}</div><div class="kpi-sub">Esperado a ${month().toLowerCase()}: <span data-metric="expected">${pct(m.expected)}</span></div><div class="usage-bar" ${m.usage === null ? 'hidden' : ''} aria-hidden="true"><span class="fill" style="width:${Math.max(0, Math.min(100, m.usage ?? 0))}%"></span><span class="expected" style="left:${Math.max(0, Math.min(99, m.expected ?? 0))}%"></span></div><div class="quiet-note">PPTO disponible a ${month().toLowerCase()}: ${fmt(m.budgetYear - m.actualYtd)}<br>FCST ${data.cutoff < 12 ? `${months[data.cutoff].slice(0, 3).toLowerCase()}–dic` : 'pendiente'}: ${fmt(m.future)} ${state.currency}</div>`) +
           '</div></section>';

@@ -66,6 +66,9 @@ main {padding: 8px 44px 12px; background: #f7f5fb}
 .delta {font-size: 13px; font-weight: 700; padding: 4px 12px; gap: 7px}
 .delta-row {gap: 5px; margin-top: 2px}
 .delta-reference {font-size: 12px}
+.annual-history {width: 100%; border-top: 1px solid var(--border); padding-top: 6px; margin-top: 2px}
+.annual-history .delta {border: 0; cursor: help}
+body[data-contrast=normal] .annual-history .delta.neutral {background: #eee; color: #555}
 .quiet-note {font-size: 12.5px; line-height: 1.4}
 .usage-bar {height: 9px; margin-top: 4px}
 .usage-bar .expected {height: 17px; background: var(--gold); border: 1px solid var(--budget-stroke)}
