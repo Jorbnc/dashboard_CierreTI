@@ -92,6 +92,21 @@ async function main() {
           const hasPrior = business.startsWith('banco');
           await expect(annual).toHaveText(hasPrior ? '+78 (+100,00%)' : 'N/D');
           await expect(annual).toHaveClass(hasPrior ? 'delta bad' : 'delta neutral');
+          await expect(app.locator('.annual-history :is(button,[data-help],template)')).toHaveCount(0);
+          await annual.click();
+          await expect(app.locator('#calculation-tooltip')).toBeHidden();
+          const comparison = app.locator('[data-scope=Total][data-kpi="3"]');
+          if (hasPrior) {
+            const percent = comparison.locator('[data-metric=yoy]');
+            await expect(percent).toHaveCSS('text-decoration-line','none');
+            await expect(comparison.locator('.ytd-footer .delta-reference')).toHaveText('vs. REAL 2029 acum.');
+            await percent.click();
+            await expect(app.locator('#calculation-tooltip')).toContainText('Acumulado a');
+            await page.keyboard.press('Escape');
+          } else {
+            await expect(comparison.locator('.unavailable')).toHaveText('N/D');
+            await expect(comparison.locator('.ytd-footer,[data-help]')).toHaveCount(0);
+          }
           await expect(app.locator('[data-kpi="2"] .annual-history .delta-reference').first()).toHaveText('vs 2029 REAL');
           await expect(app.locator('#download-pdf,#pdf-status,footer')).toHaveCount(0);
           await app.locator('#month').click(); await app.locator('[data-month-option="3"]').click(); await ready();

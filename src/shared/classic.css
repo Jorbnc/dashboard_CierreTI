@@ -1,6 +1,6 @@
 :root {--forecast: #a58bc9; --budget: #ffb81c; --prior: #41414c}
 body {
-  --budget-stroke: #ab7600; --budget-text: #905f00; --plot-paper: #fff; --plot-grid: #ece7f3;
+  --budget-stroke: #ab7600; --expected-text: #905f00; --budget-text: var(--expected-text); --plot-paper: #fff; --plot-grid: #ece7f3;
   --month-band: rgba(47, 119, 206, 0.12); --selection-ink: #252b32;
 }
 body {--monthly-real: var(--actual); --monthly-forecast: var(--forecast); --annual-real: #414146; --annual-forecast: #939198}
@@ -66,9 +66,11 @@ main {padding: 8px 44px 12px; background: #f7f5fb}
 .delta {font-size: 13px; font-weight: 700; padding: 4px 12px; gap: 7px}
 .delta-row {gap: 5px; margin-top: 2px}
 .delta-reference {font-size: 12px}
-.annual-history {width: 100%; border-top: 1px solid var(--border); padding-top: 6px; margin-top: 2px}
-.annual-history .delta {border: 0; cursor: help}
-body[data-contrast=normal] .annual-history .delta.neutral {background: #eee; color: #555}
+.annual-history, .ytd-footer {width: 100%; border-top: 1px solid var(--border); padding-top: 6px; margin-top: 2px}
+.ytd-footer.delta-row {display: grid; grid-template-columns: minmax(0, max-content) minmax(6ch, 1fr); align-items: center}
+.ytd-footer .delta {margin-top: 0}
+body[data-contrast=normal] :is(.annual-history,.ytd-footer) .delta.neutral {background: #eee; color: #555}
+.kpi-sub.expected-caption {color: var(--expected-text); font-weight: 600}
 .quiet-note {font-size: 12.5px; line-height: 1.4}
 .usage-bar {height: 9px; margin-top: 4px}
 .usage-bar .expected {height: 17px; background: var(--gold); border: 1px solid var(--budget-stroke)}
@@ -158,7 +160,7 @@ body[data-brand=retail][data-contrast=normal] {
 body[data-contrast=high][data-brand] {
   --actual: var(--hc-fg); --forecast: var(--hc-fg); --prior: var(--hc-fg); --budget: var(--hc-fg);
   --monthly-real: var(--hc-fg); --monthly-forecast: var(--hc-fg); --annual-real: var(--hc-fg); --annual-forecast: var(--hc-fg);
-  --green: var(--hc-fg); --red: var(--hc-fg); --budget-text: var(--hc-fg); --budget-stroke: var(--hc-fg);
+  --green: var(--hc-fg); --red: var(--hc-fg); --budget-text: var(--hc-fg); --expected-text: var(--hc-fg); --budget-stroke: var(--hc-fg);
   --muted: var(--hc-fg); --plot-paper: var(--hc-bg); --month-band: var(--hc-bg); --plot-grid: var(--hc-bg);
   --selection-ink: var(--hc-selected); --border: var(--hc-fg); --brand-ink: var(--hc-fg); --purple: var(--hc-fg);
   --lavender: var(--hc-bg); --navy: var(--hc-fg); --gold: var(--hc-selected);
